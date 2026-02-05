@@ -1,0 +1,332 @@
+<!-- Parts Application Workspace -->
+<!DOCTYPE html>
+<html class="light" lang="pt-br">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Parts Application Workspace</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#2563eb", // Modern Royal Blue
+            "background-light": "#f8fafc",
+            "background-dark": "#0f172a",
+            "surface-light": "#ffffff",
+            "surface-dark": "#1e293b",
+          },
+          fontFamily: {
+            display: ["Inter", "sans-serif"],
+            sans: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+  <header
+    class="border-b border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <div class="bg-primary p-2 rounded-lg">
+        <span class="material-icons-outlined text-white">settings_input_component</span>
+      </div>
+      <h1 class="text-xl font-bold tracking-tight">Gerenciador de Aplicações de Peças</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center space-x-1 border-r border-slate-200 dark:border-slate-700 pr-4 mr-2">
+        <button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors"
+          title="Ações">
+          <span class="material-icons-outlined">menu</span>
+        </button>
+        <button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors"
+          onclick="document.documentElement.classList.toggle('dark')" title="Alternar Tema">
+          <span class="material-icons-outlined dark:hidden">dark_mode</span>
+          <span class="material-icons-outlined hidden dark:block">light_mode</span>
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <p class="text-xs font-medium text-slate-500 uppercase">Usuário</p>
+          <p class="text-sm font-semibold">Admin Catalogo</p>
+        </div>
+        <div
+          class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-primary">
+          AC</div>
+      </div>
+    </div>
+  </header>
+  <main class="flex-1 p-6 max-w-[1600px] mx-auto w-full space-y-6">
+    <div
+      class="grid grid-cols-1 md:grid-cols-12 gap-6 bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="md:col-span-3 space-y-1.5">
+        <label class="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2" for="part-id">
+          <span class="material-icons-outlined text-sm">fingerprint</span> ID da Peça
+        </label>
+        <input
+          class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary"
+          id="part-id" placeholder="Ex: DS-2034..." type="text" />
+      </div>
+      <div class="md:col-span-9 space-y-1.5">
+        <label class="text-sm font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2" for="provider">
+          <span class="material-icons-outlined text-sm">database</span> Provedor de Dados
+        </label>
+        <div class="relative">
+          <select
+            class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary appearance-none py-2 px-4"
+            id="provider">
+            <option value="ds_sensor">DS SENSOR POSIÇÃO BORBOLETA</option>
+            <option value="bosch">BOSCH AUTOMOTIVE DATA</option>
+            <option value="magneti">MAGNETI MARELLI CATALOG</option>
+            <option value="tecdoc">TECDOC WEB SERVICE</option>
+          </select>
+          <span
+            class="material-icons-outlined absolute right-3 top-2.5 text-slate-400 pointer-events-none text-base">expand_more</span>
+        </div>
+      </div>
+    </div>
+    <div
+      class="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-bold text-lg flex items-center gap-2">
+          <span class="material-icons-outlined text-primary">filter_list</span> Campos da Aplicação
+        </h2>
+        <label class="inline-flex items-center cursor-pointer group">
+          <input
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary transition-all"
+            type="checkbox" />
+          <span
+            class="ml-2 text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Selecionar
+            Tudo</span>
+        </label>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-y-4 gap-x-6">
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Montadora</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Veículo</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Modelo</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Motor</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Configuração Motor</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input checked=""
+            class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Ano</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Observação</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Sistema de Freio</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Restrição</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Apenas</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Posição</span>
+        </label>
+        <label
+          class="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
+          <input class="w-5 h-5 rounded text-primary border-slate-300 dark:border-slate-700 focus:ring-primary"
+            type="checkbox" />
+          <span class="text-sm font-medium">Lado</span>
+        </label>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <button
+        class="flex items-center gap-2 bg-primary hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+        <span class="material-icons-outlined text-xl">search</span>
+        Buscar Aplicações
+      </button>
+      <button
+        class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-red-500 hover:text-red-500 text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-lg font-semibold transition-all active:scale-95">
+        <span class="material-icons-outlined text-xl">cleaning_services</span>
+        Limpar Tudo
+      </button>
+      <button
+        class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary text-slate-600 dark:text-slate-300 px-6 py-2.5 rounded-lg font-semibold transition-all active:scale-95">
+        <span class="material-icons-outlined text-xl">content_copy</span>
+        Copiar Texto Formatado
+      </button>
+    </div>
+    <div
+      class="bg-surface-light dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <span class="material-icons-outlined text-primary">analytics</span> Resultados da Aplicação
+        </h3>
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+          <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
+          <span>12 registros encontrados</span>
+        </div>
+      </div>
+      <div class="flex-1 overflow-auto custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-50 dark:bg-slate-900/50 sticky top-0">
+            <tr>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                Montadora</th>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                Veículo</th>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                Modelo</th>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                Motor</th>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                Ano</th>
+              <th
+                class="px-6 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800 text-right">
+                Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-medium">FIAT</td>
+              <td class="px-6 py-4">Uno</td>
+              <td class="px-6 py-4">Mille Fire</td>
+              <td class="px-6 py-4">1.0 8V</td>
+              <td class="px-6 py-4">2001 &gt; 2013</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-slate-400 hover:text-primary transition-colors"><span
+                    class="material-icons-outlined">edit</span></button>
+                <button class="text-slate-400 hover:text-red-500 transition-colors ml-2"><span
+                    class="material-icons-outlined">delete_outline</span></button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-medium">VOLKSWAGEN</td>
+              <td class="px-6 py-4">Gol</td>
+              <td class="px-6 py-4">Trend G5</td>
+              <td class="px-6 py-4">1.6 8V MSI</td>
+              <td class="px-6 py-4">2008 &gt; 2012</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-slate-400 hover:text-primary transition-colors"><span
+                    class="material-icons-outlined">edit</span></button>
+                <button class="text-slate-400 hover:text-red-500 transition-colors ml-2"><span
+                    class="material-icons-outlined">delete_outline</span></button>
+              </td>
+            </tr>
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-medium">CHEVROLET</td>
+              <td class="px-6 py-4">Corsa</td>
+              <td class="px-6 py-4">Joy</td>
+              <td class="px-6 py-4">1.0 Flexpower</td>
+              <td class="px-6 py-4">2005 &gt; 2009</td>
+              <td class="px-6 py-4 text-right">
+                <button class="text-slate-400 hover:text-primary transition-colors"><span
+                    class="material-icons-outlined">edit</span></button>
+                <button class="text-slate-400 hover:text-red-500 transition-colors ml-2"><span
+                    class="material-icons-outlined">delete_outline</span></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <footer
+    class="bg-surface-light dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex items-center justify-between text-xs text-slate-500">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1"><span class="material-icons-outlined text-sm">cloud_done</span>
+        Conectado</span>
+      <span class="flex items-center gap-1"><span class="material-icons-outlined text-sm">speed</span> Latência:
+        45ms</span>
+    </div>
+    <div class="font-medium">
+      v3.2.0-stable | Sistema de Catálogo de Peças
+    </div>
+  </footer>
+
+</body>
+
+</html>

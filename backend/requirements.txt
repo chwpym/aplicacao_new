@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+beautifulsoup4
+sqlalchemy
+pydantic
+python-dotenv
+pyjwt
+httpx

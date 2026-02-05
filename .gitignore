@@ -1,0 +1,62 @@
+# Python (Backend)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+
+# Node (Frontend)
+node_modules/
+dist-ssr/
+*.local
+frontend_new/dist/
+frontend_new/node_modules/
+Z_frontend/node_modules/
+Z_frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Specific
+debug_analysis/
+.env
+.flaskenv
+*.db
+*.sqlite
+
+# Agent/Gemini Data
+.gemini/
+.agent/tmp/
+.agent/history/
