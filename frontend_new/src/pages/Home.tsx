@@ -395,7 +395,7 @@ const Home = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                            className="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 md:w-auto w-full"
                         >
                             {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
                             {loading ? 'Buscando...' : 'Pesquisar'}
@@ -403,97 +403,86 @@ const Home = () => {
                     </div>
 
                     {/* Filters Row */}
-                    <div className="flex flex-wrap items-center gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 mt-4">
-                        <div className="flex items-center gap-4">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Visualização:</span>
-                            {Object.keys(visibleFields).map((field) => {
-                                // Se um provedor específico estiver selecionado, verifica se ele tem esse campo no mapeamento
-                                if (selectedProvedor) {
-                                    const prov = provedores.find(p => String(p.id) === String(selectedProvedor));
-                                    if (prov && prov.mapeamento) {
-                                        try {
-                                            const map = JSON.parse(prov.mapeamento);
-                                            // Se o campo não estiver no mapeamento e não for core, oculta o check
-                                            const coreFields = ['marca', 'veiculo', 'modelo', 'motor', 'configuracao_motor', 'ano', 'observacao', 'imagem'];
-                                            if (!map[field] && !coreFields.includes(field)) {
-                                                return null;
-                                            }
-                                        } catch { }
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Exibir:</span>
+                            <div className="flex items-center gap-4">
+                                {Object.keys(visibleFields).map((field) => {
+                                    if (selectedProvedor) {
+                                        const prov = provedores.find(p => String(p.id) === String(selectedProvedor));
+                                        if (prov && prov.mapeamento) {
+                                            try {
+                                                const map = JSON.parse(prov.mapeamento);
+                                                const coreFields = ['marca', 'veiculo', 'modelo', 'motor', 'configuracao_motor', 'ano', 'observacao', 'imagem'];
+                                                if (!map[field] && !coreFields.includes(field)) return null;
+                                            } catch { }
+                                        }
                                     }
-                                }
-                                return (
-                                    <label key={field} className="flex items-center gap-2 cursor-pointer group">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only"
-                                            checked={visibleFields[field as keyof typeof visibleFields]}
-                                            onChange={() => setVisibleFields((prev: any) => ({ ...prev, [field]: !prev[field as keyof typeof visibleFields] }))}
-                                        />
-                                        <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${visibleFields[field as keyof typeof visibleFields] ? 'bg-primary border-primary' : 'border-slate-300 dark:border-slate-600'}`}>
-                                            {visibleFields[field as keyof typeof visibleFields] && <Check size={10} className="text-white" />}
-                                        </div>
-                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors capitalize">
-                                            {getFieldLabel(field)}
-                                        </span>
-                                    </label>
-                                );
-                            })}
+                                    return (
+                                        <label key={field} className="flex items-center gap-2 cursor-pointer group whitespace-nowrap">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only"
+                                                checked={visibleFields[field as keyof typeof visibleFields]}
+                                                onChange={() => setVisibleFields((prev: any) => ({ ...prev, [field]: !prev[field as keyof typeof visibleFields] }))}
+                                            />
+                                            <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${visibleFields[field as keyof typeof visibleFields] ? 'bg-primary border-primary' : 'border-slate-300 dark:border-slate-600'}`}>
+                                                {visibleFields[field as keyof typeof visibleFields] && <Check size={10} className="text-white" />}
+                                            </div>
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors capitalize">
+                                                {getFieldLabel(field)}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
                         </div>
 
-                        <div className="flex items-center gap-4 border-l border-slate-200 dark:border-slate-800 pl-4">
-                            <label className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    className="sr-only"
-                                    checked={agrupar}
-                                    onChange={() => setAgrupar(prev => !prev)}
-                                />
-                                <div className={`w-8 h-4 rounded-full transition-all relative ${agrupar ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
-                                    <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${agrupar ? 'left-[18px]' : 'left-0.5'}`} />
-                                </div>
-                                <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors uppercase">
-                                    Agrupar Resultados
-                                </span>
-                            </label>
-                        </div>
+                        <div className="flex flex-wrap items-center gap-4 lg:ml-auto">
+                            <div className="flex items-center gap-4 lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-4">
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only"
+                                        checked={agrupar}
+                                        onChange={() => setAgrupar(prev => !prev)}
+                                    />
+                                    <div className={`w-8 h-4 rounded-full transition-all relative ${agrupar ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${agrupar ? 'left-[18px]' : 'left-0.5'}`} />
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors uppercase whitespace-nowrap">
+                                        Agrupar
+                                    </span>
+                                </label>
+                            </div>
 
-                        <div className="ml-auto flex items-center gap-4">
-                            {results.length > 0 && (
-                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                                    <button
-                                        type="button"
-                                        onClick={() => copyToClipboard('completa')}
-                                        className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-xs font-bold flex items-center gap-1.5"
-                                        title="Completa: Marca, Modelo, Motor, Config, Ano"
-                                    >
-                                        <Copy size={12} /> COMPL.
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => copyToClipboard('intermediaria')}
-                                        className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-xs font-bold flex items-center gap-1.5"
-                                        title="Interm: Marca, Veículo, Config, Ano (por range)"
-                                    >
-                                        <Copy size={12} /> INTERM.
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => copyToClipboard('agrupada')}
-                                        className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-xs font-bold flex items-center gap-1.5"
-                                        title="Agr: Marca, Veículo, Config, Ano (unificado)"
-                                    >
-                                        <Copy size={12} /> AGRUPADA
-                                    </button>
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={clearResults}
-                                className="text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
-                            >
-                                Limpar Tudo
-                            </button>
-                        </div>
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard('completa')}
+                                    className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-[10px] font-bold flex items-center gap-1.5"
+                                    title="Completa: Marca, Modelo, Motor, Config, Ano"
+                                >
+                                    <Copy size={10} /> COMPL.
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard('intermediaria')}
+                                    className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-[10px] font-bold flex items-center gap-1.5"
+                                    title="Interm: Marca, Veículo, Config, Ano (por range)"
+                                >
+                                    <Copy size={10} /> INTERM.
+                                </button>
+    </div>
+    
+    <button
+        type="button"
+        onClick={clearResults}
+        className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest pl-2"
+    >
+        Limpar
+    </button>
+</div>
                     </div>
                 </form>
             </div>
@@ -541,7 +530,7 @@ const Home = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto custom-scrollbar">
+                <div className="md:block hidden overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
                             <tr>
@@ -562,34 +551,34 @@ const Home = () => {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {displayResults.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">
+                                    <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
                                         {loading ? 'Consultando provedores...' : 'Nenhum resultado para exibir.'}
                                     </td>
                                 </tr>
                             ) : (
                                 displayResults.map((res, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors text-[11px]">
                                         {visibleFields.marca && (
-                                            <td className="px-6 py-4 font-semibold text-primary uppercase text-[10px]">{res.marca}</td>
+                                            <td className="px-6 py-4 font-semibold text-primary uppercase">{res.marca}</td>
                                         )}
                                         {visibleFields.veiculo && (
-                                            <td className="px-6 py-4 text-sm font-medium">{res.veiculo}</td>
+                                            <td className="px-6 py-4 text-xs font-medium">{res.veiculo}</td>
                                         )}
                                         {visibleFields.modelo && (
-                                            <td className="px-6 py-4 text-sm">{res.modelo}</td>
+                                            <td className="px-6 py-4 text-xs">{res.modelo}</td>
                                         )}
                                         {visibleFields.motor && (
-                                            <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-200 text-xs">
+                                            <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-200">
                                                 {res.motor}
                                             </td>
                                         )}
                                         {visibleFields.configuracao_motor && (
                                             <td className="px-6 py-4">
-                                                <div className="text-xs text-slate-500 uppercase">{res.configuracao_motor}</div>
+                                                <div className="text-slate-500 uppercase">{res.configuracao_motor}</div>
                                             </td>
                                         )}
                                         {visibleFields.ano && (
-                                            <td className="px-6 py-4 text-center text-sm font-mono bg-slate-50/50 dark:bg-slate-900/20">
+                                            <td className="px-6 py-4 text-center font-mono bg-slate-50/50 dark:bg-slate-900/20">
                                                 {res.ano_inicio || res.ano_fim ? (
                                                     <div className="flex items-center justify-center gap-1">
                                                         <span>{res.ano_inicio || ''}</span>
@@ -601,22 +590,22 @@ const Home = () => {
                                         )}
                                         {visibleFields.observacao && (
                                             <td className="px-6 py-4">
-                                                <div className="text-xs text-slate-500">{res.observacao || '---'}</div>
+                                                <div className="text-slate-500">{res.observacao || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.posicao && (
                                             <td className="px-6 py-4">
-                                                <div className="text-xs text-slate-500 uppercase">{res.posicao || '---'}</div>
+                                                <div className="text-slate-500 uppercase">{res.posicao || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.lado && (
                                             <td className="px-6 py-4">
-                                                <div className="text-xs text-slate-500 uppercase">{res.lado || '---'}</div>
+                                                <div className="text-slate-500 uppercase">{res.lado || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.direcao && (
                                             <td className="px-6 py-4">
-                                                <div className="text-xs text-slate-500 uppercase">{res.direcao || '---'}</div>
+                                                <div className="text-slate-500 uppercase">{res.direcao || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.referencias && (
@@ -632,7 +621,7 @@ const Home = () => {
                                                     {(res.imagens && res.imagens.length > 0) ? (
                                                         res.imagens.map((imgUrl: string, i: number) => (
                                                             <div key={i} className="group relative">
-                                                                <div className="h-12 w-12 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1 transition-all group-hover:scale-110 group-hover:shadow-lg">
+                                                                <div className="h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1 transition-all group-hover:scale-110 group-hover:shadow-lg">
                                                                     <img src={imgUrl} alt={`Peça ${i + 1}`} className="max-h-full max-w-full object-contain" />
                                                                 </div>
                                                                 <div className="absolute -top-2 -right-2 hidden group-hover:flex gap-1 animate-in fade-in zoom-in duration-200">
@@ -641,7 +630,7 @@ const Home = () => {
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="bg-primary text-white p-1 rounded-full shadow-md hover:bg-primary-hover transition-colors"
-                                                                        title="Abrir imagem original para salvar"
+                                                                        title="Abrir imagem original"
                                                                     >
                                                                         <FileDown size={10} />
                                                                     </a>
@@ -650,7 +639,7 @@ const Home = () => {
                                                         ))
                                                     ) : res.imagem ? (
                                                         <div className="group relative">
-                                                            <div className="h-12 w-12 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1 transition-all group-hover:scale-110 group-hover:shadow-lg">
+                                                            <div className="h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1 transition-all group-hover:scale-110 group-hover:shadow-lg">
                                                                 <img src={res.imagem} alt="Peça" className="max-h-full max-w-full object-contain" />
                                                             </div>
                                                             <div className="absolute -top-2 -right-2 hidden group-hover:flex animate-in fade-in zoom-in duration-200">
@@ -659,15 +648,15 @@ const Home = () => {
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="bg-primary text-white p-1 rounded-full shadow-md hover:bg-primary-hover transition-colors"
-                                                                    title="Abrir imagem original para salvar"
+                                                                    title="Abrir imagem original"
                                                                 >
                                                                     <FileDown size={10} />
                                                                 </a>
                                                             </div>
                                                         </div>
                                                     ) : (
-                                                        <div className="h-12 w-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                                                            <div className="opacity-20 text-[10px] font-bold">N/A</div>
+                                                        <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                                            <div className="opacity-20 text-[9px] font-bold">N/A</div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -679,6 +668,92 @@ const Home = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden block divide-y divide-slate-100 dark:divide-slate-800">
+                    {displayResults.length === 0 ? (
+                        <div className="px-6 py-12 text-center text-slate-400 italic">
+                            {loading ? 'Consultando provedores...' : 'Nenhum resultado para exibir.'}
+                        </div>
+                    ) : (
+                        displayResults.map((res, idx) => (
+                            <div key={idx} className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
+                                                {res.marca}
+                                            </span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                {res.veiculo}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                            {res.modelo} • {res.motor}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                                            {res.ano_inicio || '---'} {res.ano_inicio || res.ano_fim ? '...' : ''} {res.ano_fim || ''}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px] text-slate-500">
+                                    {visibleFields.configuracao_motor && (
+                                        <div>
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('configuracao_motor')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300">{res.configuracao_motor || '---'}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.posicao && res.posicao && (
+                                        <div>
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('posicao')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300">{res.posicao}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.observacao && res.observacao && (
+                                        <div className="col-span-2">
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('observacao')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300">{res.observacao}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {visibleFields.imagem && (
+                                    <div className="flex flex-wrap gap-2 pt-1">
+                                        {(res.imagens && res.imagens.length > 0) ? (
+                                            res.imagens.map((imgUrl: string, i: number) => (
+                                                <a
+                                                    key={i}
+                                                    href={imgUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="h-14 w-14 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white p-1"
+                                                >
+                                                    <img src={imgUrl} alt={`Peça ${i + 1}`} className="h-full w-full object-contain" />
+                                                </a>
+                                            ))
+                                        ) : res.imagem && (
+                                            <a
+                                                href={res.imagem}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="h-14 w-14 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white p-1"
+                                            >
+                                                <img src={res.imagem} alt="Peça" className="h-full w-full object-contain" />
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
             </div>
         </div>
     );
