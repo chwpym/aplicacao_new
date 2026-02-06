@@ -524,9 +524,6 @@ const Home = () => {
                         >
                             <Copy size={14} /> Copiar Tudo
                         </button>
-                        <button className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                            <FileDown size={14} /> Exportar CSV
-                        </button>
                     </div>
                 </div>
 
