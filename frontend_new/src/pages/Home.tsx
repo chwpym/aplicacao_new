@@ -404,9 +404,9 @@ const Home = () => {
 
                     {/* Filters Row */}
                     <div className="flex flex-col lg:flex-row lg:items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
-                        <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Exibir:</span>
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                                 {Object.keys(visibleFields).map((field) => {
                                     if (selectedProvedor) {
                                         const prov = provedores.find(p => String(p.id) === String(selectedProvedor));
@@ -531,18 +531,18 @@ const Home = () => {
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
                             <tr>
-                                {visibleFields.marca && <th className="px-6 py-4">{getFieldLabel('marca')}</th>}
-                                {visibleFields.veiculo && <th className="px-6 py-4">{getFieldLabel('veiculo')}</th>}
-                                {visibleFields.modelo && <th className="px-6 py-4">{getFieldLabel('modelo')}</th>}
-                                {visibleFields.motor && <th className="px-6 py-4">{getFieldLabel('motor')}</th>}
-                                {visibleFields.configuracao_motor && <th className="px-6 py-4">{getFieldLabel('configuracao_motor')}</th>}
-                                {visibleFields.ano && <th className="px-6 py-4 text-center">{getFieldLabel('ano')}</th>}
-                                {visibleFields.observacao && <th className="px-6 py-4">{getFieldLabel('observacao')}</th>}
-                                {visibleFields.posicao && <th className="px-6 py-4">{getFieldLabel('posicao')}</th>}
-                                {visibleFields.lado && <th className="px-6 py-4">{getFieldLabel('lado')}</th>}
-                                {visibleFields.direcao && <th className="px-6 py-4">{getFieldLabel('direcao')}</th>}
-                                {visibleFields.referencias && <th className="px-6 py-4">{getFieldLabel('referencias')}</th>}
-                                {visibleFields.imagem && <th className="px-6 py-4">{getFieldLabel('imagem')}</th>}
+                                {visibleFields.marca && <th className="px-6 py-2">{getFieldLabel('marca')}</th>}
+                                {visibleFields.veiculo && <th className="px-6 py-2">{getFieldLabel('veiculo')}</th>}
+                                {visibleFields.modelo && <th className="px-6 py-2">{getFieldLabel('modelo')}</th>}
+                                {visibleFields.motor && <th className="px-6 py-2">{getFieldLabel('motor')}</th>}
+                                {visibleFields.configuracao_motor && <th className="px-6 py-2">{getFieldLabel('configuracao_motor')}</th>}
+                                {visibleFields.ano && <th className="px-6 py-2 text-center">{getFieldLabel('ano')}</th>}
+                                {visibleFields.observacao && <th className="px-6 py-2">{getFieldLabel('observacao')}</th>}
+                                {visibleFields.posicao && <th className="px-6 py-2">{getFieldLabel('posicao')}</th>}
+                                {visibleFields.lado && <th className="px-6 py-2">{getFieldLabel('lado')}</th>}
+                                {visibleFields.direcao && <th className="px-6 py-2">{getFieldLabel('direcao')}</th>}
+                                {visibleFields.referencias && <th className="px-6 py-2">{getFieldLabel('referencias')}</th>}
+                                {visibleFields.imagem && <th className="px-6 py-2">{getFieldLabel('imagem')}</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -556,26 +556,26 @@ const Home = () => {
                                 displayResults.map((res, idx) => (
                                     <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors text-[11px]">
                                         {visibleFields.marca && (
-                                            <td className="px-6 py-4 font-semibold text-primary uppercase">{res.marca}</td>
+                                            <td className="px-6 py-2 font-semibold text-primary uppercase">{res.marca}</td>
                                         )}
                                         {visibleFields.veiculo && (
-                                            <td className="px-6 py-4 text-xs font-medium">{res.veiculo}</td>
+                                            <td className="px-6 py-2 text-xs font-medium">{res.veiculo}</td>
                                         )}
                                         {visibleFields.modelo && (
-                                            <td className="px-6 py-4 text-xs">{res.modelo}</td>
+                                            <td className="px-6 py-2 text-xs">{res.modelo}</td>
                                         )}
                                         {visibleFields.motor && (
-                                            <td className="px-6 py-4 font-bold text-slate-600 dark:text-slate-200">
+                                            <td className="px-6 py-2 font-bold text-slate-600 dark:text-slate-200">
                                                 {res.motor}
                                             </td>
                                         )}
                                         {visibleFields.configuracao_motor && (
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-2">
                                                 <div className="text-slate-500 uppercase">{res.configuracao_motor}</div>
                                             </td>
                                         )}
                                         {visibleFields.ano && (
-                                            <td className="px-6 py-4 text-center font-mono bg-slate-50/50 dark:bg-slate-900/20">
+                                            <td className="px-6 py-2 text-center font-mono bg-slate-50/50 dark:bg-slate-900/20">
                                                 {res.ano_inicio || res.ano_fim ? (
                                                     <div className="flex items-center justify-center gap-1">
                                                         <span>{res.ano_inicio || ''}</span>
@@ -586,17 +586,17 @@ const Home = () => {
                                             </td>
                                         )}
                                         {visibleFields.observacao && (
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-2">
                                                 <div className="text-slate-500">{res.observacao || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.posicao && (
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-2">
                                                 <div className="text-slate-500 uppercase">{res.posicao || '---'}</div>
                                             </td>
                                         )}
                                         {visibleFields.lado && (
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-2">
                                                 <div className="text-slate-500 uppercase">{res.lado || '---'}</div>
                                             </td>
                                         )}
