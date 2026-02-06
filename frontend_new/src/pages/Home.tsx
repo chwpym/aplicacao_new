@@ -23,7 +23,10 @@ const Home = () => {
         observacao: false,
         posicao: false,
         lado: false,
-        direcao: false
+        direcao: false,
+        sistema_freio: false,
+        restricao: false,
+        apenas: false
     });
 
     useEffect(() => {
@@ -78,7 +81,10 @@ const Home = () => {
             observacao: 'Observações',
             posicao: 'Posição',
             lado: 'Lado',
-            direcao: 'Direção'
+            direcao: 'Direção',
+            sistema_freio: 'Sistema Freio',
+            restricao: 'Restrição',
+            apenas: 'Apenas'
         };
 
         return defaults[field] || field.replace('_', ' ');
@@ -549,6 +555,9 @@ const Home = () => {
                                 {visibleFields.posicao && <th className="px-6 py-2">{getFieldLabel('posicao')}</th>}
                                 {visibleFields.lado && <th className="px-6 py-2">{getFieldLabel('lado')}</th>}
                                 {visibleFields.direcao && <th className="px-6 py-2">{getFieldLabel('direcao')}</th>}
+                                {visibleFields.sistema_freio && <th className="px-6 py-2">{getFieldLabel('sistema_freio')}</th>}
+                                {visibleFields.restricao && <th className="px-6 py-2">{getFieldLabel('restricao')}</th>}
+                                {visibleFields.apenas && <th className="px-6 py-2">{getFieldLabel('apenas')}</th>}
                                 {visibleFields.referencias && <th className="px-6 py-2">{getFieldLabel('referencias')}</th>}
                                 {visibleFields.imagem && <th className="px-6 py-2">{getFieldLabel('imagem')}</th>}
                             </tr>
@@ -609,8 +618,23 @@ const Home = () => {
                                             </td>
                                         )}
                                         {visibleFields.direcao && (
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-2">
                                                 <div className="text-slate-500 uppercase">{res.direcao || '---'}</div>
+                                            </td>
+                                        )}
+                                        {visibleFields.sistema_freio && (
+                                            <td className="px-6 py-2">
+                                                <div className="text-slate-500 uppercase">{res.sistema_freio || '---'}</div>
+                                            </td>
+                                        )}
+                                        {visibleFields.restricao && (
+                                            <td className="px-6 py-2">
+                                                <div className="text-slate-400 italic text-[10px]">{res.restricao || '---'}</div>
+                                            </td>
+                                        )}
+                                        {visibleFields.apenas && (
+                                            <td className="px-6 py-2 font-black text-primary uppercase text-[10px]">
+                                                {res.apenas ? `★ ${res.apenas}` : '---'}
                                             </td>
                                         )}
                                         {visibleFields.referencias && (
@@ -714,7 +738,37 @@ const Home = () => {
                                     {visibleFields.posicao && res.posicao && (
                                         <div>
                                             <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('posicao')}:</span>
-                                            <span className="text-slate-700 dark:text-slate-300">{res.posicao}</span>
+                                            <span className="text-slate-700 dark:text-slate-300 uppercase">{res.posicao}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.lado && res.lado && (
+                                        <div>
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('lado')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300 uppercase">{res.lado}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.direcao && res.direcao && (
+                                        <div>
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('direcao')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300 uppercase">{res.direcao}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.sistema_freio && res.sistema_freio && (
+                                        <div>
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('sistema_freio')}:</span>
+                                            <span className="text-slate-700 dark:text-slate-300 uppercase">{res.sistema_freio}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.restricao && res.restricao && (
+                                        <div className="col-span-2">
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('restricao')}:</span>
+                                            <span className="text-slate-400 italic">{res.restricao}</span>
+                                        </div>
+                                    )}
+                                    {visibleFields.apenas && res.apenas && (
+                                        <div className="col-span-2">
+                                            <span className="font-bold text-slate-400 uppercase mr-1">{getFieldLabel('apenas')}:</span>
+                                            <span className="text-primary font-black uppercase text-[11px]">★ {res.apenas}</span>
                                         </div>
                                     )}
                                     {visibleFields.observacao && res.observacao && (
