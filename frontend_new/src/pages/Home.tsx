@@ -473,7 +473,15 @@ const Home = () => {
                                 >
                                     <Copy size={10} /> INTERM.
                                 </button>
-    </div>
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard('agrupada')}
+                                    className="px-3 py-1.5 rounded-lg text-slate-500 hover:text-primary hover:bg-white dark:hover:bg-slate-900 transition-all text-[10px] font-bold flex items-center gap-1.5"
+                                    title="Agrupada: Marca, Veículo, Range Total de Anos"
+                                >
+                                    <Copy size={10} /> AGRUP.
+                                </button>
+                            </div>
     
     <button
         type="button"

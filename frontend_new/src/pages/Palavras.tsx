@@ -87,7 +87,7 @@ const Palavras = () => {
                 </button>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+            <div className="flex flex-wrap gap-2">
                 {campos.map(campo => (
                     <button
                         key={campo.id}
