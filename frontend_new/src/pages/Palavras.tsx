@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Plus, Tag, X } from 'lucide-react';
+import { Trash2, Plus, Tag, X, Search } from 'lucide-react';
 import { configApi } from '../services/api';
 
 const Palavras = () => {
@@ -9,6 +9,7 @@ const Palavras = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newWord, setNewWord] = useState('');
     const [newWordField, setNewWordField] = useState('modelo');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const campos = [
         { id: 'todos', label: 'Todos os Campos' },
@@ -73,9 +74,11 @@ const Palavras = () => {
         }
     };
 
-    const filteredPalavras = selectedField === 'todos'
-        ? palavras
-        : palavras.filter(p => p.campo === selectedField);
+    const filteredPalavras = palavras.filter(p => {
+        const matchesField = selectedField === 'todos' || p.campo === selectedField;
+        const matchesSearch = p.palavra.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesField && matchesSearch;
+    });
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -90,6 +93,19 @@ const Palavras = () => {
                 >
                     <Plus size={20} /> Adicionar Termo
                 </button>
+            </div>
+            
+            <div className="relative">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
+                    <Search size={18} />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Pesquisar termo já cadastrado..."
+                    className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
             <div className="flex flex-wrap gap-2">
