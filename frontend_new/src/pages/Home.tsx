@@ -543,7 +543,7 @@ const Home = () => {
 
                 <div className="md:block hidden overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+                        <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
                             <tr>
                                 {visibleFields.marca && <th className="px-6 py-2">{getFieldLabel('marca')}</th>}
                                 {visibleFields.veiculo && <th className="px-6 py-2">{getFieldLabel('veiculo')}</th>}
@@ -562,7 +562,7 @@ const Home = () => {
                                 {visibleFields.imagem && <th className="px-6 py-2">{getFieldLabel('imagem')}</th>}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                             {displayResults.length === 0 ? (
                                 <tr>
                                     <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
@@ -571,7 +571,7 @@ const Home = () => {
                                 </tr>
                             ) : (
                                 displayResults.map((res, idx) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors text-[11px]">
+                                    <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors text-[11px] group">
                                         {visibleFields.marca && (
                                             <td className="px-6 py-2 font-semibold text-primary uppercase">{res.marca}</td>
                                         )}
