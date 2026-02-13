@@ -36,5 +36,14 @@ def get_provider(config_model):
         return BoschProvider(config)
     elif config["tipo"] == "autoexperts":
         return AutoExpertsProvider(config)
+    elif config["tipo"] == "viemar":
+        from app.providers.viemar_provider import ViemarProvider
+
+        return ViemarProvider(config)
+
+    elif config["tipo"] == "cofap":
+        from app.providers.cofap_provider import CofapProvider
+
+        return CofapProvider(config)
 
     return None

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
+
 # --- Provedores ---
 class ProvedorBase(BaseModel):
     nome: str
@@ -16,45 +17,59 @@ class ProvedorBase(BaseModel):
     pasta_pdf: Optional[str] = None
     mapeamento: Optional[str] = None
 
+
 class ProvedorCreate(ProvedorBase):
     pass
 
+
 class Provedor(ProvedorBase):
     id: int
+
     class Config:
         from_attributes = True
+
 
 # --- Siglas ---
 class SiglaBase(BaseModel):
     nome_completo: str
     abreviacao: str
+    campo: str = "marca"
+
 
 class SiglaCreate(SiglaBase):
     pass
 
+
 class Sigla(SiglaBase):
     id: int
+
     class Config:
         from_attributes = True
+
 
 # --- Palavras Remover ---
 class PalavraRemoverBase(BaseModel):
     palavra: str
     campo: str
 
+
 class PalavraRemoverCreate(PalavraRemoverBase):
     pass
 
+
 class PalavraRemover(PalavraRemoverBase):
     id: int
+
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 
 # --- Busca ---
 class SearchResult(BaseModel):
     marca: str
     veiculo: str
     modelo: str
+    versao: Optional[str] = None
     motor: str
     configuracao_motor: Optional[str]
     sistema_freio: Optional[str]
@@ -68,8 +83,9 @@ class SearchResult(BaseModel):
     direcao: Optional[str] = None
     imagem: Optional[str]
     imagens: Optional[List[str]] = []
-    referencias: Optional[str] # Números originais/similares
-    raw_response: Optional[str] = None # Para depuração no Playground
+    referencias: Optional[str]  # Números originais/similares
+    raw_response: Optional[str] = None  # Para depuração no Playground
+
 
 class TestSearchRequest(BaseModel):
     id_peca: str

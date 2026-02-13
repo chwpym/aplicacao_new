@@ -29,10 +29,12 @@ def add_autoexperts_provider():
         # Note que no frontend as chaves são as do schema padrão
         mapeamento = {
             "labels": {
-                "motor": "Motor",
-                "configuracao_motor": "Config. Motor",
-                "referencias": "Referências OE / Cruzadas",
                 "veiculo": "Montadora",
+                "modelo": "Veículo",
+                "versao": "Modelo / Versão",
+                "motor": "Motor",
+                "configuracao_motor": "Combustível / Detalhes",
+                "referencias": "Referências OE / Cruzadas",
             }
         }
         axp.mapeamento = json.dumps(mapeamento)

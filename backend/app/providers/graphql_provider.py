@@ -3,26 +3,29 @@ import json
 from app.providers.base_provider import BaseProvider
 from app.services.auth_service import auth_service
 
+
 class GraphQLProvider(BaseProvider):
     def __init__(self, config):
         self.config = config
-        self.url = config['url']
-        self.query = config['query']
-        self.headers = config.get('headers', {})
-        self.login_required = config.get('login_required', False)
-        self.username = config.get('username')
-        self.password = config.get('password')
-        self.token = None # Cache do token JWT
+        self.url = config["url"]
+        self.query = config["query"]
+        self.headers = config.get("headers", {})
+        self.login_required = config.get("login_required", False)
+        self.username = config.get("username")
+        self.password = config.get("password")
+        self.token = None  # Cache do token JWT
 
     async def _get_auth_token(self):
         """Usa o auth_service para obter o token de acesso."""
         from app.models.models import Provedor
+
         p_simulado = Provedor(
-            id=self.config['id'],
-            nome=self.config['nome'],
-            url=self.config['url'],
+            id=self.config["id"],
+            nome=self.config["nome"],
+            url=self.config["url"],
             username=self.username,
-            password=self.password
+            password=self.password,
+            headers=self.headers,
         )
         return await auth_service.get_token(p_simulado)
 
@@ -44,20 +47,16 @@ class GraphQLProvider(BaseProvider):
         """
         payload = {
             "query": discovery_query,
-            "variables": {
-                "query": code,
-                "skip": 0,
-                "take": 1
-            }
+            "variables": {"query": code, "skip": 0, "take": 1},
         }
-        
+
         try:
             response = await client.post(self.url, json=payload, headers=headers)
             if response.status_code == 200:
                 data = response.json()
-                nodes = data.get('data', {}).get('catalogSearch', {}).get('nodes', [])
+                nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
                 if nodes:
-                    return nodes[0]['product']['id']
+                    return nodes[0]["product"]["id"]
             return None
         except Exception as e:
             print(f"Erro na descoberta de UUID ({self.config['nome']}): {e}")
@@ -74,29 +73,37 @@ class GraphQLProvider(BaseProvider):
             request_headers = {
                 "Content-Type": "application/json",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                **self.headers
+                **self.headers,
             }
-            
+
             if self.login_required:
                 auth_data = await self._get_auth_token()
                 if auth_data:
                     # Se for Authomix, o retorno contém KEYCLOAK (cookies)
-                    if 'KEYCLOAK' in auth_data:
-                        request_headers['Cookie'] = auth_data
+                    if "KEYCLOAK" in auth_data:
+                        request_headers["Cookie"] = auth_data
                         print(f"[{self.config['nome']}] Login realizado via Cookies.")
                     else:
-                        request_headers['Authorization'] = f"Bearer {auth_data}"
-                        print(f"[{self.config['nome']}] Login realizado via Bearer Token.")
+                        request_headers["Authorization"] = f"Bearer {auth_data}"
+                        print(
+                            f"[{self.config['nome']}] Login realizado via Bearer Token."
+                        )
                 else:
-                    print(f"[{self.config['nome']}] ALERTA: Login Requerido, mas falhou. Tentando busca sem credenciais...")
+                    print(
+                        f"[{self.config['nome']}] ALERTA: Login Requerido, mas falhou. Tentando busca sem credenciais..."
+                    )
 
             # Etapa 1: Discovery (Se o id_peca não for um UUID, tentamos descobrir)
             uuid_alvo = id_peca
             # Heurística simples: UUIDs do Fraga geralmente têm 20+ caracteres e hifens.
             # Se for um código curto (ex: 02525BRAGF), tentamos o Discovery.
             if len(id_peca) < 20 or "-" not in id_peca:
-                print(f"[{self.config['nome']}] Tentando descobrir UUID para: {id_peca}")
-                descoberto = await self.search_product_id(client, id_peca, request_headers)
+                print(
+                    f"[{self.config['nome']}] Tentando descobrir UUID para: {id_peca}"
+                )
+                descoberto = await self.search_product_id(
+                    client, id_peca, request_headers
+                )
                 if descoberto:
                     uuid_alvo = descoberto
                     print(f"[{self.config['nome']}] UUID encontrado: {uuid_alvo}")
@@ -106,68 +113,98 @@ class GraphQLProvider(BaseProvider):
             # Etapa 2: Retrieval (com tentativa multi-mercado)
             market_values = ["BRA", "BRAZIL", "BR", "Brasil"]
             ultima_excecao = None
-            
+
             for market in market_values:
                 payload = {
                     "query": self.query,
-                    "variables": {
-                        "id": uuid_alvo,
-                        "market": market
-                    }
+                    "variables": {"id": uuid_alvo, "market": market},
                 }
-                
+
                 try:
-                    response = await client.post(self.url, json=payload, headers=request_headers)
+                    response = await client.post(
+                        self.url, json=payload, headers=request_headers
+                    )
                     data = response.json()
-                    
-                    if 'errors' in data:
-                        error_msg = str(data['errors'])
-                        # Se o erro for relacionado ao valor do enum market, tentamos o próximo
-                        if 'EnumValueNode' in error_msg or 'MarketType' in error_msg or 'market' in error_msg.lower():
-                            print(f"[{self.config['nome']}] Market '{market}' não aceito, tentando próximo...")
+
+                    if "errors" in data:
+                        error_str = str(data["errors"])
+                        # Se o erro for explicitamente de mercado, tentamos o próximo
+                        if (
+                            "EnumValueNode" in error_str
+                            or "MarketType" in error_str
+                            or "market" in error_str.lower()
+                        ):
+                            print(
+                                f"[{self.config['nome']}] Market '{market}' não aceito pelo servidor (Erro de Tipo/Enum). Tentando próximo..."
+                            )
                             continue
-                        print(f"Erro GraphQL ({self.config['nome']}): {data.get('errors')}")
-                        
-                    if not data or 'data' not in data or not data['data']:
+
+                        # Se for erro de autorização ou outro, logamos e tentamos extrair o que for possível (partial data)
+                        print(
+                            f"[{self.config['nome']}] Alerta: Servidor retornou erros parciais para o mercado '{market}': {data.get('errors')[:100]}..."
+                        )
+
+                    if (
+                        not data
+                        or "data" not in data
+                        or not data["data"]
+                        or not data["data"].get("product")
+                    ):
+                        print(
+                            f"[{self.config['nome']}] Produto '{uuid_alvo}' não encontrado ou sem acesso no mercado '{market}'."
+                        )
                         continue
-                        
-                    product_data = data['data'].get('product')
+
+                    product_data = data["data"].get("product")
                     if not product_data:
+                        # Se não autorizou o produto neste mercado, tentamos o próximo
+                        print(
+                            f"[{self.config['nome']}] Produto '{uuid_alvo}' não acessível no mercado '{market}'."
+                        )
                         continue
-                        
-                    vehicles = product_data.get('vehicles', [])
-                    
+
+                    # Garantir que vehicles seja uma lista (pode ser None em caso de erro parcial GraphQL)
+                    vehicles = product_data.get("vehicles") or []
+
                     # Extrair referências originais (OEM)
                     referencias_formatadas = ""
-                    if product_data.get('crossReferences'):
+                    if product_data.get("crossReferences"):
                         refs = []
-                        for cr in product_data['crossReferences']:
-                            brand_name = cr.get('brand', {}).get('name', '').upper()
+                        for cr in product_data["crossReferences"]:
+                            brand_name = cr.get("brand", {}).get("name", "").upper()
                             # Se for Original, GM Original, OEM, etc.
-                            if 'ORIGINAL' in brand_name or 'OEM' in brand_name:
+                            if "ORIGINAL" in brand_name or "OEM" in brand_name:
                                 refs.append(f"{brand_name}: {cr.get('partNumber')}")
                         referencias_formatadas = " | ".join(refs)
 
-                    # Formatar resultados
-                    resultados = [self.formatar_resultado(v) for v in vehicles]
-                    
+                    # Formatar resultados (filtrando possíveis itens nulos na lista causados por erros GraphQL)
+                    resultados = [
+                        self.formatar_resultado(v) for v in vehicles if v is not None
+                    ]
+
                     # Extrair lista de imagens
                     imagens = []
-                    if product_data.get('images'):
-                        imagens = [img.get('imageUrl') for img in product_data['images'] if img.get('imageUrl')]
-                    
+                    if product_data.get("images"):
+                        imagens = [
+                            img.get("imageUrl")
+                            for img in product_data["images"]
+                            if img.get("imageUrl")
+                        ]
+
                     for res in resultados:
-                        res['imagens'] = imagens
-                        res['imagem'] = imagens[0] if imagens else None
-                        res['codigo'] = product_data.get('partNumber', id_peca)
-                        res['referencias'] = referencias_formatadas
-                        
+                        res["imagens"] = imagens
+                        res["imagem"] = imagens[0] if imagens else None
+                        res["codigo"] = product_data.get("partNumber", id_peca)
+                        res["referencias"] = referencias_formatadas
+
                     return resultados
-                    
+
                 except Exception as e:
                     ultima_excecao = e
                     continue
-            
+
             if ultima_excecao:
-                print(f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}")
+                print(
+                    f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}"
+                )
             return []

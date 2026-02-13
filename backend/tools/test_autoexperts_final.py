@@ -29,6 +29,7 @@ async def test_integrated_autoexperts():
         print(f"Código: {app.get('codigo')}")
         print(f"Veículo: {app.get('veiculo')}")
         print(f"Modelo: {app.get('modelo')}")
+        print(f"Versão: {app.get('versao')}")
         print(f"Motor: {app.get('motor')}")
         print(f"Config. Motor: {app.get('configuracao_motor')}")
         print(f"Ano: {app.get('ano_inicio')} - {app.get('ano_fim')}")

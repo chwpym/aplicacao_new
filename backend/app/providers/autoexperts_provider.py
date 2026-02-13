@@ -90,7 +90,8 @@ class AutoExpertsProvider(BaseProvider):
                         app.update(
                             {
                                 "veiculo": v.get("brand", ""),
-                                "modelo": f"{v.get('name', '')} {v.get('model', '')}".strip(),
+                                "modelo": v.get("name", ""),
+                                "versao": v.get("model", ""),
                                 "motor": v.get("engineName", ""),
                                 "configuracao_motor": v.get("engineConfiguration", ""),
                                 "ano_inicio": str(v.get("startYear", "")),

@@ -15,6 +15,7 @@ const Home = () => {
         marca: true,
         veiculo: true,
         modelo: true,
+        versao: true,
         motor: true,
         configuracao_motor: true,
         ano: true,
@@ -45,6 +46,24 @@ const Home = () => {
             console.error('Erro ao buscar provedores:', error);
         }
     };
+
+    // Atualiza visibilidade de campos conforme o provedor selecionado
+    useEffect(() => {
+        if (selectedProvedor) {
+            const prov = provedores.find(p => String(p.id) === String(selectedProvedor));
+            if (prov && prov.mapeamento) {
+                try {
+                    const map = JSON.parse(prov.mapeamento);
+                    if (map.visibility) {
+                        setVisibleFields((prev: any) => ({
+                            ...prev,
+                            ...map.visibility
+                        }));
+                    }
+                } catch { }
+            }
+        }
+    }, [selectedProvedor, provedores]);
 
     const getFieldLabel = (field: string) => {
         if (selectedProvedor) {
@@ -419,8 +438,9 @@ const Home = () => {
                                         if (prov && prov.mapeamento) {
                                             try {
                                                 const map = JSON.parse(prov.mapeamento);
-                                                const coreFields = ['marca', 'veiculo', 'modelo', 'motor', 'configuracao_motor', 'ano', 'observacao', 'imagem'];
-                                                if (!map[field] && !coreFields.includes(field)) return null;
+                                                const coreFields = ['marca', 'veiculo', 'modelo', 'versao', 'motor', 'configuracao_motor', 'ano', 'observacao', 'imagem'];
+                                                const labels = map.labels || {};
+                                                if (!labels[field] && !coreFields.includes(field)) return null;
                                             } catch { }
                                         }
                                     }
@@ -548,6 +568,7 @@ const Home = () => {
                                 {visibleFields.marca && <th className="px-6 py-2">{getFieldLabel('marca')}</th>}
                                 {visibleFields.veiculo && <th className="px-6 py-2">{getFieldLabel('veiculo')}</th>}
                                 {visibleFields.modelo && <th className="px-6 py-2">{getFieldLabel('modelo')}</th>}
+                                {visibleFields.versao && <th className="px-6 py-2">{getFieldLabel('versao')}</th>}
                                 {visibleFields.motor && <th className="px-6 py-2">{getFieldLabel('motor')}</th>}
                                 {visibleFields.configuracao_motor && <th className="px-6 py-2">{getFieldLabel('configuracao_motor')}</th>}
                                 {visibleFields.ano && <th className="px-6 py-2 text-center">{getFieldLabel('ano')}</th>}
@@ -580,6 +601,9 @@ const Home = () => {
                                         )}
                                         {visibleFields.modelo && (
                                             <td className="px-6 py-2 text-xs">{res.modelo}</td>
+                                        )}
+                                        {visibleFields.versao && (
+                                            <td className="px-6 py-2 text-xs text-slate-400 italic font-medium">{res.versao || '---'}</td>
                                         )}
                                         {visibleFields.motor && (
                                             <td className="px-6 py-2 font-bold text-slate-600 dark:text-slate-200">
