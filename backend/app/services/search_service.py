@@ -69,9 +69,14 @@ async def buscar_em_todos(
                 "marca",
                 "veiculo",
                 "modelo",
+                "versao",
                 "motor",
                 "configuracao_motor",
                 "observacao",
+                "sistema_freio",
+                "posicao",
+                "lado",
+                "direcao",
             ]:
                 val = app.get(campo, "")
                 if not val:

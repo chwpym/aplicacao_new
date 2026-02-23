@@ -5,6 +5,7 @@ from app.providers.ds_provider import DSProvider
 from app.providers.generic_scraper_provider import GenericScraperProvider
 from app.providers.bosch_provider import BoschProvider
 from app.providers.autoexperts_provider import AutoExpertsProvider
+from app.providers.mte_thomson_provider import MteThomsonProvider
 
 
 def get_provider(config_model):
@@ -45,5 +46,8 @@ def get_provider(config_model):
         from app.providers.cofap_provider import CofapProvider
 
         return CofapProvider(config)
+
+    elif config["tipo"] == "mte_thomson":
+        return MteThomsonProvider(config)
 
     return None

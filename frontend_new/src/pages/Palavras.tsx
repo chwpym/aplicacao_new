@@ -13,9 +13,10 @@ const Palavras = () => {
 
     const campos = [
         { id: 'todos', label: 'Todos os Campos' },
-        { id: 'marca', label: 'Marca' },
-        { id: 'veiculo', label: 'Veículo' },
-        { id: 'modelo', label: 'Modelo' },
+        { id: 'marca', label: 'Marca Peça' },
+        { id: 'veiculo', label: 'Montadora' },
+        { id: 'modelo', label: 'Veículo' },
+        { id: 'versao', label: 'Modelo' },
         { id: 'motor', label: 'Motor' },
         { id: 'configuracao_motor', label: 'Combustível' },
         { id: 'ano', label: 'Ano' },

@@ -211,8 +211,6 @@ class BoschProvider(BaseProvider):
     def _fmt_date(self, d):
         if not d:
             return ""
-        month = str(d.get("month", "")).zfill(2)
-        year = str(d.get("year", ""))
-        if month != "00" and year:
-            return f"{month}/{year}"
-        return year
+        # Retorna apenas o ano para evitar que o motor central de extração
+        # interprete o mês (2 dígitos) como um ano curto (ex: 04 -> 2004)
+        return str(d.get("year", ""))
