@@ -4,6 +4,9 @@ import JSZip from "jszip";
 
 export const useCatalog = () => {
   const [partId, setPartId] = useState("");
+  const [filterText, setFilterText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30; // 30 itens por página
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [provedores, setProvedores] = useState<any[]>([]);
@@ -147,17 +150,40 @@ export const useCatalog = () => {
     e.preventDefault();
     if (!partId) return;
 
+    setResults([]); // Limpa resultados anteriores para dar feedback visual instantâneo
+    setFilterText(""); // Limpa filtro anterior
+    setCurrentPage(1); // Reseta para primeira página
     setLoading(true);
+
     try {
-      // Passa apenas o provedor selecionado
-      const response = await searchApi.buscarPeca(
-        partId,
-        selectedProvedor ? [selectedProvedor as number] : undefined,
-        agrupar,
-      );
-      // Ordenação inicial
-      const sorted = response.data.sort(compareResults);
-      setResults(sorted);
+      if (selectedProvedor) {
+        // 1. Busca direta/unitária rápida para 1 provedor isolado
+        const response = await searchApi.buscarPeca(
+          partId,
+          [selectedProvedor as number],
+          agrupar,
+        );
+        const sorted = response.data.sort(compareResults);
+        setResults(sorted);
+      } else {
+        // 2. Fila Assíncrona: Dispara Promessas em paralelo para TODOS os provedores ATIVOS
+        const promises = provedores.map(async (p) => {
+          try {
+            const response = await searchApi.buscarPeca(partId, [p.id], agrupar);
+            if (response.data && response.data.length > 0) {
+              setResults((prev) => {
+                const combined = [...prev, ...response.data];
+                return combined.sort(compareResults);
+              });
+            }
+          } catch (err) {
+            console.error(`Erro no provedor ${p.nome}:`, err);
+          }
+        });
+
+        // Aguarda todos os provedores responderem ou falharem
+        await Promise.allSettled(promises);
+      }
     } catch (error) {
       console.error("Erro na busca:", error);
       alert("Erro ao realizar busca. Verifique se o backend está rodando.");
@@ -165,6 +191,7 @@ export const useCatalog = () => {
       setLoading(false);
     }
   };
+
 
   const formatYearShort = (year: number | string | null | undefined) => {
     if (!year) return "";
@@ -337,11 +364,24 @@ export const useCatalog = () => {
   const displayResults = useMemo(() => {
     if (results.length === 0) return [];
 
+    // 1. FILTRAGEM DINÂMICA LOCAL (Varre colunas VISÍVEIS)
+    let filtered = results;
+    if (filterText) {
+      const lowerFilter = filterText.toLowerCase();
+      filtered = results.filter((res) => {
+        return Object.entries(res).some(([key, val]) => {
+          // Ignora campos de controle ou ocultos para evitar falsos positivos
+          if (visibleFields[key] === false) return false;
+          return String(val).toLowerCase().includes(lowerFilter);
+        });
+      });
+    }
+
     // Se "Agrupar Resultados" estiver desligado no topo, mostramos tudo individual
-    if (!agrupar) return results;
+    if (!agrupar) return filtered.sort(compareResults);
 
     const groups: any = {};
-    results.forEach((res) => {
+    filtered.forEach((res) => {
       // Chave baseada apenas no que está visível
       const keyParts = [];
       if (visibleFields.marca) keyParts.push(res.marca);
@@ -410,11 +450,21 @@ export const useCatalog = () => {
 
     // Ordenação dinâmica final baseada no que está visível
     return processed.sort(compareResults);
-  }, [results, visibleFields, agrupar]);
+  }, [results, visibleFields, agrupar, filterText]);
+
+  const totalPages = Math.max(1, Math.ceil(displayResults.length / itemsPerPage));
+
+  // 2. Fatiamento para Paginação
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return displayResults.slice(start, start + itemsPerPage);
+  }, [displayResults, currentPage, itemsPerPage]);
 
   const clearResults = () => {
     setResults([]);
     setPartId("");
+    setFilterText("");
+    setCurrentPage(1);
   };
 
   const downloadAllImages = async () => {
@@ -498,10 +548,17 @@ export const useCatalog = () => {
     setVisibleFields,
     uniqueReferences,
     displayResults,
+    paginatedResults,
+    filterText,
+    setFilterText,
+    currentPage,
+    setCurrentPage,
+    totalPages,
     handleSearch,
     getFieldLabel,
     copyToClipboard,
     clearResults,
     downloadAllImages,
   };
+
 };

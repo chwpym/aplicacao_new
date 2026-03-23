@@ -19,6 +19,12 @@ const Home = () => {
     setVisibleFields,
     uniqueReferences,
     displayResults,
+    paginatedResults,
+    filterText,
+    setFilterText,
+    currentPage,
+    setCurrentPage,
+    totalPages,
     handleSearch,
     getFieldLabel,
     copyToClipboard,
@@ -53,6 +59,12 @@ const Home = () => {
       <DataTable
         results={results}
         displayResults={displayResults}
+        paginatedResults={paginatedResults}
+        filterText={filterText}
+        setFilterText={setFilterText}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        totalPages={totalPages}
         visibleFields={visibleFields}
         loading={loading}
         uniqueReferences={uniqueReferences}

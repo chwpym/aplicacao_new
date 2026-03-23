@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import { Copy, FileDown, Loader2, Info } from "lucide-react";
+import { Copy, FileDown, Loader2, Info, FileSpreadsheet, FileText } from "lucide-react";
 import { FichaTecnicaModal } from "./FichaTecnicaModal";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 interface DataTableProps {
   results: any[];
   displayResults: any[];
+  paginatedResults: any[];
+  filterText: string;
+  setFilterText: (val: string) => void;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  totalPages: number;
   visibleFields: any;
   loading: boolean;
   uniqueReferences: any;
@@ -16,6 +25,12 @@ interface DataTableProps {
 export const DataTable: React.FC<DataTableProps> = ({
   results,
   displayResults,
+  paginatedResults,
+  filterText,
+  setFilterText,
+  currentPage,
+  setCurrentPage,
+  totalPages,
   visibleFields,
   loading,
   uniqueReferences,
@@ -273,15 +288,148 @@ export const DataTable: React.FC<DataTableProps> = ({
     },
   ];
 
+  const exportToExcel = () => {
+    if (displayResults.length === 0) return;
+
+    // 1. Mapear resultados para JSON plano baseado nos campos visíveis
+    const dataToExport = displayResults.map((res: any) => {
+      const row: any = {};
+      Object.keys(visibleFields).forEach((field) => {
+        if (visibleFields[field]) {
+          const label = getFieldLabel(field);
+          // Trata array de imagens ou objetos para string limpa
+          if (field === "imagens" || field === "imagem") {
+             row[label] = res.imagens ? res.imagens.join(", ") : res.imagem || "";
+          } else {
+             row[label] = res[field] || "---";
+          }
+        }
+      });
+      return row;
+    });
+
+    // 2. Criar Sheet
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Resultados");
+
+    // 3. Download
+    const filename = `busca_${results[0]?.codigo || "peca"}_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+  };
+
+  const exportToPdf = () => {
+    if (displayResults.length === 0) return;
+
+    const doc = new jsPDF("l", "pt", "a4"); // Paisagem, Pontos, A4
+    
+    // Pegar cabeçalhos visíveis
+    const headers = COLUMN_CONFIG
+      .filter((col) => visibleFields[col.id as keyof typeof visibleFields])
+      .map((col) => col.getHeader());
+
+    // Pegar linhas associadas
+    const rows = displayResults.map((res: any) => 
+      COLUMN_CONFIG
+        .filter((col) => visibleFields[col.id as keyof typeof visibleFields])
+        .map((col) => {
+          if (col.id === "imagens" || col.id === "imagem" || col.id === "ficha_tecnica") {
+             return "---"; // PDF não renderiza imagens nativamente deste loop simples
+          }
+          return res[col.id] || "---";
+        })
+    );
+
+    (doc as any).autoTable({
+      head: [headers],
+      body: rows,
+      theme: "grid",
+      styles: { fontSize: 8, cellPadding: 4 },
+      headStyles: { fillColor: [37, 99, 235] }, // Primária
+    });
+
+    const filename = `busca_${results[0]?.codigo || "peca"}_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(filename);
+  };
+
   return (
-    <div className="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden mt-6">
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="font-bold text-lg">
-            Resultados ({displayResults.length})
-          </h2>
-          {Object.keys(uniqueReferences).length > 0 && (
-            <div className="flex flex-wrap gap-2 items-center bg-primary/5 border border-primary/10 rounded-lg px-3 py-1.5">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6 transition-all">
+      <div className="border-b border-slate-100 dark:border-slate-800">
+        {/* Linha 1: Título + Filtro + Botões */}
+        <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-lg whitespace-nowrap">
+                Resultados ({displayResults.length})
+              </h2>
+            </div>
+
+            {/* 🔍 FILTRO RÁPIDO */}
+            {results.length > 0 && (
+              <div className="flex-1 relative max-w-xs">
+                <input
+                  type="text"
+                  placeholder="Filtrar nesta página..."
+                  value={filterText}
+                  onChange={(e) => {
+                    setFilterText(e.target.value);
+                    setCurrentPage(1); // Reseta para pág 1 ao filtrar
+                  }}
+                  className="w-full pl-3 pr-10 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs bg-slate-50/50 dark:bg-slate-900 focus:ring-1 focus:ring-primary outline-none transition-all"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {results.length > 0 && (
+              <button
+                onClick={downloadAllImages}
+                disabled={loading}
+                className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 transition-all border border-orange-500/20 disabled:opacity-50"
+                title="Baixa todas as imagens no formato .zip"
+              >
+                {loading ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <FileDown size={14} />
+                )}
+                Salvar Todas
+              </button>
+            )}
+            <button
+              onClick={() => copyToClipboard("completa")}
+              className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20"
+            >
+              <Copy size={14} /> Copiar Tudo
+            </button>
+
+            {displayResults.length > 0 && (
+              <>
+                <button
+                  onClick={exportToExcel}
+                  className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-all border border-green-500/10"
+                  title="Exportar para Excel"
+                >
+                  <FileSpreadsheet size={14} /> Excel
+                </button>
+
+                <button
+                  onClick={exportToPdf}
+                  className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10"
+                  title="Exportar para PDF"
+                >
+                  <FileText size={14} /> PDF
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Linha 2: Referências Cruzadas (Se houver) */}
+        {Object.keys(uniqueReferences).length > 0 && (
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 items-center bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 rounded-xl px-3 py-2 text-xs w-full max-h-32 overflow-y-auto custom-scrollbar">
               <span className="text-[10px] font-black text-primary uppercase">
                 Original:
               </span>
@@ -300,32 +448,10 @@ export const DataTable: React.FC<DataTableProps> = ({
                 ),
               )}
             </div>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {results.length > 0 && (
-            <button
-              onClick={downloadAllImages}
-              disabled={loading}
-              className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 transition-all border border-orange-500/20 disabled:opacity-50"
-              title="Baixa todas as imagens no formato .zip"
-            >
-              {loading ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <FileDown size={14} />
-              )}
-              Salvar Todas
-            </button>
-          )}
-          <button
-            onClick={() => copyToClipboard("completa")}
-            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20"
-          >
-            <Copy size={14} /> Copiar Tudo
-          </button>
-        </div>
+          </div>
+        )}
       </div>
+
 
       <div className="md:block hidden overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse">
@@ -342,18 +468,26 @@ export const DataTable: React.FC<DataTableProps> = ({
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-white/5">
             {displayResults.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={12}
-                  className="px-6 py-12 text-center text-slate-400 italic"
-                >
-                  {loading
-                    ? "Consultando provedores..."
-                    : "Nenhum resultado para exibir."}
-                </td>
-              </tr>
+              loading ? (
+                // SKELETON LOADING
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    {COLUMN_CONFIG.filter((col) => visibleFields[col.id as keyof typeof visibleFields]).map((col) => (
+                      <td key={col.id} className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-full"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
+                    Nenhum resultado para exibir.
+                  </td>
+                </tr>
+              )
             ) : (
-              displayResults.map((res, idx) => (
+              paginatedResults.map((res, idx) => (
                 <tr
                   key={idx}
                   className="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors text-[11px] group"
@@ -375,13 +509,25 @@ export const DataTable: React.FC<DataTableProps> = ({
       {/* Mobile Card View */}
       <div className="md:hidden block divide-y divide-slate-100 dark:divide-slate-800">
         {displayResults.length === 0 ? (
-          <div className="px-6 py-12 text-center text-slate-400 italic">
-            {loading
-              ? "Consultando provedores..."
-              : "Nenhum resultado para exibir."}
-          </div>
+          loading ? (
+            // MOBILE SKELETON LOADING
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="p-4 space-y-3 animate-pulse border-b border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between">
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+                </div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+              </div>
+            ))
+          ) : (
+            <div className="px-6 py-12 text-center text-slate-400 italic">
+              Nenhum resultado para exibir.
+            </div>
+          )
         ) : (
-          displayResults.map((res, idx) => (
+          paginatedResults.map((res, idx) => (
             <div
               key={idx}
               className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
@@ -551,6 +697,34 @@ export const DataTable: React.FC<DataTableProps> = ({
           ))
         )}
       </div>
+
+      {/* 🧭 PAGINAÇÃO FOOTER */}
+      {displayResults.length > 0 && (
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/10">
+          <div className="text-xs text-slate-500">
+             Mostrando <span className="font-bold text-slate-700 dark:text-slate-200">{paginatedResults.length}</span> de <span className="font-bold">{displayResults.length}</span> itens
+          </div>
+          <div className="flex items-center gap-2">
+             <button 
+               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+               disabled={currentPage === 1}
+               className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+             >
+               &lt; Anterior
+             </button>
+             <span className="text-xs font-medium text-slate-500">
+               Página <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
+             </span>
+             <button 
+               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+               disabled={currentPage === totalPages}
+               className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+             >
+               Próxima &gt;
+             </button>
+          </div>
+        </div>
+      )}
 
       <FichaTecnicaModal 
         isOpen={fichaModalOpen} 

@@ -21,7 +21,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
   handleSearch,
 }) => {
   return (
-    <div className="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-6 shadow-xl shadow-slate-100/50 dark:shadow-none transition-all">
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
