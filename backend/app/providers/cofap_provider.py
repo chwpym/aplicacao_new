@@ -166,9 +166,10 @@ class CofapProvider(GraphQLProvider):
         observacao = " | ".join([p for p in obs_parts if p]).strip()
 
         res = {
-            "marca": safe_label(vehicle.get("brand")),
-            "veiculo": veiculo_nome,
-            "modelo": safe_label(vehicle.get("vehicleType")),
+            "marca": self.config.get("nome", "COFAP").upper(),
+            "veiculo": safe_label(vehicle.get("brand")),
+            "modelo": veiculo_nome,
+            "versao": safe_label(vehicle.get("vehicleType")),
             "motor": safe_label(vehicle.get("engineName")),
             "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
             "ano_inicio": str(vehicle.get("startYear") or ""),
@@ -195,25 +196,24 @@ class CofapProvider(GraphQLProvider):
           }
         }
         """
-        payload = {
-            "query": discovery_query,
-            "variables": {"query": code, "skip": 0, "take": 1, "market": "BRA"},
-        }
+        markets = ["BRA", "BR", "BRAZIL", "Brasil"]
         print(f"[{self.config.get('nome')}] Discovery iniciando para: {code}")
-        try:
-            response = await client.post(self.url, json=payload, headers=headers)
-            if response.status_code == 200:
-                data = response.json()
-                if "errors" in data:
-                    print(
-                        f"[{self.config.get('nome')}] Erro no Discovery: {data['errors']}"
-                    )
-                nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
-                if nodes:
-                    uuid = nodes[0]["product"]["id"]
-                    print(f"[{self.config.get('nome')}] UUID descoberto: {uuid}")
-                    return uuid
-            return None
-        except Exception as e:
-            print(f"Erro na descoberta de UUID (COFAP): {e}")
-            return None
+        for mkt in markets:
+            payload = {
+                "query": discovery_query,
+                "variables": {"query": code, "skip": 0, "take": 1, "market": mkt},
+            }
+            try:
+                response = await client.post(self.url, json=payload, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
+                    if nodes:
+                        uuid = nodes[0]["product"]["id"]
+                        print(f"[{self.config.get('nome')}] UUID descoberto no mercado {mkt}: {uuid}")
+                        return uuid
+            except Exception as e:
+                print(f"[{self.config.get('nome')}] Falha discovery no mercado {mkt}: {e}")
+                continue
+        return None
+

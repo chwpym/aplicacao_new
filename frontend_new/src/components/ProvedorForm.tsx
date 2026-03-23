@@ -103,6 +103,13 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
         const currentTipo = name === "tipo" ? value : next.tipo;
 
         if (name === "tipo") {
+          const isUrlDefaultOrEmpty =
+            !next.url ||
+            next.url.includes("catalogofraga") ||
+            next.url.includes("ds.ind.br") ||
+            next.url.includes("viemar") ||
+            next.url.includes("exemplo.com");
+
           if (value === "graphql") {
             next.query = GRAPHQL_TEMPLATE;
             if (!next.headers || next.headers === "{}") {
@@ -115,8 +122,9 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 2,
               );
             }
-            if (!next.url)
+            if (isUrlDefaultOrEmpty) {
               next.url = "https://bff.catalogofraga.com.br/gateway/graphql";
+            }
             next.mapeamento = JSON.stringify(
               {
                 marca: "brand",
@@ -148,22 +156,13 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               null,
               2,
             );
-            if (!next.url || next.url.includes("busca-full")) {
+            if (isUrlDefaultOrEmpty) {
               next.url = "https://www.ds.ind.br/pt/busca-full?q={id}";
             }
-          } else if (value === "rest") {
-            if (!next.headers || next.headers === "{}") {
-              next.headers = JSON.stringify(
-                {
-                  Accept: "application/json",
-                  "Content-Type": "application/json",
-                },
-                null,
-                2,
-              );
-            }
           } else if (value === "cofap") {
-            next.url = "https://bff.catalogofraga.com.br/gateway/graphql";
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://bff.catalogofraga.com.br/gateway/graphql";
+            }
             next.headers = JSON.stringify(
               {
                 Origin: "https://cofap.catalogofraga.com.br",
@@ -172,29 +171,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               null,
               2,
             );
-            next.query = `query getProduct($id: String!, $market: MarketType!) {
-  product(id: $id, market: $market) {
-    id
-    partNumber
-    crossReferences {
-      brand { name }
-      partNumber
-    }
-    vehicles {
-      brand
-      name
-      model
-      engineName
-      engineConfiguration
-      startYear
-      endYear
-      note
-    }
-    images {
-      imageUrl
-    }
-  }
-}`;
+            next.query = GRAPHQL_TEMPLATE;
             next.mapeamento = JSON.stringify(
               {
                 marca: "brand",
@@ -202,6 +179,62 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 motor: "engineName",
                 ano_inicio: "startYear",
                 imagem: "images",
+              },
+              null,
+              2,
+            );
+          } else if (value === "viemar") {
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://catalogo.viemar.com.br/catalog/search/catalog/code";
+            }
+            next.query = JSON.stringify(
+              {
+                searchCode: "{id}",
+                cardMode: true,
+              },
+              null,
+              2,
+            );
+            next.headers = JSON.stringify(
+              {
+                accept: "application/json, text/plain, */*",
+                "content-type": "application/json;charset=UTF-8",
+              },
+              null,
+              2,
+            );
+            next.mapeamento = JSON.stringify(
+              {
+                marca: "brand.value",
+                veiculo: "model.value",
+                ano_inicio: "year.value",
+                referencias: "crossReference.valueList",
+              },
+              null,
+              2,
+            );
+          } else if (value === "scraper") {
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://www.site-exemplo.com/busca?q={id}";
+            }
+            next.mapeamento = JSON.stringify({ container: "body", marca: "h1" }, null, 2);
+          } else if (value === "rest") {
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://api.exemplo.com/v1/produto/{id}";
+            }
+            if (!next.headers || next.headers === "{}") {
+              next.headers = JSON.stringify(
+                { Accept: "application/json", "Content-Type": "application/json" },
+                null,
+                2,
+              );
+            }
+            next.mapeamento = JSON.stringify(
+              {
+                container: "Obj",
+                marca: "Marca",
+                veiculo: "Modelo",
+                ano_inicio: "Ano",
               },
               null,
               2,

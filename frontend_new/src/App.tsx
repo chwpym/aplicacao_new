@@ -6,6 +6,8 @@ import Siglas from './pages/Siglas';
 import Palavras from './pages/Palavras';
 import Playground from './pages/Playground.tsx';
 import Ajuda from './pages/Ajuda';
+import ManualProvedores from './pages/ManualProvedores';
+import Documentacao from './pages/Documentacao';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="/palavras" element={<Palavras />} />
           <Route path="/playground" element={<Playground />} />
           <Route path="/ajuda" element={<Ajuda />} />
+          <Route path="/manual-provedores" element={<ManualProvedores />} />
+          <Route path="/documentacao" element={<Documentacao />} />
         </Routes>
       </Layout>
     </Router>

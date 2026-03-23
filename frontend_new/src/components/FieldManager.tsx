@@ -12,7 +12,8 @@ const ALL_FIELDS = [
   { key: "modelo", defaultLabel: "Veículo" },
   { key: "versao", defaultLabel: "Modelo / Versão" },
   { key: "motor", defaultLabel: "Motor" },
-  { key: "configuracao_motor", defaultLabel: "Combustível / Detalhes" },
+  { key: "configuracao_motor", defaultLabel: "Config. Motor" },
+  { key: "combustivel", defaultLabel: "Combustível" },
   { key: "ano", defaultLabel: "Ano" },
   { key: "referencias", defaultLabel: "Referências" },
   { key: "observacao", defaultLabel: "Observações" },
@@ -23,6 +24,7 @@ const ALL_FIELDS = [
   { key: "restricao", defaultLabel: "Restrição" },
   { key: "apenas", defaultLabel: "Apenas" },
   { key: "imagem", defaultLabel: "Imagens" },
+  { key: "ficha_tecnica", defaultLabel: "Ficha Técnica" },
 ];
 
 const FieldManager: React.FC<FieldManagerProps> = ({ mapping, onChange }) => {

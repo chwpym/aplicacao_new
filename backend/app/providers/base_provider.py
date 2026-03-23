@@ -41,25 +41,30 @@ class BaseProvider(ABC):
         """
         Transforma o ID para o formato ideal de imagem (MAIÚSCULAS e com hífen se for padrão WEGA).
         Ex: wo130 -> WO-130
+        Garante que qualquer barra '/' vire hífen '-' para não quebrar a URL.
         """
         if not id_peca:
             return ""
 
+        import re
+
         # Sempre Maiúsculo e Limpo
         clean = id_peca.upper().replace(" ", "").strip()
 
-        # Se contiver hífen, apenas garante maiúsculas
-        if "-" in clean:
-            return clean
+        # Se contiver barra, separa para tratar a raiz e o sufixo
+        sub_parts = clean.split("/")
+        main_part = sub_parts[0]
 
-        # Se for padrão Letras + Números (WEGA/SABO/etc), injeta hífen
-        import re
+        # Trata a parte principal (Injeta hífen se for padrão Letras + Número)
+        if "-" not in main_part:
+            match = re.match(r"^([A-Z]{2,3})(\d+)$", main_part)
+            if match:
+                main_part = f"{match.group(1)}-{match.group(2)}"
 
-        match = re.match(r"^([A-Z]{2,3})(\d+)$", clean)
-        if match:
-            return f"{match.group(1)}-{match.group(2)}"
-
-        return clean
+        sub_parts[0] = main_part
+        
+        # Junta todas as subpartes usando hífen como colagem
+        return "-".join(sub_parts)
 
     def extrair_anos(self, ano_str):
         """Extrai ano de início e fim de strings como '2014 -->', '14 - 18', etc."""
@@ -94,6 +99,7 @@ class BaseProvider(ABC):
             ).upper(),
             "veiculo": str(raw_data.get("name", raw_data.get("veiculo", ""))).upper(),
             "modelo": str(raw_data.get("model", raw_data.get("modelo", ""))).upper(),
+            "versao": str(raw_data.get("version", raw_data.get("versao", ""))).upper(),
             "motor": str(raw_data.get("engineName", raw_data.get("motor", ""))).upper(),
             "configuracao_motor": str(
                 raw_data.get(

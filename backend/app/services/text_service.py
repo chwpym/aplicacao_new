@@ -19,6 +19,24 @@ def remover_palavras_avancado(texto: str, palavras: list[str]) -> str:
     texto = re.sub(r'\s+', ' ', texto).strip()
     return texto
 
+def aplicar_siglas_avancado(texto: str, siglas_map: dict) -> str:
+    """Substitui ocorrências de palavras inteiras (boundary) pelas siglas mapeadas."""
+    if not texto or not siglas_map:
+        return texto or ""
+        
+    # Ordena as chaves por tamanho descendente para pegar frases longas primeiro
+    chaves_ordenadas = sorted(siglas_map.keys(), key=len, reverse=True)
+    
+    for chave in chaves_ordenadas:
+        if not chave.strip():
+            continue
+        substituto = siglas_map[chave]
+        # Padrao regex para palavra inteira, insensível a maiúsculas
+        padrao = r'(?i)(?<!\w){}(?!\w)'.format(re.escape(chave.strip()))
+        texto = re.sub(padrao, substituto, texto)
+        
+    return texto.strip()
+
 def merge_year_ranges(ranges: list[tuple]) -> tuple[int | None, int | None]:
     """Mescla múltiplos intervalos de anos em um intervalo único (mínimo e máximo)."""
     if not ranges:

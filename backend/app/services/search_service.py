@@ -82,10 +82,12 @@ async def buscar_em_todos(
                 if not val:
                     continue
 
-                # 1. Aplicar Siglas Contextuais
+                # 1. Aplicar Siglas Contextuais (Substring Inteligente/Boundary)
                 val_upper = val.upper().strip()
-                if campo in siglas_map and val_upper in siglas_map[campo]:
-                    app[campo] = siglas_map[campo][val_upper]
+                if campo in siglas_map:
+                    app[campo] = text_service.aplicar_siglas_avancado(val_upper, siglas_map[campo])
+                else:
+                    app[campo] = val_upper
 
                 # 2. Limpeza de texto (Remoção de palavras)
                 if campo in remover_map:

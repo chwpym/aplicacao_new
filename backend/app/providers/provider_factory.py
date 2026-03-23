@@ -50,4 +50,9 @@ def get_provider(config_model):
     elif config["tipo"] == "mte_thomson":
         return MteThomsonProvider(config)
 
+    elif config["tipo"] == "tecfil":
+        from app.providers.tecfil_provider import TecfilProvider
+
+        return TecfilProvider(config)
+
     return None

@@ -19,6 +19,7 @@ import {
     Package
 } from 'lucide-react';
 import { searchApi, configApi } from '../services/api';
+import FieldManager from '../components/FieldManager';
 
 const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
@@ -332,17 +333,21 @@ export default function Playground() {
             setConfigs(prev => {
                 const isDefaultUrl = prev.url === '' || 
                                    prev.url.includes('exemplo.com') || 
-                                   prev.url.includes('catalogofraga.com.br');
+                                   prev.url.includes('catalogofraga.com.br') ||
+                                   prev.url.includes('ds.ind.br') ||
+                                   prev.url.includes('viemar.com.br');
                 
                 const isDefaultHeaders = prev.headers === '{}' || 
                                        prev.headers === '' || 
                                        prev.headers.includes('[BRAND]') ||
-                                       prev.headers.includes('catalogofraga.com.br');
+                                       prev.headers.includes('catalogofraga.com.br') ||
+                                       prev.headers.includes('viemar.com.br');
 
                 const isDefaultMapping = prev.mapeamento === '{}' || 
                                        prev.mapeamento === '' || 
                                        prev.mapeamento.includes('brand') || // Fraga default
-                                       prev.mapeamento.includes('name');    // Fraga default
+                                       prev.mapeamento.includes('name') ||
+                                       prev.mapeamento.includes('crossReference.valueList');
 
                 const isViemar = newType === 'viemar';
 
@@ -907,53 +912,11 @@ export default function Playground() {
                                 <span className="flex items-center gap-2"><Database size={14} /> Campos de Mapeamento</span>
                                 <span className="text-slate-400/50 italic">Sincronizado com o JSON abaixo</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                {[
-                                    'container', 'product_link', 'marca', 'veiculo', 'modelo', 'versao', 
-                                    'motor', 'configuracao_motor', 'ano_inicio', 'ano_fim', 'imagem', 
-                                    'image_pattern', 'referencias', 'ref_marca', 'ref_codigo', 
-                                    'observacao', 'posicao', 'lado', 'direcao', 'sistema_freio', 
-                                    'restricao', 'apenas'
-                                ].map(field => {
-                                    const labels: Record<string, string> = {
-                                        veiculo: 'Nome do Carro',
-                                        modelo: 'Modelo',
-                                        versao: 'Versão',
-                                        configuracao_motor: 'Combustível / Detalhes',
-                                        ano_inicio: 'Ano Inicial',
-                                        ano_fim: 'Ano Final',
-                                        image_pattern: 'Padrão Imagem ({id})',
-                                        product_link: 'Link da Página',
-                                        ref_marca: 'Ref: Marca',
-                                        ref_codigo: 'Ref: Código'
-                                    };
-                                    const label = labels[field] || field.toUpperCase().replace('_', ' ');
-                                    
-                                    let fieldValue = '';
-                                    try {
-                                        const m = JSON.parse(configs.mapeamento);
-                                        fieldValue = m[field] || '';
-                                    } catch { }
-
-                                    return (
-                                        <div key={field} className="space-y-1">
-                                            <label className="text-[9px] font-bold text-slate-500 uppercase">{label}</label>
-                                            <input
-                                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-[10px] outline-none focus:border-primary font-mono transition-all"
-                                                placeholder={configs.tipo === 'rest' ? `Atributo: ${field}` : `CSS: .${field}`}
-                                                value={fieldValue}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    let currentMap = {};
-                                                    try { currentMap = JSON.parse(configs.mapeamento); } catch { }
-                                                    const nextMap = { ...currentMap, [field]: val };
-                                                    setConfigs({ ...configs, mapeamento: JSON.stringify(nextMap, null, 2) });
-                                                }}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            
+                            <FieldManager
+                                mapping={configs.mapeamento}
+                                onChange={(newMap) => setConfigs({ ...configs, mapeamento: newMap })}
+                            />
                         </div>
                     )}
 

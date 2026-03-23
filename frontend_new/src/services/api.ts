@@ -8,7 +8,7 @@ export const searchApi = {
     buscarPeca: (id: string, provedorIds?: number[], agrupar = true) => {
         const params: any = { agrupar };
         if (provedorIds) params.provedores = provedorIds.join(',');
-        return api.get(`/search/${id}`, { params });
+        return api.get(`/search/${encodeURIComponent(id)}`, { params });
     },
     testarProvedor: (idPeca: string, config: any) => {
         return api.post('/search/test', { id_peca: idPeca, config });

@@ -8,7 +8,42 @@ from typing import List
 router = APIRouter(prefix="/search", tags=["Busca"])
 
 
-@router.get("/{id_peca}", response_model=List[schemas.SearchResult])
+@router.get("/proxy/image")
+async def proxy_image(url: str):
+    """
+    Proxy para download de imagens para evitar bloqueios de CORS no frontend.
+    """
+    try:
+        import httpx
+        from fastapi.responses import Response
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            # Algumas URLs podem vir com ponto final por erro de digitação/parsing, removemos
+            clean_url = url.strip().rstrip(".")
+
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+            response = await client.get(
+                clean_url, headers=headers, follow_redirects=True
+            )
+
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail="Falha ao buscar imagem externa",
+                )
+
+            return Response(
+                content=response.content,
+                media_type=response.headers.get("Content-Type", "image/jpeg"),
+            )
+    except Exception as e:
+        print(f"Erro no proxy de imagem: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{id_peca:path}", response_model=List[schemas.SearchResult])
 async def buscar_peca(
     id_peca: str,
     provedores: str = None,
@@ -69,36 +104,3 @@ async def testar_provedor(request: schemas.TestSearchRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/proxy/image")
-async def proxy_image(url: str):
-    """
-    Proxy para download de imagens para evitar bloqueios de CORS no frontend.
-    """
-    try:
-        import httpx
-        from fastapi.responses import Response
-
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            # Algumas URLs podem vir com ponto final por erro de digitação/parsing, removemos
-            clean_url = url.strip().rstrip(".")
-
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            }
-            response = await client.get(
-                clean_url, headers=headers, follow_redirects=True
-            )
-
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail="Falha ao buscar imagem externa",
-                )
-
-            return Response(
-                content=response.content,
-                media_type=response.headers.get("Content-Type", "image/jpeg"),
-            )
-    except Exception as e:
-        print(f"Erro no proxy de imagem: {e}")
-        raise HTTPException(status_code=500, detail=str(e))

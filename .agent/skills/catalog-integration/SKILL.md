@@ -31,6 +31,16 @@ Para provedores protegidos como Authomix:
 - **Configuração:** Adicione um objeto `labels` no mapeamento do provedor no Banco de Dados.
 - **Efeito:** O Frontend substitui o nome da coluna conforme o provedor (Ex: `configuracao_motor` vira `Combustível` para DS).
 
+### Padronização de Colunas (Grid)
+Para manter o alinhamento visual no Frontend (`Home.tsx`), o dicionário de retorno em `formatar_resultado()` deve seguir estritamente:
+- **`marca`**: Nome da Marca do Produto / Provedor (*Ex: COFAP, NAKATA, PERFECT*).
+- **`veiculo`**: Nome da Montadora (*Ex: VW, FIAT, CITROEN*).
+- **`modelo`**: Nome do Veículo / Carro (*Ex: GOL, UNO, XANTIA*).
+- **`versao`**: Versão do Modelo (*Ex: 1.6 16V, GLX*).
+
+> [!IMPORTANT]
+> Provedores baseados em GraphQL (Fraga) herdam essa formatação automaticamente de `GraphQLProvider`. Evite sobrescrever `formatar_resultado` em subclasses para prevenir desalinhamentos.
+
 ### Padronização de Dados (Cópia)
 - **Referências:** Devem ser enviadas no formato `Marca: Código`.
 - **Separação:** Itens separados por ` | `. Isso permite que a função de cópia centralizada agrupe os números originais no final da colagem (`ORIGINAL:`).

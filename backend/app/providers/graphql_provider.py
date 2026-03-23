@@ -166,20 +166,18 @@ class GraphQLProvider(BaseProvider):
                     # Garantir que vehicles seja uma lista (pode ser None em caso de erro parcial GraphQL)
                     vehicles = product_data.get("vehicles") or []
 
-                    # Extrair referências originais (OEM)
+                    # Extrair referências originais e similares
                     referencias_formatadas = ""
                     if product_data.get("crossReferences"):
                         refs = []
                         for cr in product_data["crossReferences"]:
                             brand_name = cr.get("brand", {}).get("name", "").upper()
-                            # Se for Original, GM Original, OEM, etc.
-                            if "ORIGINAL" in brand_name or "OEM" in brand_name:
-                                refs.append(f"{brand_name}: {cr.get('partNumber')}")
+                            refs.append(f"{brand_name}: {cr.get('partNumber')}")
                         referencias_formatadas = " | ".join(refs)
 
                     # Formatar resultados (filtrando possíveis itens nulos na lista causados por erros GraphQL)
                     resultados = [
-                        self.formatar_resultado(v) for v in vehicles if v is not None
+                        self.formatar_resultado(v, product_data) for v in vehicles if v is not None
                     ]
 
                     # Extrair lista de imagens
@@ -198,13 +196,80 @@ class GraphQLProvider(BaseProvider):
                         res["referencias"] = referencias_formatadas
 
                     return resultados
-
                 except Exception as e:
                     ultima_excecao = e
                     continue
 
             if ultima_excecao:
-                print(
-                    f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}"
-                )
+                print(f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}")
             return []
+
+    def formatar_resultado(self, vehicle: dict, product_data: dict = None) -> dict:
+        """
+        Padroniza os campos retornados pelo GraphQL/Fraga para o Frontend.
+        """
+        def safe_label(field_obj):
+            if field_obj is None: return ""
+            if isinstance(field_obj, dict):
+                val = field_obj.get("value") or field_obj.get("label") or field_obj.get("name")
+                return str(val).upper().strip() if val else ""
+            val = str(field_obj).strip()
+            if val.upper() in ["NONE", "NULL", "AUTH_NOT_AUTHORIZED"]: return ""
+            return val.upper()
+
+        veiculo_nome = safe_label(vehicle.get("name"))
+        versao_nome = safe_label(vehicle.get("model"))
+        if not versao_nome:
+            versao_nome = safe_label(vehicle.get("vehicleType"))
+            
+        # Se veio apenas um deles, garantimos que não fique vazio na tela principal ("Veículo" / modelo do backend)
+        if not veiculo_nome and versao_nome:
+            veiculo_nome = versao_nome
+            versao_nome = ""
+        
+        # Extrair detalhes técnicos do produto (se existir)
+        # O Ficha Técnica é agnóstico por linha, logo todas as linhas herdam do product_data
+        ficha_tecnica = {}
+        if product_data:
+            desc = product_data.get("applicationDescription")
+            if desc: ficha_tecnica["Descrição Comercial"] = desc
+            
+            grupo = product_data.get("productGroup", {}).get("name")
+            if grupo: ficha_tecnica["Categoria"] = grupo
+            
+            if product_data.get("specifications"):
+                for spec in product_data["specifications"]:
+                    s_desc = safe_label(spec.get("description"))
+                    s_val = safe_label(spec.get("value"))
+                    if s_desc and s_val:
+                        # Capitalize title
+                        s_desc = s_desc.title() if s_desc.isupper() else s_desc
+                        ficha_tecnica[s_desc] = s_val
+        
+        # O Combustível ganha coluna própria no frontend
+        combustivel_val = safe_label(vehicle.get("fuelType"))
+
+        # As outras notas compõem a observação visual
+        obs_parts = [
+            safe_label(vehicle.get("only")),
+            safe_label(vehicle.get("restriction")),
+            safe_label(vehicle.get("note")),
+            safe_label(vehicle.get("transmissionType")),
+        ]
+        observacao = " | ".join([p for p in obs_parts if p]).strip()
+
+        # Alinhando com a semântica do Frontend (Home.tsx)
+        return {
+            "marca": self.config.get("nome", "PROVEDOR").upper(), # Marca da Peça
+            "veiculo": safe_label(vehicle.get("brand")),          # Montadora (e.g. VW)
+            "modelo": veiculo_nome,                              # Veículo (e.g. UNO, GOL)
+            "versao": versao_nome,                               # Modelo/Versão (e.g. SPORTING)
+            "motor": safe_label(vehicle.get("engineName")),
+            "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
+            "combustivel": combustivel_val,                      # Combustível extraído individualmente
+            "ano_inicio": str(vehicle.get("startYear") or ""),
+            "ano_fim": str(vehicle.get("endYear") or ""),
+            "observacao": observacao,
+            "posicao": safe_label(vehicle.get("position")),
+            "ficha_tecnica": ficha_tecnica if len(ficha_tecnica.keys()) > 0 else None
+        }

@@ -318,3 +318,30 @@ class DSProvider(BaseProvider):
                         continue
 
             return []
+
+    def formatar_resultado(self, raw_data: dict) -> dict:
+        """
+        Sobrescreve a formatação base para adequar os dados da DS ao padrão AutoExpert.
+        Grid -> marca: Provedor | veiculo: Montadora | modelo: Veículo
+        DS   -> brand: Montadora | name: Veículo
+        """
+        base = super().formatar_resultado(raw_data)
+        
+        # Corrige as colunas primárias
+        nome_provedor = self.config.get("nome", "DS").upper()
+        base["marca"] = nome_provedor
+        base["veiculo"] = str(raw_data.get("brand", "")).upper()
+        
+        # Em muitos casos a DS retorna "ARGO" tanto em name quanto model
+        modelo = str(raw_data.get("name", "")).upper()
+        base["modelo"] = modelo
+        
+        # Se 'model' tiver mais detalhes que 'name', usamos como versão
+        # Caso contrário, deixamos vazio para o grid
+        versao_ds = str(raw_data.get("model", "")).upper()
+        if versao_ds and versao_ds != modelo:
+            base["versao"] = versao_ds
+        else:
+            base["versao"] = ""
+            
+        return base
