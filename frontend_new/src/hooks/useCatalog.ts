@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { searchApi, configApi } from "../services/api";
 import JSZip from "jszip";
 
@@ -12,6 +12,7 @@ export const useCatalog = () => {
   const [provedores, setProvedores] = useState<any[]>([]);
   const [selectedProvedor, setSelectedProvedor] = useState<number | "">("");
   const [agrupar, setAgrupar] = useState(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [visibleFields, setVisibleFields] = useState<any>({
     marca: true,
     veiculo: true,
@@ -50,25 +51,7 @@ export const useCatalog = () => {
     }
   };
 
-  // Atualiza visibilidade de campos conforme o provedor selecionado
-  useEffect(() => {
-    if (selectedProvedor) {
-      const prov = provedores.find(
-        (p) => String(p.id) === String(selectedProvedor),
-      );
-      if (prov && prov.mapeamento) {
-        try {
-          const map = JSON.parse(prov.mapeamento);
-          if (map.visibility) {
-            setVisibleFields((prev: any) => ({
-              ...prev,
-              ...map.visibility,
-            }));
-          }
-        } catch {}
-      }
-    }
-  }, [selectedProvedor, provedores]);
+  // Removida a sobreposição automática de visibilidade para manter os filtros globais sob controle do usuário
 
   const getFieldLabel = (field: string) => {
     if (selectedProvedor) {
@@ -146,50 +129,88 @@ export const useCatalog = () => {
     return 0;
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!partId) return;
 
-    setResults([]); // Limpa resultados anteriores para dar feedback visual instantâneo
-    setFilterText(""); // Limpa filtro anterior
-    setCurrentPage(1); // Reseta para primeira página
+    // Se já houver uma busca em andamento, cancelamos ela antes de começar a nova
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setResults([]);
+    setFilterText("");
+    setCurrentPage(1);
     setLoading(true);
 
     try {
       if (selectedProvedor) {
-        // 1. Busca direta/unitária rápida para 1 provedor isolado
+        const p = provedores.find(prov => prov.id === selectedProvedor);
         const response = await searchApi.buscarPeca(
           partId,
           [selectedProvedor as number],
           agrupar,
+          { signal: controller.signal }
         );
-        const sorted = response.data.sort(compareResults);
+        const cleanedData = response.data.map((r: any) => ({
+          ...r,
+          marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p?.nome || "---").toUpperCase()
+        }));
+        const sorted = cleanedData.sort(compareResults);
         setResults(sorted);
       } else {
-        // 2. Fila Assíncrona: Dispara Promessas em paralelo para TODOS os provedores ATIVOS
         const promises = provedores.map(async (p) => {
           try {
-            const response = await searchApi.buscarPeca(partId, [p.id], agrupar);
+            const response = await searchApi.buscarPeca(
+              partId, 
+              [p.id], 
+              agrupar,
+              { signal: controller.signal }
+            );
             if (response.data && response.data.length > 0) {
+              const cleanedData = response.data.map((r: any) => ({
+                ...r,
+                marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p.nome || "---").toUpperCase()
+              }));
               setResults((prev) => {
-                const combined = [...prev, ...response.data];
+                const combined = [...prev, ...cleanedData];
                 return combined.sort(compareResults);
               });
             }
-          } catch (err) {
-            console.error(`Erro no provedor ${p.nome}:`, err);
+          } catch (err: any) {
+            if (err.name !== 'AbortError') {
+              console.error(`Erro ao buscar no provedor ${p.nome}:`, err);
+            }
           }
         });
 
-        // Aguarda todos os provedores responderem ou falharem
         await Promise.allSettled(promises);
       }
-    } catch (error) {
-      console.error("Erro na busca:", error);
-      alert("Erro ao realizar busca. Verifique se o backend está rodando.");
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log("Busca global cancelada pelo usuário.");
+      } else {
+        console.error("Erro na busca:", error);
+        alert("Erro ao realizar busca. Verifique se o backend está rodando.");
+      }
     } finally {
-      setLoading(false);
+      // Só desativa o loading se for o controller atual (para não bugar com cancelamentos rápidos)
+      if (abortControllerRef.current === controller) {
+        setLoading(false);
+        abortControllerRef.current = null;
+      }
     }
+  };
+
+  const cancelSearch = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setLoading(false);
   };
 
 
@@ -203,18 +224,25 @@ export const useCatalog = () => {
     const brands: Record<string, Set<string>> = {};
     results.forEach((res) => {
       if (res.referencias) {
-        // Tenta split por ' | ' primeiro, depois por outros possíveis separadores
-        res.referencias.split(/\s*\|\s*/).forEach((ref: string) => {
-          // Tenta split por ': ' (com espaço) ou ':' (sem espaço)
-          const parts = ref.split(/:\s*/);
-          if (parts.length >= 2) {
-            const brand = parts[0].trim();
-            const code = parts.slice(1).join(":").trim();
+        // Quebra por múltiplos separadores: |, ,, ;, e quebra de linha
+        const refParts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/);
+        
+        refParts.forEach((part: string) => {
+          if (!part.trim()) return;
+
+          // Tenta split por ': ' (com espaço) ou ':' (sem espaço) ou ' - '
+          const pair = part.split(/\s*(?::|-)\s*/);
+          
+          if (pair.length >= 2) {
+            const brand = pair[0].trim();
+            const code = pair.slice(1).join(":").trim();
+            
             if (brand && code) {
               const cleanBrand = brand
                 .toUpperCase()
-                .replace(" ORIGINAL", "")
-                .replace("ORIGINAL ", "");
+                .replace(/\s+ORIGINAL$/g, "")
+                .replace(/^ORIGINAL\s+/g, "");
+
               if (!brands[cleanBrand]) brands[cleanBrand] = new Set();
               brands[cleanBrand].add(code);
             }
@@ -347,17 +375,34 @@ export const useCatalog = () => {
     }
 
     if (Object.keys(uniqueReferences).length > 0) {
-      text += "\n\nORIGINAL:";
-      Object.entries(uniqueReferences).forEach(([brand, codes]) => {
-        // Remove espaços duplos e garante formatação limpa
+      // Adiciona o separador rígido '...' para o sistema receptor
+      text += "\n\n...\nREFERENECIA DE SIMILARES :\n";
+      
+      // Identifica montadoras a partir dos resultados atuais (para priorizar no topo)
+      const manufacturersInResults = new Set(
+        results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
+      );
+
+      // Ordena marcas: ORIGINAL, OEM e Montadoras primeiro, depois alfabética
+      const sortedBrands = Object.entries(uniqueReferences).sort(([brandA], [brandB]) => {
+        const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || manufacturersInResults.has(brandA);
+        const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || manufacturersInResults.has(brandB);
+        
+        if (isPriorityA && !isPriorityB) return -1;
+        if (!isPriorityA && isPriorityB) return 1;
+        return brandA.localeCompare(brandB);
+      });
+
+      sortedBrands.forEach(([brand, codes]) => {
         const codesList = Array.from(codes as Set<string>)
           .sort()
           .join(" - ");
-        text += `\n${brand}  ${codesList}`;
+        // Garante formato vertical: um marca por linha
+        text += `${brand}: ${codesList}\n`;
       });
     }
 
-    navigator.clipboard.writeText(text);
+    navigator.clipboard.writeText(text.trim());
   };
 
   // Lógica para processar os resultados que serão EXIBIDOS na tela
@@ -559,6 +604,7 @@ export const useCatalog = () => {
     copyToClipboard,
     clearResults,
     downloadAllImages,
+    cancelSearch,
   };
 
 };

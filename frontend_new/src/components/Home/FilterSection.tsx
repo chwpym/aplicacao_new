@@ -1,13 +1,11 @@
 import React from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Trash2 } from "lucide-react";
 
 interface FilterSectionProps {
   visibleFields: any;
   setVisibleFields: (val: any) => void;
   agrupar: boolean;
   setAgrupar: React.Dispatch<React.SetStateAction<boolean>>;
-  provedores: any[];
-  selectedProvedor: number | "";
   getFieldLabel: (field: string) => string;
   copyToClipboard: (mode: "completa" | "intermediaria" | "agrupada") => void;
   clearResults: () => void;
@@ -18,8 +16,6 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   setVisibleFields,
   agrupar,
   setAgrupar,
-  provedores,
-  selectedProvedor,
   getFieldLabel,
   copyToClipboard,
   clearResults,
@@ -32,30 +28,6 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         </span>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           {Object.keys(visibleFields).map((field) => {
-            if (selectedProvedor) {
-              const prov = provedores.find(
-                (p) => String(p.id) === String(selectedProvedor),
-              );
-              if (prov && prov.mapeamento) {
-                try {
-                  const map = JSON.parse(prov.mapeamento);
-                  const coreFields = [
-                    "marca",
-                    "veiculo",
-                    "modelo",
-                    "versao",
-                    "motor",
-                    "configuracao_motor",
-                    "ano",
-                    "observacao",
-                    "imagem",
-                  ];
-                  const labels = map.labels || {};
-                  if (!labels[field] && !coreFields.includes(field))
-                    return null;
-                } catch {}
-              }
-            }
             return (
               <label
                 key={field}
@@ -140,8 +112,10 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         <button
           type="button"
           onClick={clearResults}
-          className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest pl-2"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/30 hover:shadow-red-600/50 transition-all text-[10px] font-bold uppercase tracking-widest"
+          title="Limpar todos os resultados da busca"
         >
+          <Trash2 size={12} fill="white" />
           Limpar
         </button>
       </div>

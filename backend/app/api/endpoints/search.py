@@ -62,6 +62,23 @@ async def buscar_peca(
     except Exception as e:
         print(f"ERRO NA BUSCA: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+@router.get("/details/peca", response_model=dict)
+async def buscar_detalhes_peca(
+    codigo: str,
+    provedor_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Busca detalhes técnicos específicos de uma peça em um provedor.
+    """
+    try:
+        detalhes = await search_service.buscar_detalhes(db, provedor_id, codigo)
+        if not detalhes:
+            return {"ficha_tecnica": {}, "imagens": []}
+        return detalhes
+    except Exception as e:
+        print(f"ERRO NOS DETALHES: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/test", response_model=List[schemas.SearchResult])

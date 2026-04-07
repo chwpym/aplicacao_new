@@ -13,6 +13,13 @@ async def buscar_em_todos(
     """
     Orquestra a busca em múltiplos provedores com suporte a cache.
     """
+    import time
+    start_time = time.time()
+    
+    # [PLACEHOLDER] Registro de Auditoria SaaS: Logar quem buscou o quê
+    # LogEvent(user_id=None, action="search", query=id_peca, providers=provedor_ids)
+    print(f"[AUDIT] Iniciando busca global por: {id_peca}")
+
     id_peca = id_peca.upper().strip()
 
     # 1. Verificar Cache (Dados Brutos)
@@ -38,6 +45,13 @@ async def buscar_em_todos(
             return []
 
         raw_respostas = await asyncio.gather(*tasks)
+
+        # Injeta nome do provedor nos dados brutos para fallback de colunas
+        for i, resp in enumerate(raw_respostas):
+            if i < len(provedores_db):
+                p_nome = provedores_db[i].nome.upper()
+                for app in resp:
+                    app["provedor"] = p_nome
 
         # Salva dados brutos no cache
         cache_service.set(cache_key, raw_respostas)
@@ -114,10 +128,27 @@ async def buscar_em_todos(
             todas_aplicacoes.append(app)
 
     # 6. Agrupamento por modelo/motor (Dinâmico)
-    if not agrupar:
-        return todas_aplicacoes
+    # [PLACEHOLDER] Analytics: Tempo de resposta total
+    duration = time.time() - start_time
+    print(f"[METRICS] Busca por {id_peca} concluída em {duration:.2f}s com {len(todas_aplicacoes)} resultados.")
 
     return _agrupar_por_veiculo(todas_aplicacoes)
+
+
+async def buscar_detalhes(db: Session, provedor_id: int, codigo_peca: str):
+    """
+    Busca detalhes técnicos e imagens de uma peça específica em um provedor.
+    """
+    provedor_db = db.query(models.Provedor).filter(models.Provedor.id == provedor_id).first()
+    if not provedor_db:
+        return None
+    
+    provider = provider_factory.get_provider(provedor_db)
+    if not provider:
+        return None
+    
+    # Executa a busca de detalhes no provedor (pode ser Scraping ou API)
+    return await provider.get_details(codigo_peca)
 
 
 def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:

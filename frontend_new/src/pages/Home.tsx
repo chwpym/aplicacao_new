@@ -30,6 +30,7 @@ const Home = () => {
     copyToClipboard,
     clearResults,
     downloadAllImages,
+    cancelSearch,
   } = useCatalog();
 
   return (
@@ -42,6 +43,7 @@ const Home = () => {
         provedores={provedores}
         loading={loading}
         handleSearch={handleSearch}
+        cancelSearch={cancelSearch}
       />
       
       <FilterSection
@@ -49,8 +51,6 @@ const Home = () => {
         setVisibleFields={setVisibleFields}
         agrupar={agrupar}
         setAgrupar={setAgrupar}
-        provedores={provedores}
-        selectedProvedor={selectedProvedor}
         getFieldLabel={getFieldLabel}
         copyToClipboard={copyToClipboard}
         clearResults={clearResults}
@@ -71,6 +71,7 @@ const Home = () => {
         getFieldLabel={getFieldLabel}
         copyToClipboard={copyToClipboard}
         downloadAllImages={downloadAllImages}
+        partId={partId}
       />
     </div>
   );

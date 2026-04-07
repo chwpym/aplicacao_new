@@ -55,4 +55,8 @@ def get_provider(config_model):
 
         return TecfilProvider(config)
 
+    elif config["tipo"] == "ima":
+        from app.providers.ima_provider import IMAProvider
+        return IMAProvider(config)
+
     return None

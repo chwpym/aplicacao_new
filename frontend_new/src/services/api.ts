@@ -5,13 +5,13 @@ const api = axios.create({
 });
 
 export const searchApi = {
-    buscarPeca: (id: string, provedorIds?: number[], agrupar = true) => {
+    buscarPeca: (id: string, provedorIds?: number[], agrupar = true, config: any = {}) => {
         const params: any = { agrupar };
         if (provedorIds) params.provedores = provedorIds.join(',');
-        return api.get(`/search/${encodeURIComponent(id)}`, { params });
+        return api.get(`/search/${encodeURIComponent(id)}`, { ...config, params });
     },
-    testarProvedor: (idPeca: string, config: any) => {
-        return api.post('/search/test', { id_peca: idPeca, config });
+    getDetalhesPeca: (codigo: string, provedorId: number) => {
+        return api.get(`/search/details/peca`, { params: { codigo, provedor_id: provedorId } });
     }
 };
 

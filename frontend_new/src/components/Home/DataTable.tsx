@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Copy, FileDown, Loader2, Info, FileSpreadsheet, FileText } from "lucide-react";
+import { Copy, FileDown, Loader2, FileSpreadsheet, FileText } from "lucide-react";
 import { FichaTecnicaModal } from "./FichaTecnicaModal";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { ImageGalleryModal } from "./ImageGalleryModal";
+import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
+import { Image, Zap, ExternalLink } from "lucide-react";
 
 interface DataTableProps {
   results: any[];
@@ -20,6 +20,7 @@ interface DataTableProps {
   getFieldLabel: (field: string) => string;
   copyToClipboard: (mode: "completa" | "intermediaria" | "agrupada") => void;
   downloadAllImages: () => void;
+  partId: string;
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -37,13 +38,38 @@ export const DataTable: React.FC<DataTableProps> = ({
   getFieldLabel,
   copyToClipboard,
   downloadAllImages,
+  partId,
 }) => {
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
   const [selectedFicha, setSelectedFicha] = useState<any>(null);
+  
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryTitle, setGalleryTitle] = useState("");
 
-  const handleOpenFicha = (ficha: any) => {
-    setSelectedFicha(ficha);
+  // Fecha modais se an an busca for limpa
+  React.useEffect(() => {
+    if (results.length === 0) {
+      setFichaModalOpen(false);
+      setGalleryOpen(false);
+    }
+  }, [results.length]);
+
+  const handleOpenFicha = (res: any) => {
+    setSelectedFicha(res);
     setFichaModalOpen(true);
+  };
+
+  const handleOpenGallery = (res: any) => {
+    const imgs = res.imagens && res.imagens.length > 0 
+      ? res.imagens 
+      : (res.imagem ? [res.imagem] : []);
+    
+    if (imgs.length === 0) return;
+    
+    setGalleryImages(imgs);
+    setGalleryTitle(`${res.marca} - ${res.veiculo} ${res.modelo}`);
+    setGalleryOpen(true);
   };
 
   const COLUMN_CONFIG = [
@@ -51,8 +77,8 @@ export const DataTable: React.FC<DataTableProps> = ({
       id: "marca",
       getHeader: () => getFieldLabel("marca"),
       render: (res: any) => (
-        <td className="px-6 py-2 font-semibold text-primary uppercase">
-          {res.marca}
+        <td className="px-4 py-2 font-semibold text-primary uppercase whitespace-nowrap">
+          {res.marca || res.provedor || "---"}
         </td>
       ),
     },
@@ -81,7 +107,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       id: "motor",
       getHeader: () => getFieldLabel("motor"),
       render: (res: any) => (
-        <td className="px-6 py-2 font-bold text-slate-600 dark:text-slate-200">
+        <td className="px-4 py-2 font-bold text-slate-600 dark:text-slate-200 whitespace-nowrap">
           {res.motor}
         </td>
       ),
@@ -112,7 +138,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       id: "ano",
       getHeader: () => getFieldLabel("ano"),
       render: (res: any) => (
-        <td className="px-6 py-2 text-center font-mono bg-slate-50/50 dark:bg-slate-900/20">
+        <td className="px-4 py-2 text-center font-mono bg-slate-50/50 dark:bg-slate-900/20 whitespace-nowrap">
           {res.ano_inicio || res.ano_fim ? (
             <div className="flex items-center justify-center gap-1">
               <span>{res.ano_inicio || ""}</span>
@@ -191,7 +217,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       id: "apenas",
       getHeader: () => getFieldLabel("apenas"),
       render: (res: any) => (
-        <td className="px-6 py-2 font-black text-primary uppercase text-[10px]">
+        <td className="px-4 py-2 font-black text-primary uppercase text-[10px] whitespace-nowrap">
           {res.apenas ? `★ ${res.apenas}` : "---"}
         </td>
       ),
@@ -199,157 +225,84 @@ export const DataTable: React.FC<DataTableProps> = ({
     {
       id: "referencias",
       getHeader: () => getFieldLabel("referencias"),
-      render: (res: any) => (
-        <td className="px-6 py-4">
-          <div
-            className="text-[10px] text-slate-500 max-w-xs truncate"
-            title={res.referencias}
-          >
-            {res.referencias || "---"}
-          </div>
-        </td>
-      ),
+      render: (res: any) => {
+        if (!res.referencias) return <td className="px-6 py-4 text-slate-300">---</td>;
+        
+        // Parser para display: Quebra por separadores e limpa
+        const parts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/).filter((p: string) => !!p.trim());
+        const cleanedRefs = parts.map((p: string) => {
+          const pair = p.split(/\s*(?::|-)\s*/);
+          if (pair.length < 2) return p.trim();
+          const brand = pair[0].trim().toUpperCase().replace(/\s+ORIGINAL$/g, "").replace(/^ORIGINAL\s+/g, "");
+          const code = pair.slice(1).join(":").trim();
+          return `${brand}: ${code}`;
+        });
+
+        return (
+          <td className="px-4 py-4 min-w-[150px]">
+            <div className="text-[10px] text-slate-500 max-w-[200px] leading-relaxed">
+              {cleanedRefs.map((ref: string, idx: number) => (
+                <div key={idx} className="whitespace-nowrap">{ref}</div>
+              ))}
+            </div>
+          </td>
+        );
+      },
     },
     {
-      id: "imagem",
-      getHeader: () => getFieldLabel("imagem"),
+      id: "acoes",
+      getHeader: () => "Ações",
       render: (res: any) => (
-        <td className="px-6 py-4">
-          <div className="flex flex-wrap gap-2">
-            {res.imagens && res.imagens.length > 0 ? (
-              res.imagens.map((imgUrl: string, i: number) => (
-                <div key={i} className="group relative">
-                  <div className="h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1">
-                    <img
-                      src={imgUrl}
-                      alt={`Peça ${i + 1}`}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                  <div className="absolute -top-2 -right-2 hidden group-hover:flex gap-1">
-                    <a
-                      href={imgUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-primary text-white p-1 rounded-full"
-                    >
-                      <FileDown size={10} />
-                    </a>
-                  </div>
-                </div>
-              ))
-            ) : res.imagem ? (
-              <div className="group relative">
-                <div className="h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden bg-white flex items-center justify-center p-1">
-                  <img
-                    src={res.imagem}
-                    alt="Peça"
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
-                <div className="absolute -top-2 -right-2 hidden group-hover:flex">
-                  <a
-                    href={res.imagem}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-primary text-white p-1 rounded-full"
-                  >
-                    <FileDown size={10} />
-                  </a>
-                </div>
-              </div>
-            ) : (
-              <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-                <div className="opacity-20 text-[9px] font-bold">N/A</div>
-              </div>
+        <td className="px-4 py-2">
+          <div className="flex items-center gap-1.5 justify-center">
+            {/* Botão de Galeria de Imagens */}
+            <button
+              onClick={() => handleOpenGallery(res)}
+              disabled={!res.imagem && (!res.imagens || res.imagens.length === 0)}
+              className={`
+                p-2 rounded-lg transition-all flex items-center justify-center
+                ${(!res.imagem && (!res.imagens || res.imagens.length === 0)) 
+                  ? 'text-slate-200 cursor-not-allowed' 
+                  : 'bg-primary/5 text-primary hover:bg-primary/10 hover:scale-110 active:scale-95'}
+              `}
+              title="Ver Galeria de Imagens"
+            >
+              <Image size={18} />
+            </button>
+
+            {/* Botão de Ficha Técnica On-Demand */}
+            <button
+              onClick={() => handleOpenFicha(res)}
+              className="p-2 bg-amber-500/5 text-amber-600 hover:bg-amber-500/10 hover:scale-110 active:scale-95 rounded-lg transition-all flex items-center justify-center"
+              title="Ver Ficha Técnica"
+            >
+              <Zap size={18} />
+            </button>
+            
+            {/* Link Externo (Opcional se houver raw_response com link) */}
+            {res.url && (
+               <a 
+                href={res.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-lg transition-all flex items-center justify-center"
+                title="Ver no site original"
+               >
+                 <ExternalLink size={16} />
+               </a>
             )}
           </div>
         </td>
       ),
     },
-    {
-      id: "ficha_tecnica",
-      getHeader: () => getFieldLabel("ficha_tecnica"),
-      render: (res: any) => (
-        <td className="px-6 py-2">
-          {res.ficha_tecnica ? (
-            <button
-              onClick={() => handleOpenFicha(res.ficha_tecnica)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-md transition-colors text-[10px] font-bold uppercase mx-auto"
-              title="Ver Ficha Técnica"
-            >
-              <Info size={14} /> Ficha
-            </button>
-          ) : (
-            <div className="text-center text-slate-300">---</div>
-          )}
-        </td>
-      ),
-    },
   ];
 
-  const exportToExcel = () => {
-    if (displayResults.length === 0) return;
-
-    // 1. Mapear resultados para JSON plano baseado nos campos visíveis
-    const dataToExport = displayResults.map((res: any) => {
-      const row: any = {};
-      Object.keys(visibleFields).forEach((field) => {
-        if (visibleFields[field]) {
-          const label = getFieldLabel(field);
-          // Trata array de imagens ou objetos para string limpa
-          if (field === "imagens" || field === "imagem") {
-             row[label] = res.imagens ? res.imagens.join(", ") : res.imagem || "";
-          } else {
-             row[label] = res[field] || "---";
-          }
-        }
-      });
-      return row;
-    });
-
-    // 2. Criar Sheet
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Resultados");
-
-    // 3. Download
-    const filename = `busca_${results[0]?.codigo || "peca"}_${new Date().toISOString().split("T")[0]}.xlsx`;
-    XLSX.writeFile(workbook, filename);
+  const handleExportExcel = () => {
+    exportToExcel(displayResults, visibleFields, getFieldLabel, partId);
   };
 
-  const exportToPdf = () => {
-    if (displayResults.length === 0) return;
-
-    const doc = new jsPDF("l", "pt", "a4"); // Paisagem, Pontos, A4
-    
-    // Pegar cabeçalhos visíveis
-    const headers = COLUMN_CONFIG
-      .filter((col) => visibleFields[col.id as keyof typeof visibleFields])
-      .map((col) => col.getHeader());
-
-    // Pegar linhas associadas
-    const rows = displayResults.map((res: any) => 
-      COLUMN_CONFIG
-        .filter((col) => visibleFields[col.id as keyof typeof visibleFields])
-        .map((col) => {
-          if (col.id === "imagens" || col.id === "imagem" || col.id === "ficha_tecnica") {
-             return "---"; // PDF não renderiza imagens nativamente deste loop simples
-          }
-          return res[col.id] || "---";
-        })
-    );
-
-    (doc as any).autoTable({
-      head: [headers],
-      body: rows,
-      theme: "grid",
-      styles: { fontSize: 8, cellPadding: 4 },
-      headStyles: { fillColor: [37, 99, 235] }, // Primária
-    });
-
-    const filename = `busca_${results[0]?.codigo || "peca"}_${new Date().toISOString().split("T")[0]}.pdf`;
-    doc.save(filename);
+  const handleExportPdf = () => {
+    exportToPdf(displayResults, results, visibleFields, uniqueReferences, partId, COLUMN_CONFIG);
   };
 
   return (
@@ -360,7 +313,7 @@ export const DataTable: React.FC<DataTableProps> = ({
           <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1">
             <div className="flex items-center gap-2">
               <h2 className="font-bold text-lg whitespace-nowrap">
-                Resultados ({displayResults.length})
+                Resultados {partId ? `para ${partId}` : ""} ({displayResults.length})
               </h2>
             </div>
 
@@ -407,7 +360,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             {displayResults.length > 0 && (
               <>
                 <button
-                  onClick={exportToExcel}
+                  onClick={handleExportExcel}
                   className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-all border border-green-500/10"
                   title="Exportar para Excel"
                 >
@@ -415,7 +368,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                 </button>
 
                 <button
-                  onClick={exportToPdf}
+                  onClick={handleExportPdf}
                   className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10"
                   title="Exportar para PDF"
                 >
@@ -452,29 +405,31 @@ export const DataTable: React.FC<DataTableProps> = ({
         )}
       </div>
 
-
+      {/* Desktop Table View */}
       <div className="md:block hidden overflow-x-auto custom-scrollbar">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse table-auto">
           <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
             <tr>
               {COLUMN_CONFIG.filter(
-                (col) => visibleFields[col.id as keyof typeof visibleFields],
+                (col) => col.id === "acoes" || visibleFields[col.id as keyof typeof visibleFields]
               ).map((col) => (
-                <th key={col.id} className="px-6 py-2">
+                <th key={col.id} className="px-6 py-4 font-black">
                   {col.getHeader()}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
             {displayResults.length === 0 ? (
               loading ? (
                 // SKELETON LOADING
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    {COLUMN_CONFIG.filter((col) => visibleFields[col.id as keyof typeof visibleFields]).map((col) => (
-                      <td key={col.id} className="px-6 py-4">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-lg w-full"></div>
+                    {COLUMN_CONFIG.filter(
+                      (col) => col.id === "acoes" || visibleFields[col.id as keyof typeof visibleFields]
+                    ).map((col) => (
+                      <td key={col.id} className="px-4 py-4">
+                        <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded-lg w-full"></div>
                       </td>
                     ))}
                   </tr>
@@ -493,7 +448,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                   className="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors text-[11px] group"
                 >
                   {COLUMN_CONFIG.filter(
-                    (col) => visibleFields[col.id as keyof typeof visibleFields],
+                    (col) => col.id === "acoes" || visibleFields[col.id as keyof typeof visibleFields]
                   ).map((col) => (
                     <React.Fragment key={col.id}>
                       {col.render(res)}
@@ -648,51 +603,22 @@ export const DataTable: React.FC<DataTableProps> = ({
                 )}
               </div>
 
-              {visibleFields.imagem && (
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {res.imagens && res.imagens.length > 0
-                    ? res.imagens.map((imgUrl: string, i: number) => (
-                        <a
-                          key={i}
-                          href={imgUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="h-14 w-14 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white p-1"
-                        >
-                          <img
-                            src={imgUrl}
-                            alt={`Peça ${i + 1}`}
-                            className="h-full w-full object-contain"
-                          />
-                        </a>
-                      ))
-                    : res.imagem && (
-                        <a
-                          href={res.imagem}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="h-14 w-14 rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white p-1"
-                        >
-                          <img
-                            src={res.imagem}
-                            alt="Peça"
-                            className="h-full w-full object-contain"
-                          />
-                        </a>
-                      )}
-                </div>
-              )}
-              
-              {visibleFields.ficha_tecnica && res.ficha_tecnica && (
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <button 
-                    onClick={() => handleOpenFicha(res.ficha_tecnica)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg transition-colors text-xs font-bold uppercase"
-                  >
-                    <Info size={16} /> Ficha Técnica
-                  </button>
-                </div>
-              )}
+              {/* Botões de Ação Mobile */}
+              <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => handleOpenGallery(res)}
+                  disabled={!res.imagem && (!res.imagens || res.imagens.length === 0)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary/5 text-primary disabled:opacity-30 rounded-lg text-xs font-bold uppercase transition-all"
+                >
+                  <Image size={16} /> Galeria
+                </button>
+                <button
+                  onClick={() => handleOpenFicha(res)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-500/5 text-amber-600 rounded-lg text-xs font-bold uppercase transition-all"
+                >
+                  <Zap size={16} /> Ficha Técnica
+                </button>
+              </div>
             </div>
           ))
         )}
@@ -729,7 +655,15 @@ export const DataTable: React.FC<DataTableProps> = ({
       <FichaTecnicaModal 
         isOpen={fichaModalOpen} 
         onClose={() => setFichaModalOpen(false)} 
-        data={selectedFicha} 
+        item={selectedFicha} 
+        partId={partId}
+      />
+
+      <ImageGalleryModal
+        isOpen={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        images={galleryImages}
+        title={galleryTitle}
       />
     </div>
   );

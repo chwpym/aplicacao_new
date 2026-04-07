@@ -9,6 +9,7 @@ interface SearchSectionProps {
   provedores: any[];
   loading: boolean;
   handleSearch: (e: React.FormEvent) => void;
+  cancelSearch: () => void;
 }
 
 export const SearchSection: React.FC<SearchSectionProps> = ({
@@ -19,6 +20,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
   provedores,
   loading,
   handleSearch,
+  cancelSearch,
 }) => {
   return (
     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-6 shadow-xl shadow-slate-100/50 dark:shadow-none transition-all">
@@ -52,18 +54,31 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
             </select>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 md:w-auto w-full"
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <Search size={20} />
+          <div className="flex gap-2 w-full md:w-auto">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-primary hover:bg-primary-hover text-white px-8 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 flex-1 md:flex-none"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <Search size={20} />
+              )}
+              {loading ? "Buscando..." : "Pesquisar"}
+            </button>
+
+            {loading && (
+              <button
+                type="button"
+                onClick={cancelSearch}
+                className="px-6 py-3 rounded-xl font-semibold border border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center justify-center"
+                title="Cancelar busca"
+              >
+                Cancelar
+              </button>
             )}
-            {loading ? "Buscando..." : "Pesquisar"}
-          </button>
+          </div>
         </div>
       </form>
     </div>
