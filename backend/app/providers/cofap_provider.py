@@ -100,7 +100,7 @@ class CofapProvider(GraphQLProvider):
                     for v in product_data["vehicles"]:
                         if not v:
                             continue
-                        res = self.formatar_resultado(v)
+                        res = self.formatar_resultado(v, product_data)
 
                         # Injetar dados do produto
                         res["referencias"] = refs_str
@@ -128,7 +128,7 @@ class CofapProvider(GraphQLProvider):
 
             return []
 
-    def formatar_resultado(self, vehicle: Dict[str, Any]) -> Dict[str, Any]:
+    def formatar_resultado(self, vehicle: Dict[str, Any], product_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Sobrescreve a formatação para lidar com campos que a COFAP bloqueia (AUTH_NOT_AUTHORIZED).
         """
@@ -152,10 +152,25 @@ class CofapProvider(GraphQLProvider):
                 return ""
             return val.upper()
 
-        # No JSON da Cofap/Fraga, 'name' costuma ser o modelo do veículo
-        veiculo_nome = safe_label(vehicle.get("name") or vehicle.get("model"))
+        # Preparamos os dados para o formatador base
+        raw_data = vehicle.copy()
+        raw_data["provedor"] = self.config.get("nome", "COFAP").upper()
+        
+        if product_data:
+            # Injetamos o que for necessário para o motor universal da BaseProvider
+            raw_data["specifications"] = product_data.get("specifications")
+            raw_data["ficha_tecnica"] = {
+                "Descrição Comercial": product_data.get("applicationDescription"),
+                "Categoria": product_data.get("productGroup", {}).get("name")
+            }
+            # Unifica especificações estruturadas
+            parsed_specs = self.parse_specifications(product_data.get("specifications"))
+            raw_data["ficha_tecnica"].update(parsed_specs)
 
-        # Combinar observações (only, restriction, note)
+        # Chama o formatador base para garantir an an PecaSchema e o mapeamento correto de colunas
+        res = super().formatar_resultado(raw_data)
+
+        # Combinar observações (only, restriction, note) com an an segurança da Cofap
         obs_parts = [
             safe_label(vehicle.get("only")),
             safe_label(vehicle.get("restriction")),
@@ -163,20 +178,7 @@ class CofapProvider(GraphQLProvider):
             safe_label(vehicle.get("fuelType")),
             safe_label(vehicle.get("transmissionType")),
         ]
-        observacao = " | ".join([p for p in obs_parts if p]).strip()
-
-        res = {
-            "marca": self.config.get("nome", "COFAP").upper(),
-            "veiculo": safe_label(vehicle.get("brand")),
-            "modelo": veiculo_nome,
-            "versao": safe_label(vehicle.get("vehicleType")),
-            "motor": safe_label(vehicle.get("engineName")),
-            "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
-            "ano_inicio": str(vehicle.get("startYear") or ""),
-            "ano_fim": str(vehicle.get("endYear") or ""),
-            "observacao": observacao,
-            "posicao": safe_label(vehicle.get("position")),
-        }
+        res["observacao"] = " | ".join([p for p in obs_parts if p]).strip()
 
         return res
 

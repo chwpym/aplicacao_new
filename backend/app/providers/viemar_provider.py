@@ -32,7 +32,7 @@ class ViemarProvider(BaseProvider):
             for cod in codigos_busca:
                 try:
                     # A API da Viemar exige searchCode e cardMode (booleano)
-                    payload = {"searchCode": cod, "cardMode": True}
+                    payload = {"searchCode": cod, "cardMode": False}  # False = dados completos (crossRef, moreInfo, etc.)
                     print(f"[Viemar] Buscando código: {cod} com payload {payload}")
 
                     response = await client.post(
@@ -63,6 +63,33 @@ class ViemarProvider(BaseProvider):
                         model = get_val(catalog, "model")
                         year_global = get_val(catalog, "year")
                         product_line = get_val(catalog, "productLine")
+
+                        # Posição global do catálogo (lista consolidada, ex: "Direita | Esquerda")
+                        positions_list = []
+                        pos_catalog_obj = catalog.get("position", {})
+                        if isinstance(pos_catalog_obj, dict):
+                            for pv in pos_catalog_obj.get("valueList", []):
+                                val = pv.get("value", "").strip()
+                                if val:
+                                    positions_list.append(val)
+                        catalog_positions = " | ".join(positions_list)
+
+                        # Informações adicionais (moreInformation) → coluna Observações
+                        more_info_str = ""
+                        more_info_obj = catalog.get("moreInformation", {})
+                        if isinstance(more_info_obj, dict):
+                            for mi in more_info_obj.get("value", []):
+                                if isinstance(mi, dict) and mi.get("value"):
+                                    more_info_str = mi["value"]
+                                    break
+
+                        # Ficha Técnica básica do catálogo
+                        ficha_tecnica = {}
+                        if product_line:
+                            ficha_tecnica["Linha de Produto"] = product_line
+                        manuf_country = get_val(catalog, "manufacturerCountry")
+                        if manuf_country:
+                            ficha_tecnica["País de Fabricação"] = manuf_country
 
                         # Referências cruzadas
                         cross_ref_obj = catalog.get("crossReference")
@@ -103,7 +130,8 @@ class ViemarProvider(BaseProvider):
                         if not applications:
                             # Se não tiver aplicações específicas, cria uma entrada genérica
                             res = {
-                                "marca": brand,
+                                "marca": self.config.get("nome", "VIEMAR"),  # Nome do provedor como Marca Peça
+                                "montadora": brand,  # BaseProvider procura 'montadora' para coluna Montadora
                                 "veiculo": model,
                                 "modelo": model,
                                 "motor": "",
@@ -114,33 +142,58 @@ class ViemarProvider(BaseProvider):
                                 "ano_fim": str(
                                     self._parse_ano(year_global, False) or ""
                                 ),
-                                "observacao": cross_ref_str,
+                                "posicao": catalog_positions,
+                                "observacao": more_info_str,
                                 "imagem": primary_image,
                                 "imagens": all_images,
                                 "referencias": cross_ref_str,
+                                "ficha_tecnica": ficha_tecnica,
                             }
                             resultados.append(self.formatar_resultado(res))
                         else:
+                            # Agrupa aplicações por faixa de ano para concatenar posições (ex: "DIREITA | ESQUERDA")
+                            # em vez de gerar uma linha duplicada por posição
+                            from collections import defaultdict
+                            year_groups: dict = defaultdict(list)
                             for app in applications:
                                 if not app:
                                     continue
+                                s = app.get("ano_inicial") or year_global
+                                e = app.get("ano_final") or year_global
+                                year_groups[(s, e)].append(app)
 
-                                # A estrutura da aplicação na Viemar varia, mas geralmente tem campos específicos
-                                # ou herda do topo (catalog)
-                                pos = ""
-                                pos_obj = app.get("posicao")
-                                if pos_obj and isinstance(pos_obj, dict):
-                                    pos = pos_obj.get("default_value", "")
-                                if not pos:
-                                    pos_obj = app.get("position")
+                            for (start_year, end_year), apps_group in year_groups.items():
+                                # Coleta posições e direções únicas do grupo
+                                positions = []
+                                direcao_values = []
+
+                                for app in apps_group:
+                                    # Posição (default_value em pt)
+                                    pos = ""
+                                    pos_obj = app.get("posicao")
                                     if pos_obj and isinstance(pos_obj, dict):
-                                        pos = pos_obj.get("value", "")
+                                        pos = pos_obj.get("default_value", "")
+                                    if not pos:
+                                        pos_obj = app.get("position")
+                                        if pos_obj and isinstance(pos_obj, dict):
+                                            pos = pos_obj.get("value", "")
+                                    if pos and pos not in positions:
+                                        positions.append(pos)
 
-                                start_year = app.get("ano_inicial") or year_global
-                                end_year = app.get("ano_final") or year_global
+                                    # Direção: dos qualificadores (label="Direção" em pt)
+                                    for q in (app.get("qualificador") or []):
+                                        for i18n in q.get("i18nValues", []):
+                                            if i18n.get("cod_i18n") == "pt" and i18n.get("label") == "Direção":
+                                                val = i18n.get("value", "").strip()
+                                                if val and val not in direcao_values:
+                                                    direcao_values.append(val)
+
+                                posicao_str = " | ".join(positions) or catalog_positions
+                                direcao = " / ".join(direcao_values)
 
                                 res = {
-                                    "marca": brand,
+                                    "marca": self.config.get("nome", "VIEMAR"),  # Nome do provedor como Marca Peça
+                                    "montadora": brand,  # BaseProvider procura 'montadora' para coluna Montadora
                                     "veiculo": model,
                                     "modelo": model,
                                     "motor": "",
@@ -151,11 +204,13 @@ class ViemarProvider(BaseProvider):
                                     "ano_fim": str(
                                         self._parse_ano(end_year, False) or ""
                                     ),
-                                    "observacao": cross_ref_str,
-                                    "posicao": pos,
+                                    "posicao": posicao_str,
+                                    "direcao": direcao,
+                                    "observacao": more_info_str,
                                     "imagem": primary_image,
                                     "imagens": all_images,
                                     "referencias": cross_ref_str,
+                                    "ficha_tecnica": ficha_tecnica,
                                 }
                                 resultados.append(self.formatar_resultado(res))
 

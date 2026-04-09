@@ -159,6 +159,13 @@ class RESTProvider(BaseProvider):
                                     elif isinstance(r, (int, float)): formatted_refs.append(str(r))
                                 res["referencias"] = " | ".join(formatted_refs)
 
+                            # Tradução de chave interna do REST para o que a BaseProvider espera:
+                            # O mapeamento do banco usa "veiculo" para guardar a Montadora (ex: HYUNDAI, KIA).
+                            # A BaseProvider procura "brand" ou "montadora" para preencher a coluna Montadora.
+                            # Sem essa tradução, "veiculo" cai na coluna Veículo (comportamento errado).
+                            if "veiculo" in res and res["veiculo"]:
+                                res["montadora"] = res.pop("veiculo")
+
                             formatted = self.formatar_resultado(res)
                             if not resultados and data:
                                 formatted["raw_response"] = json.dumps(data, indent=2, ensure_ascii=False)

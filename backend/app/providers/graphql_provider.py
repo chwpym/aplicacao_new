@@ -217,59 +217,24 @@ class GraphQLProvider(BaseProvider):
             if val.upper() in ["NONE", "NULL", "AUTH_NOT_AUTHORIZED"]: return ""
             return val.upper()
 
-        veiculo_nome = safe_label(vehicle.get("name"))
-        versao_nome = safe_label(vehicle.get("model"))
-        if not versao_nome:
-            versao_nome = safe_label(vehicle.get("vehicleType"))
-            
-        # Se veio apenas um deles, garantimos que não fique vazio na tela principal ("Veículo" / modelo do backend)
-        if not veiculo_nome and versao_nome:
-            veiculo_nome = versao_nome
-            versao_nome = ""
+        # Preparamos os dados para o formatador base
+        raw_data = vehicle.copy()
+        raw_data["provedor"] = self.config.get("nome", "PROVEDOR").upper()
         
-        # Extrair detalhes técnicos do produto (se existir)
-        # O Ficha Técnica é agnóstico por linha, logo todas as linhas herdam do product_data
-        ficha_tecnica = {}
         if product_data:
-            desc = product_data.get("applicationDescription")
-            if desc: ficha_tecnica["Descrição Comercial"] = desc
-            
-            grupo = product_data.get("productGroup", {}).get("name")
-            if grupo: ficha_tecnica["Categoria"] = grupo
-            
-            if product_data.get("specifications"):
-                for spec in product_data["specifications"]:
-                    s_desc = safe_label(spec.get("description"))
-                    s_val = safe_label(spec.get("value"))
-                    if s_desc and s_val:
-                        # Capitalize title
-                        s_desc = s_desc.title() if s_desc.isupper() else s_desc
-                        ficha_tecnica[s_desc] = s_val
+            raw_data["specifications"] = product_data.get("specifications")
+            raw_data["ficha_tecnica"] = {
+                "Descrição Comercial": product_data.get("applicationDescription"),
+                "Categoria": product_data.get("productGroup", {}).get("name")
+            }
+            # Unifica especificações se existirem
+            parsed_specs = self.parse_specifications(product_data.get("specifications"))
+            raw_data["ficha_tecnica"].update(parsed_specs)
+
+        # Chama o formatador base que agora lida corretamente com brand, name e model
+        res = super().formatar_resultado(raw_data)
         
-        # O Combustível ganha coluna própria no frontend
-        combustivel_val = safe_label(vehicle.get("fuelType"))
+        # O Combustível ganha tratamento especial por ser coluna individual
+        res["combustivel"] = safe_label(vehicle.get("fuelType"))
 
-        # As outras notas compõem a observação visual
-        obs_parts = [
-            safe_label(vehicle.get("only")),
-            safe_label(vehicle.get("restriction")),
-            safe_label(vehicle.get("note")),
-            safe_label(vehicle.get("transmissionType")),
-        ]
-        observacao = " | ".join([p for p in obs_parts if p]).strip()
-
-        # Alinhando com a semântica do Frontend (Home.tsx)
-        return {
-            "marca": self.config.get("nome", "PROVEDOR").upper(), # Marca da Peça
-            "veiculo": safe_label(vehicle.get("brand")),          # Montadora (e.g. VW)
-            "modelo": veiculo_nome,                              # Veículo (e.g. UNO, GOL)
-            "versao": versao_nome,                               # Modelo/Versão (e.g. SPORTING)
-            "motor": safe_label(vehicle.get("engineName")),
-            "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
-            "combustivel": combustivel_val,                      # Combustível extraído individualmente
-            "ano_inicio": str(vehicle.get("startYear") or ""),
-            "ano_fim": str(vehicle.get("endYear") or ""),
-            "observacao": observacao,
-            "posicao": safe_label(vehicle.get("position")),
-            "ficha_tecnica": ficha_tecnica if len(ficha_tecnica.keys()) > 0 else None
-        }
+        return res
