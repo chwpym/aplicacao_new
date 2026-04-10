@@ -376,7 +376,7 @@ export const useCatalog = () => {
 
     if (Object.keys(uniqueReferences).length > 0) {
       // Adiciona o separador rígido '...' para o sistema receptor
-      text += "\n\n...\nREFERENECIA DE SIMILARES :\n";
+      text += "\n\n...\nREFERÊNCIA DE SIMILARES :\n";
       
       // Identifica montadoras a partir dos resultados atuais (para priorizar no topo)
       const manufacturersInResults = new Set(

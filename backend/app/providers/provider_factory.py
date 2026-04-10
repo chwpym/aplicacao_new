@@ -59,4 +59,8 @@ def get_provider(config_model):
         from app.providers.ima_provider import IMAProvider
         return IMAProvider(config)
 
+    elif config["tipo"] == "tsa":
+        from app.providers.tsa_provider import TSAProvider
+        return TSAProvider(config)
+
     return None
