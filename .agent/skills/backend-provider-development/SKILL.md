@@ -52,3 +52,12 @@ Para que o sistema reconheça o novo provedor:
 - Use blocos `try/except` para capturar falhas de rede.
 - Retorne uma lista vazia `[]` em caso de erro, para não interromper a busca nos outros provedores.
 - Use logs para registrar o status do request.
+
+## 5. Arquitetura de Busca em 2 Níveis (Discovery-Hydration)
+Para sites complexos onde a lista de resultados não traz todos os dados técnicos:
+
+1.  **Discovery (Passo 1):** Captura o ID interno ou a URL da peça no site.
+    -   *Dica (Mira Laser):* Use atributos como `alt` das imagens ou links específicos para filtrar apenas o resultado exato e ignorar sugestões do site.
+2.  **Hydration (Passo 2):** Realiza uma segunda requisição para a página de detalhes.
+    -   Extraia: Tabelas de aplicação, Referências OE, Fichas Técnicas e Galeria de Imagens.
+3.  **Performance:** Realize o Hydration apenas para os itens que passaram no filtro do Discovery. Use `asyncio.gather` se precisar hidratar múltiplos itens validados simultaneamente.
