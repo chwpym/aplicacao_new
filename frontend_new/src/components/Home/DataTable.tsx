@@ -231,10 +231,15 @@ export const DataTable: React.FC<DataTableProps> = ({
         // Parser para display: Quebra por separadores e limpa
         const parts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/).filter((p: string) => !!p.trim());
         const cleanedRefs = parts.map((p: string) => {
-          const pair = p.split(/\s*(?::|-)\s*/);
-          if (pair.length < 2) return p.trim();
-          const brand = pair[0].trim().toUpperCase().replace(/\s+ORIGINAL$/g, "").replace(/^ORIGINAL\s+/g, "");
-          const code = pair.slice(1).join(":").trim();
+          // Separa apenas pelo PRIMEIRO sinal de dois pontos
+          const firstColonIdx = p.indexOf(":");
+          if (firstColonIdx === -1) return p.trim();
+
+          const brand = p.slice(0, firstColonIdx).trim().toUpperCase()
+            .replace(/\s+ORIGINAL$/g, "")
+            .replace(/^ORIGINAL\s+/g, "");
+          const code = p.slice(firstColonIdx + 1).trim();
+          
           return `${brand}: ${code}`;
         });
 
@@ -630,23 +635,39 @@ export const DataTable: React.FC<DataTableProps> = ({
           <div className="text-xs text-slate-500">
              Mostrando <span className="font-bold text-slate-700 dark:text-slate-200">{paginatedResults.length}</span> de <span className="font-bold">{displayResults.length}</span> itens
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 md:gap-2">
+             <button 
+               onClick={() => setCurrentPage(1)}
+               disabled={currentPage === 1}
+               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+               title="Primeira Página"
+             >
+               &lt;&lt;
+             </button>
              <button 
                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                disabled={currentPage === 1}
-               className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
              >
-               &lt; Anterior
+               &lt; Ant
              </button>
-             <span className="text-xs font-medium text-slate-500">
-               Página <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
+             <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+               Pág <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
              </span>
              <button 
                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                disabled={currentPage === totalPages}
-               className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
              >
-               Próxima &gt;
+               Próx &gt;
+             </button>
+             <button 
+               onClick={() => setCurrentPage(totalPages)}
+               disabled={currentPage === totalPages}
+               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+               title="Última Página"
+             >
+               &gt;&gt;
              </button>
           </div>
         </div>

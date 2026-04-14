@@ -84,3 +84,9 @@ def delete_palavra(palavra_id: int, db: Session = Depends(get_db)):
     db.delete(db_palavra)
     db.commit()
     return {"message": "Palavra excluída"}
+
+# --- Montadoras (FIPE) ---
+@router.get("/automakers")
+def get_automakers():
+    from app.services.automaker_service import automaker_service
+    return {"status": "ok", "automakers": automaker_service._cached_names}

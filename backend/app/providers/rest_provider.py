@@ -12,7 +12,7 @@ class RESTProvider(BaseProvider):
         # Gera variações do ID para busca (com/sem hífens)
         codigos_busca = self.normalizar_codigo(id_peca)
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
             for cod in codigos_busca:
                 try:
                     url = self.url.replace("{id}", cod).replace("{codigo}", cod)
@@ -101,7 +101,8 @@ class RESTProvider(BaseProvider):
                             res = {
                                 "marca": str(resolve(map_config.get("marca")) or ""),
                                 "veiculo": str(resolve(map_config.get("veiculo")) or ""),
-                                "modelo": str(resolve(map_config.get("modelo")) or resolve("Descrição do Modelo") or ""),
+                                "modelo": str(resolve(map_config.get("modelo")) or ""),
+                                "versao": str(resolve(map_config.get("versao")) or resolve("Descriçao do Modelo") or ""),
                                 "motor": str(resolve(map_config.get("motor")) or resolve("Motor_PTBR") or ""),
                                 "configuracao_motor": str(
                                     resolve(map_config.get("configuracao_motor")) or ""
@@ -111,6 +112,9 @@ class RESTProvider(BaseProvider):
                                 ),
                                 "ano_fim": str(
                                     resolve(map_config.get("ano_fim")) or ""
+                                ),
+                                "combustivel": str(
+                                    resolve(map_config.get("combustivel")) or ""
                                 ),
                                 "observacao": str(
                                     resolve(map_config.get("observacao")) or ""
@@ -198,7 +202,7 @@ class RESTProvider(BaseProvider):
             import httpx
             from bs4 import BeautifulSoup
             
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with httpx.AsyncClient(timeout=15.0, verify=False) as client:
                 headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 }
