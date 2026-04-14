@@ -3,7 +3,6 @@ import json
 from app.providers.base_provider import BaseProvider
 from bs4 import BeautifulSoup
 
-
 class DSProvider(BaseProvider):
     def __init__(self, config):
         self.config = config
@@ -15,333 +14,176 @@ class DSProvider(BaseProvider):
             },
         )
 
-    def parse_year(self, year_str: str):
-        """Converte anos de 2 dígitos para 4 dígitos."""
-        if not year_str or year_str == "-":
-            return None
-        try:
-            # Remove caracteres não numéricos
-            clean_year = "".join(filter(str.isdigit, year_str))
-            if not clean_year:
-                return None
-
-            year = int(clean_year)
-            if year < 100:
-                # Lógica simples: > 40 assume 1900, <= 40 assume 2000
-                if year > 40:
-                    return 1900 + year
-                else:
-                    return 2000 + year
-            return year
-        except Exception:
-            return None
-
     async def buscar(self, id_peca: str):
-        # Gera variações do ID (ex: WO545 -> WO-545)
+        """Fase 1 (Discovery): Busca o código e filtra os resultados exatos."""
         codigos_busca = self.normalizar_codigo(id_peca)
+        resultados_finais = []
+        links_processados = set()
 
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
             for cod in codigos_busca:
-                search_urls = [
-                    f"https://www.ds.ind.br/pt/busca-full?q={cod}",
-                    self.url.replace("{id}", cod),
-                ]
-
-                # Categorias comuns
-                categorias = [
-                    "kit-de-filtros-para-bico-injetor",
-                    "valvula-solenoide-de-partida-a-frio",
-                    "sensor-de-nivel-de-combustivel",
-                    "regulador-de-pressao",
-                    "sensor-map",
-                    "sensor-de-velocidade",
-                ]
-                base_url = "https://www.ds.ind.br/pt/produtos"
-                for cat in categorias:
-                    search_urls.append(f"{base_url}/{cat}/{cod}")
-
-                for url in search_urls:
-                    try:
-                        print(f"[DS] Tentando URL: {url} (ID: {cod})")
-                        response = await client.get(url, headers=self.headers)
-
-                        if response.status_code != 200:
-                            print(
-                                f"[DS] Falha na requisição ({response.status_code}): {url}"
-                            )
-                            continue
-
-                        if "Produto não encontrado" in response.text:
-                            print(f"[DS] Produto não encontrado na página: {url}")
-                            continue
-
-                        soup = BeautifulSoup(response.text, "html.parser")
-
-                        # Se caiu em uma página de busca (múltiplos resultados)
-                        # Procura pelo primeiro link de produto na lista de resultados
-                        is_search_page = (
-                            "busca-full" in str(response.url)
-                            or "busca?" in str(response.url)
-                            or bool(soup.select(".resultado-itens"))
-                        )
-                        if is_search_page:
-                            print(f"[DS] Página de busca detectada: {response.url}")
-                            product_link = soup.select_one(
-                                '.resultado-itens a[href*="/produtos/"]'
-                            ) or soup.select_one('a[href*="/produtos/"]')
-                            if product_link:
-                                new_url = product_link["href"]
-                                if not new_url.startswith("http"):
-                                    new_url = "https://www.ds.ind.br" + new_url
-
-                                print(f"[DS] Link de produto encontrado: {new_url}")
-                                # Evita looping se o link for a própria página de busca (improvável mas seguro)
-                                if (
-                                    "busca-full" not in new_url
-                                    and "busca?" not in new_url
-                                ):
-                                    response = await client.get(
-                                        new_url, headers=self.headers
-                                    )
-                                    if response.status_code == 200:
-                                        soup = BeautifulSoup(
-                                            response.text, "html.parser"
-                                        )
-                                        print(
-                                            f"[DS] Navegação para produto bem-sucedida: {new_url}"
-                                        )
-                                    else:
-                                        print(
-                                            f"[DS] Erro ao navegar para o produto ({response.status_code}): {new_url}"
-                                        )
-                                        continue
-                            else:
-                                print(
-                                    f"[DS] Nenhum link de produto encontrado na página de busca."
-                                )
-
-                        # Agora estamos na página do produto (ou tentamos estar)
-                        map_config = {}
-                        if self.config.get("mapeamento"):
-                            try:
-                                map_config = json.loads(self.config["mapeamento"])
-                            except Exception as e:
-                                print(f"[DS] Erro ao carregar mapeamento JSON: {e}")
-
-                        print(f"[DS] Mapeamento atual: {map_config}")
-
-                        # Extração de Referências (Original e Similar)
-                        referencias = []
-                        ref_selectors = [
-                            map_config.get("referencias"),
-                            ".jq-codes tr",
-                            ".jq-refs tr",
-                            ".tabela-referencias tr",
-                        ]
-                        for sel in ref_selectors:
-                            if not sel:
-                                continue
-                            ref_els = soup.select(sel)
-                            if ref_els:
-                                print(
-                                    f"[DS] Referências encontradas com seletor '{sel}': {len(ref_els)}"
-                                )
-                            for ref_el in ref_els:
-                                cols = ref_el.find_all("td")
-                                if len(cols) >= 2:
-                                    # Formato padronizado Marca: Código
-                                    brand_ref = cols[0].get_text(strip=True)
-                                    code_ref = cols[1].get_text(strip=True)
-                                    txt = f"{brand_ref}: {code_ref}"
-                                elif cols:
-                                    txt = " ".join(
-                                        [c.get_text(strip=True) for c in cols]
-                                    )
-                                else:
-                                    txt = ref_el.get_text(strip=True, separator=" ")
-
-                                if txt and txt not in referencias:
-                                    referencias.append(txt)
-
-                        # Extração de Múltiplas Imagens
-                        imagens = []
-                        img_selectors = [
-                            map_config.get("imagem"),
-                            ".pgwSlider img",
-                            ".img-produto",
-                            ".gallery img",
-                        ]
-                        for sel in img_selectors:
-                            if not sel:
-                                continue
-                            img_els = soup.select(sel)
-                            if img_els:
-                                print(
-                                    f"[DS] Imagens encontradas com seletor '{sel}': {len(img_els)}"
-                                )
-                            for img_el in img_els:
-                                src = img_el.get("src") or img_el.get("data-src")
-                                if src:
-                                    if not src.startswith("http"):
-                                        src = "https://www.ds.ind.br" + src
-                                    if src not in imagens:
-                                        imagens.append(src)
-
-                        resultados = []
-                        # Força mapeamento padrão se o usuário não definiu nada ou se está incompleto
-                        if not map_config or not map_config.get("container"):
-                            print(
-                                f"[DS] Usando Mapeamento Padrão (Container não definido na config)"
-                            )
-                            map_config = {
-                                "container": ".jq-apps tr, table.table-aplicacao tr",
-                                "marca": "td.montadora",
-                                "veiculo": "td.modelo",
-                                "modelo": "td.modelo",  # Fallback
-                                "motor": "td.motor",
-                                "configuracao_motor": "td.complemento",
-                                "observacao": "td.observacoes",
-                                "ano_inicio": "td.ano",
-                                "imagem": ".pgwSlider img",
-                                "referencias": ".jq-codes tr",
-                            }
-                        container_sel = map_config.get("container", "table tr")
-                        container_els = soup.select(container_sel)
-                        print(
-                            f"[DS] Itens encontrados pelo seletor de container '{container_sel}': {len(container_els)}"
-                        )
-
-                        for item in container_els:
-                            try:
-                                # Tenta extrair cada campo baseado no mapeamento
-                                brand = (
-                                    item.select_one(map_config["marca"]).get_text(
-                                        strip=True
-                                    )
-                                    if map_config.get("marca")
-                                    and item.select_one(map_config["marca"])
-                                    else ""
-                                )
-                                name = (
-                                    item.select_one(map_config["veiculo"]).get_text(
-                                        strip=True
-                                    )
-                                    if map_config.get("veiculo")
-                                    and item.select_one(map_config["veiculo"])
-                                    else ""
-                                )
-                                model = (
-                                    item.select_one(
-                                        map_config.get("modelo", "")
-                                    ).get_text(strip=True)
-                                    if map_config.get("modelo")
-                                    and item.select_one(map_config["modelo"])
-                                    else ""
-                                )
-                                engine = (
-                                    item.select_one(
-                                        map_config.get("motor", "")
-                                    ).get_text(strip=True)
-                                    if map_config.get("motor")
-                                    and item.select_one(map_config["motor"])
-                                    else ""
-                                )
-                                fuel = (
-                                    item.select_one("td.complemento").get_text(
-                                        strip=True
-                                    )
-                                    if item.select_one("td.complemento")
-                                    else ""
-                                )
-                                obs = (
-                                    item.select_one("td.observacoes").get_text(
-                                        strip=True
-                                    )
-                                    if item.select_one("td.observacoes")
-                                    else ""
-                                )
-
-                                ano_text = (
-                                    item.select_one(
-                                        map_config.get("ano_inicio", "")
-                                    ).get_text(strip=True)
-                                    if map_config.get("ano_inicio")
-                                    and item.select_one(map_config["ano_inicio"])
-                                    else ""
-                                )
-
-                                start_year = None
-                                end_year = None
-
-                                if ano_text:
-                                    years = [y.strip() for y in ano_text.split(">")]
-                                    if len(years) >= 1 and years[0] and years[0] != "-":
-                                        start_year = self.parse_year(years[0])
-                                    if len(years) >= 2 and years[1] and years[1] != "-":
-                                        end_year = self.parse_year(years[1])
-
-                                res = {
-                                    "brand": brand,
-                                    "name": name,
-                                    "model": model,
-                                    "engineName": engine,
-                                    "engineConfiguration": fuel,
-                                    "note": obs,
-                                    "startYear": start_year,
-                                    "endYear": end_year,
-                                    "image": imagens[0] if imagens else None,
-                                    "imageUrl": imagens[0] if imagens else None,
-                                    "images": imagens,
-                                    "originalNumbers": " | ".join(referencias),
-                                    "crossReferences": " | ".join(referencias),
-                                }
-
-                                if res["brand"] or res["name"]:
-                                    resultados.append(res)
-                            except Exception as inner_e:
-                                print(f"[DS] Erro ao processar linha: {inner_e}")
-                                pass  # Linha inválida ou cabeçalho
-
-                        if resultados:
-                            print(
-                                f"[DS] Sucesso! Extraídos {len(resultados)} itens de: {url}"
-                            )
-                            return [self.formatar_resultado(r) for r in resultados]
-                        else:
-                            print(f"[DS] Fim da tentativa para {url}. Itens válidos: 0")
-
-                    except Exception as e:
-                        print(f"[DS] Erro fatal ao tentar URL {url}: {e}")
-                        import traceback
-
-                        traceback.print_exc()
+                url_busca = f"https://www.ds.ind.br/pt/busca-full?q={cod}"
+                try:
+                    print(f"[DS] Iniciando Discovery: {url_busca}")
+                    response = await client.get(url_busca, headers=self.headers)
+                    if response.status_code != 200:
                         continue
 
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    
+                    # Caso 1: Redirecionamento direto para a página do produto
+                    if "/produtos/" in str(response.url) and "busca-full" not in str(response.url):
+                        full_url = str(response.url)
+                        if full_url not in links_processados:
+                            print(f"[DS] Redirecionamento direto: {full_url}")
+                            detalhes = await self._extrair_detalhes_produto(client, full_url)
+                            resultados_finais.extend(detalhes)
+                            links_processados.add(full_url)
+                        continue
+
+                    # Caso 2: Listagem de resultados
+                    itens_busca = soup.select(".resultado-itens li.index")
+                    links_para_hidratar = []
+                    
+                    for item in itens_busca:
+                        img_el = item.select_one("img")
+                        link_el = item.select_one('a[href*="/produtos/"]')
+                        
+                        if not img_el or not link_el:
+                            continue
+
+                        # FILTRO MIRA LASER (padrão sugerido pelo usuário)
+                        alt_text = img_el.get("alt", "").strip().upper()
+                        link_text = link_el.get_text(strip=True).upper()
+                        
+                        # Verifica se o código de busca bate exatamente com o ALT ou está no título
+                        if cod.upper() == alt_text or f"- {cod.upper()}" in link_text:
+                            href = link_el["href"]
+                            full_url = href if href.startswith("http") else f"https://www.ds.ind.br{href}"
+                            if full_url not in links_processados:
+                                print(f"[DS] Item validado: {alt_text} -> {full_url}")
+                                links_para_hidratar.append(full_url)
+                        else:
+                            print(f"[DS] Ignorado: Buscado {cod.upper()} | Encontrado {alt_text}")
+
+                    # Fase 2 (Hydration): Entra em cada produto validado
+                    for url_prod in links_para_hidratar:
+                        detalhes = await self._extrair_detalhes_produto(client, url_prod)
+                        resultados_finais.extend(detalhes)
+                        links_processados.add(url_prod)
+
+                except Exception as e:
+                    print(f"[DS] Erro na busca por {cod}: {e}")
+
+        return [self.formatar_resultado(r) for r in resultados_finais]
+
+    async def _extrair_detalhes_produto(self, client, url):
+        """Extrai dados técnicos profundos da página do produto."""
+        try:
+            print(f"[DS] Extraindo detalhes: {url}")
+            response = await client.get(url, headers=self.headers)
+            if response.status_code != 200:
+                return []
+
+            soup = BeautifulSoup(response.text, "html.parser")
+            
+            # Captura título e categoria para ajudar na identificação de combustível
+            titulo_produto = soup.select_one("h1").get_text(strip=True) if soup.select_one("h1") else ""
+            categoria_produto = soup.select_one(".breadcrumbs").get_text(strip=True) if soup.select_one(".breadcrumbs") else ""
+            
+            # Referências OEM / Similares (Ajustado para o padrão de coluna única da DS)
+            referencias = []
+            for row in soup.select(".jq-codes tr, .tabela-referencias tr, .jq-refs tr"):
+                tds = row.find_all("td")
+                if len(tds) >= 2:
+                    brand = tds[0].get_text(strip=True)
+                    code = tds[1].get_text(strip=True)
+                    if brand and code:
+                        referencias.append(f"{brand}:{code}")
+                elif len(tds) == 1:
+                    # Caso da DS: <strong>Bosch</strong>:1582980142 (tudo em um TD)
+                    info = tds[0].get_text(separator=":", strip=True).replace("::", ":")
+                    if ":" in info:
+                        referencias.append(info)
+            
+            # Backup: caso não seja tabela (blocos de texto)
+            if not referencias:
+                box_refs = soup.select_one(".box-referencias, .demais-codigos, .jq-codes")
+                if box_refs:
+                    texto_refs = box_refs.get_text(separator="\n", strip=True)
+                    for linha in texto_refs.split("\n"):
+                        if ":" in linha and len(linha) < 100: # Evita pegar parágrafos longos
+                            referencias.append(linha.strip())
+
+            ref_str = " | ".join(referencias)
+
+            # Imagens da Galeria
+            imagens = []
+            for img_el in soup.select(".pgwSlider img, .img-produto, .gallery img, .thumb-produto img"):
+                src = img_el.get("src") or img_el.get("data-src")
+                if src:
+                    full_src = src if src.startswith("http") else f"https://www.ds.ind.br{src}"
+                    if full_src not in imagens:
+                        imagens.append(full_src)
+
+            # Aplicações
+            resultados = []
+            linhas_app = soup.select(".jq-apps tr, table.table-aplicacao tr, .table-generic tr, .table-aplicacoes tr")
+            for row in linhas_app:
+                cols = row.find_all("td")
+                if len(cols) < 3:
+                    continue
+
+                val_complemento = cols[3].get_text(strip=True) if len(cols) > 3 else ""
+                
+                # Inteligência para não duplicar combustível
+                fuel_detected = ""
+                config_motor = val_complemento
+                
+                # Lista de tipos conhecidos de combustível
+                tipos_combustivel = ["FLEX", "GASOLINA", "ALCOOL", "DIESEL", "GNV", "TETRAFUEL"]
+                
+                # Se o campo for EXATAMENTE um combustível, movemos para fuel e limpamos o motor
+                if val_complemento.upper() in tipos_combustivel:
+                    fuel_detected = val_complemento
+                    config_motor = ""
+                # Se contiver o combustível mas tiver algo mais (ex: "FLEX 16V"), mantemos no motor e deixamos o motor de IA extrair
+                elif any(c in val_complemento.upper() for c in tipos_combustivel):
+                    fuel_detected = val_complemento
+
+                res = {
+                    "brand": cols[0].get_text(strip=True),
+                    "name": cols[1].get_text(strip=True),
+                    "model": cols[1].get_text(strip=True),
+                    "motor": cols[2].get_text(strip=True),
+                    "fuel": fuel_detected,
+                    "configuracao_motor": config_motor,
+                    "startYear": cols[4].get_text(strip=True) if len(cols) > 4 else "",
+                    "note": cols[5].get_text(strip=True) if len(cols) > 5 else "",
+                    "description": f"{titulo_produto} {categoria_produto}", 
+                    "images": imagens,
+                    "originalNumbers": ref_str,
+                    "provedor": "DS"
+                }
+                
+                if res["brand"] and res["brand"].upper() != "MONTADORA":
+                    resultados.append(res)
+            
+            return resultados
+        except Exception as e:
+            print(f"[DS] Erro na extração de {url}: {e}")
             return []
 
     def formatar_resultado(self, raw_data: dict) -> dict:
-        """
-        Sobrescreve a formatação base para adequar os dados da DS ao padrão AutoExpert.
-        Grid -> marca: Provedor | veiculo: Montadora | modelo: Veículo
-        DS   -> brand: Montadora | name: Veículo
-        """
+        """Padronização final usando a inteligência do BaseProvider."""
         base = super().formatar_resultado(raw_data)
-        
-        # Corrige as colunas primárias
-        nome_provedor = self.config.get("nome", "DS").upper()
-        base["marca"] = nome_provedor
+        base["marca"] = "DS"
         base["veiculo"] = str(raw_data.get("brand", "")).upper()
         
-        # Em muitos casos a DS retorna "ARGO" tanto em name quanto model
-        modelo = str(raw_data.get("name", "")).upper()
-        base["modelo"] = modelo
+        modelo_bruto = str(raw_data.get("name", "")).upper()
+        base["modelo"] = modelo_bruto
         
-        # Se 'model' tiver mais detalhes que 'name', usamos como versão
-        # Caso contrário, deixamos vazio para o grid
-        versao_ds = str(raw_data.get("model", "")).upper()
-        if versao_ds and versao_ds != modelo:
-            base["versao"] = versao_ds
-        else:
+        if base.get("versao") == modelo_bruto:
             base["versao"] = ""
             
         return base

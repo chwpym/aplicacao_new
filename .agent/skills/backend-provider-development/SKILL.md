@@ -24,15 +24,24 @@ class MeuNovoProvider(BaseProvider):
         return [self.formatar_resultado(v) for v in resultados]
 ```
 
-## 2. Padronização de Retorno
-O método `buscar` deve retornar uma lista de dicionários com as seguintes chaves (exigidas pelo Frontend):
-- `brand` (Marca)
-- `name` (Veículo)
-- `engineName` (Motor)
-- `engineConfiguration` (Combustível/Complemento)
-- `startYear` / `endYear` (String ou Inteiro - o sistema converte para string automaticamente para suportar formatos como "2014 -->")
-- `images` (Lista de URLs)
-- `originalNumbers` (String separada por ` | `)
+## 2. Padronização de Retorno (Smart Mapping)
+O `BaseProvider.formatar_resultado()` é inteligente e aceita diversos nomes de chaves (sinônimos) para preencher os campos do Frontend. O desenvolvedor deve retornar um dicionário com os dados brutos; o sistema cuidará da normalização (Upper Case, limpeza Wega, extração de anos e combustíveis).
+
+| Campo Final | Chaves Aceitas no Raw Data (Sinônimos) |
+| :--- | :--- |
+| **Marca Peça** | `marca_peca`, `marca`, `provedor` |
+| **Montadora** | `brand`, `montadora`, `marca_veiculo` |
+| **Veículo** | `name`, `veiculo`, `modelo` |
+| **Versão** | `model`, `version`, `versao` |
+| **Motor** | `engineName`, `motor` |
+| **Combustível** | `fuel`, `combustivel` (Também extraído da `versao` via regex) |
+| **Anos** | `startYear` / `endYear` ou `ano_inicio` / `ano_fim` |
+| **Referências** | `originalNumbers`, `crossReferences`, `referencias` (Padrão `Marca: Código`) |
+| **Imagens** | `image`, `imageUrl`, `imagem` (Single) ou `images`, `imagens` (List) |
+| **Especificações**| `ficha_tecnica`, `specifications` (Dicionário ou Lista) |
+
+> [!TIP]
+> **Inteligência de Anos:** Se você enviar `2014 -->` no campo `startYear`, o sistema automaticamente preencherá o `ano_inicio` como `2014` e o `ano_fim` como vazio.
 
 ## 3. Registro e Ativação
 Para que o sistema reconheça o novo provedor:
