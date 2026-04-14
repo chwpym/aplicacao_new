@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { searchApi, configApi } from "../services/api";
+import { useAutomakerCache } from "./useAutomakerCache";
 import JSZip from "jszip";
-
 export const useCatalog = () => {
+  const { automakers } = useAutomakerCache();
   const [partId, setPartId] = useState("");
   const [filterText, setFilterText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -261,24 +262,21 @@ export const useCatalog = () => {
     // Sempre ordena antes de copiar, seguindo a lógica da tela
     const sortedResults = [...results].sort(compareResults);
 
+    // Ordem de campos recomendada para exibição/cópia
+    const orderedKeys = [
+      "marca", "veiculo", "modelo", "versao", "motor", "configuracao_motor", 
+      "combustivel", "posicao", "lado", "direcao", "sistema_freio", 
+      "restricao", "apenas"
+    ];
+
     if (mode === "completa") {
       const lines = sortedResults
         .map((res) => {
           const parts = [];
-          if (visibleFields.marca) parts.push(res.marca);
-          if (visibleFields.veiculo) parts.push(res.veiculo);
-          if (visibleFields.modelo) parts.push(res.modelo);
-          if (visibleFields.versao) parts.push(res.versao);
-          if (visibleFields.motor) parts.push(res.motor);
-          if (visibleFields.configuracao_motor)
-            parts.push(res.configuracao_motor);
-          if (visibleFields.combustivel) parts.push(res.combustivel);
-          if (visibleFields.posicao) parts.push(res.posicao);
-          if (visibleFields.lado) parts.push(res.lado);
-          if (visibleFields.direcao) parts.push(res.direcao);
-          if (visibleFields.sistema_freio) parts.push(res.sistema_freio);
-          if (visibleFields.restricao) parts.push(res.restricao);
-          if (visibleFields.apenas) parts.push(res.apenas);
+          orderedKeys.forEach(key => {
+            if (visibleFields[key] && res[key]) parts.push(res[key]);
+          });
+          
           if (visibleFields.ano) {
             const anoStr =
               res.ano_inicio || res.ano_fim
@@ -286,7 +284,7 @@ export const useCatalog = () => {
                 : "";
             if (anoStr) parts.push(anoStr);
           }
-          if (visibleFields.referencias) parts.push(res.referencias);
+          if (visibleFields.referencias && res.referencias) parts.push(res.referencias);
           return parts.join(" ").replace(/\s+/g, " ").trim();
         })
         .filter((line) => line.length > 0);
@@ -295,22 +293,10 @@ export const useCatalog = () => {
     } else {
       const groups: any = {};
       sortedResults.forEach((res) => {
-        const dynamicKeyParts = [];
-        if (visibleFields.marca) dynamicKeyParts.push(res.marca);
-        if (visibleFields.veiculo) dynamicKeyParts.push(res.veiculo);
-        if (visibleFields.modelo) dynamicKeyParts.push(res.modelo);
-        if (visibleFields.versao) dynamicKeyParts.push(res.versao);
-        if (visibleFields.motor) dynamicKeyParts.push(res.motor);
-        if (visibleFields.configuracao_motor)
-          dynamicKeyParts.push(res.configuracao_motor);
-        if (visibleFields.combustivel) dynamicKeyParts.push(res.combustivel);
-        if (visibleFields.posicao) dynamicKeyParts.push(res.posicao);
-        if (visibleFields.lado) dynamicKeyParts.push(res.lado);
-        if (visibleFields.direcao) dynamicKeyParts.push(res.direcao);
-        if (visibleFields.sistema_freio)
-          dynamicKeyParts.push(res.sistema_freio);
-        if (visibleFields.restricao) dynamicKeyParts.push(res.restricao);
-        if (visibleFields.apenas) dynamicKeyParts.push(res.apenas);
+        const dynamicKeyParts: any[] = [];
+        orderedKeys.forEach(key => {
+          if (visibleFields[key] && res[key]) dynamicKeyParts.push(res[key]);
+        });
 
         const key = dynamicKeyParts.join("|") || "default";
 
@@ -378,15 +364,19 @@ export const useCatalog = () => {
       // Adiciona o separador rígido '...' para o sistema receptor
       text += "\n\n...\nREFERÊNCIA DE SIMILARES :\n";
       
-      // Identifica montadoras a partir dos resultados atuais (para priorizar no topo)
-      const manufacturersInResults = new Set(
+      // Identifica montadoras conhecidas (agora usando Cache do IndexedDB + os presentes nos resultados)
+      const visibleManufacturers = new Set(
         results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
       );
 
       // Ordena marcas: ORIGINAL, OEM e Montadoras primeiro, depois alfabética
       const sortedBrands = Object.entries(uniqueReferences).sort(([brandA], [brandB]) => {
-        const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || manufacturersInResults.has(brandA);
-        const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || manufacturersInResults.has(brandB);
+        // Agora verificamos se é montadora pela lista da FIPE/IndexedDB ou se está nos resultados de hoje
+        const isMkrA = automakers.includes(brandA) || visibleManufacturers.has(brandA);
+        const isMkrB = automakers.includes(brandB) || visibleManufacturers.has(brandB);
+        
+        const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || isMkrA;
+        const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || isMkrB;
         
         if (isPriorityA && !isPriorityB) return -1;
         if (!isPriorityA && isPriorityB) return 1;

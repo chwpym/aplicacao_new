@@ -55,6 +55,7 @@ debug_analysis/
 .flaskenv
 *.db
 *.sqlite
+*.duckdb
 
 # Agent/Gemini Data
 .gemini/
