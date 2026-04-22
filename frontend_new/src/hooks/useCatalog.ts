@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { searchApi, configApi } from "../services/api";
 import { useAutomakerCache } from "./useAutomakerCache";
+import { generateUniqueReferences, copyToClipboard as performCopy } from "../utils/clipboard";
 import JSZip from "jszip";
 export const useCatalog = () => {
   const { automakers } = useAutomakerCache();
@@ -16,6 +17,7 @@ export const useCatalog = () => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [visibleFields, setVisibleFields] = useState<any>({
     marca: true,
+    codigo: false,
     veiculo: true,
     modelo: true,
     versao: true,
@@ -76,6 +78,7 @@ export const useCatalog = () => {
 
     const defaults: Record<string, string> = {
       marca: "Marca Peça",
+      codigo: "Cód. Peça",
       veiculo: "Montadora",
       modelo: "Veículo",
       versao: "Modelo",
@@ -215,184 +218,12 @@ export const useCatalog = () => {
   };
 
 
-  const formatYearShort = (year: number | string | null | undefined) => {
-    if (!year) return "";
-    const s = year.toString();
-    return s.length >= 4 ? s.substring(2) : s;
-  };
-
   const uniqueReferences = useMemo(() => {
-    const brands: Record<string, Set<string>> = {};
-    results.forEach((res) => {
-      if (res.referencias) {
-        // Quebra por múltiplos separadores: |, ,, ;, e quebra de linha
-        const refParts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/);
-        
-        refParts.forEach((part: string) => {
-          if (!part.trim()) return;
-
-          // Tenta split por ': ' (com espaço) ou ':' (sem espaço) ou ' - '
-          const pair = part.split(/\s*(?::|-)\s*/);
-          
-          if (pair.length >= 2) {
-            const brand = pair[0].trim();
-            const code = pair.slice(1).join(":").trim();
-            
-            if (brand && code) {
-              const cleanBrand = brand
-                .toUpperCase()
-                .replace(/\s+ORIGINAL$/g, "")
-                .replace(/^ORIGINAL\s+/g, "");
-
-              if (!brands[cleanBrand]) brands[cleanBrand] = new Set();
-              brands[cleanBrand].add(code);
-            }
-          }
-        });
-      }
-    });
-    return brands;
+    return generateUniqueReferences(results);
   }, [results]);
 
   const copyToClipboard = (mode: "completa" | "intermediaria" | "agrupada") => {
-    if (results.length === 0) return;
-
-    let text = "";
-
-    // Sempre ordena antes de copiar, seguindo a lógica da tela
-    const sortedResults = [...results].sort(compareResults);
-
-    // Ordem de campos recomendada para exibição/cópia
-    const orderedKeys = [
-      "marca", "veiculo", "modelo", "versao", "motor", "configuracao_motor", 
-      "combustivel", "posicao", "lado", "direcao", "sistema_freio", 
-      "restricao", "apenas"
-    ];
-
-    if (mode === "completa") {
-      const lines = sortedResults
-        .map((res) => {
-          const parts = [];
-          orderedKeys.forEach(key => {
-            if (visibleFields[key] && res[key]) parts.push(res[key]);
-          });
-          
-          if (visibleFields.ano) {
-            const anoStr =
-              res.ano_inicio || res.ano_fim
-                ? `${res.ano_inicio || ""}...${res.ano_fim || ""}`
-                : "";
-            if (anoStr) parts.push(anoStr);
-          }
-          if (visibleFields.referencias && res.referencias) parts.push(res.referencias);
-          return parts.join(" ").replace(/\s+/g, " ").trim();
-        })
-        .filter((line) => line.length > 0);
-
-      text = Array.from(new Set(lines)).join("\n");
-    } else {
-      const groups: any = {};
-      sortedResults.forEach((res) => {
-        const dynamicKeyParts: any[] = [];
-        orderedKeys.forEach(key => {
-          if (visibleFields[key] && res[key]) dynamicKeyParts.push(res[key]);
-        });
-
-        const key = dynamicKeyParts.join("|") || "default";
-
-        if (!groups[key]) {
-          groups[key] = {
-            parts: dynamicKeyParts,
-            anos: [],
-            items: [],
-          };
-        }
-        groups[key].anos.push({ start: res.ano_inicio, end: res.ano_fim });
-        groups[key].items.push(res);
-      });
-
-      // Grupos já estão ordenados porque percorremos sortedResults
-      const sortedGroups = Object.values(groups);
-
-      if (mode === "intermediaria") {
-        const lines: string[] = [];
-        sortedGroups.forEach((g: any) => {
-          const uniqueRanges = new Set<string>();
-          g.anos.forEach((a: any) => {
-            const yearRange = `${formatYearShort(a.start)}...${a.end ? formatYearShort(a.end) : ""}`;
-            uniqueRanges.add(yearRange);
-          });
-          const sortedRanges = Array.from(uniqueRanges).sort();
-          sortedRanges.forEach((range) => {
-            lines.push(
-              `${g.parts.join(" ")} ${range}`.replace(/\s+/g, " ").trim(),
-            );
-          });
-        });
-        text = lines.join("\n");
-      } else {
-        // mode === 'agrupada'
-        const lines = sortedGroups.map((g: any) => {
-          const starts = g.anos
-            .map((a: any) => a.start)
-            .filter((a: any) => a !== null && a !== undefined && a !== "");
-          const ends = g.anos
-            .map((a: any) => a.end)
-            .filter((a: any) => a !== null && a !== undefined && a !== "");
-          const minStart =
-            starts.length > 0
-              ? starts.every((s: any) => !isNaN(Number(s)))
-                ? Math.min(...starts.map(Number))
-                : starts[0]
-              : "";
-          const maxEnd =
-            ends.length > 0
-              ? ends.every((e: any) => !isNaN(Number(e)))
-                ? Math.max(...ends.map(Number))
-                : ends[ends.length - 1]
-              : "";
-          const yearRange = `${formatYearShort(minStart)}${maxEnd ? "..." + formatYearShort(maxEnd) : "..."}`;
-          return `${g.parts.join(" ")} ${yearRange}`
-            .replace(/\s+/g, " ")
-            .trim();
-        });
-        text = lines.join("\n");
-      }
-    }
-
-    if (Object.keys(uniqueReferences).length > 0) {
-      // Adiciona o separador rígido '...' para o sistema receptor
-      text += "\n\n...\nREFERÊNCIA DE SIMILARES :\n";
-      
-      // Identifica montadoras conhecidas (agora usando Cache do IndexedDB + os presentes nos resultados)
-      const visibleManufacturers = new Set(
-        results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
-      );
-
-      // Ordena marcas: ORIGINAL, OEM e Montadoras primeiro, depois alfabética
-      const sortedBrands = Object.entries(uniqueReferences).sort(([brandA], [brandB]) => {
-        // Agora verificamos se é montadora pela lista da FIPE/IndexedDB ou se está nos resultados de hoje
-        const isMkrA = automakers.includes(brandA) || visibleManufacturers.has(brandA);
-        const isMkrB = automakers.includes(brandB) || visibleManufacturers.has(brandB);
-        
-        const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || isMkrA;
-        const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || isMkrB;
-        
-        if (isPriorityA && !isPriorityB) return -1;
-        if (!isPriorityA && isPriorityB) return 1;
-        return brandA.localeCompare(brandB);
-      });
-
-      sortedBrands.forEach(([brand, codes]) => {
-        const codesList = Array.from(codes as Set<string>)
-          .sort()
-          .join(" - ");
-        // Garante formato vertical: um marca por linha
-        text += `${brand}: ${codesList}\n`;
-      });
-    }
-
-    navigator.clipboard.writeText(text.trim());
+    performCopy(mode, results, visibleFields, automakers, uniqueReferences);
   };
 
   // Lógica para processar os resultados que serão EXIBIDOS na tela

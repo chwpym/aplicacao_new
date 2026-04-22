@@ -331,6 +331,9 @@ class TSAProvider(BaseProvider):
 
                 resultados = await self._extrair_detalhes(client, produto_url)
                 if resultados:
+                    # Injeta o código da peça em todos os resultados
+                    for r in resultados:
+                        r["codigo"] = id_peca.strip().upper()
                     return resultados
 
         print(f"[TSA] Nenhum resultado encontrado para '{id_peca}'.")

@@ -155,6 +155,7 @@ class TecfilProvider(BaseProvider):
 
                             raw = {
                                 "brand": "TECFIL",
+                                "codigo": codigo_buscado,
                                 "veiculo": montadora,
                                 "modelo": modelo,
                                 "versao": desc,

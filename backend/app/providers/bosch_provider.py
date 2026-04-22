@@ -153,6 +153,7 @@ class BoschProvider(BaseProvider):
                 for v in v_json.get("vehicles", []):
                     raw = {
                         "brand": "BOSCH",
+                        "codigo": prod_num,
                         "veiculo": display_name or v.get("keyMakerId", "BOSCH"),
                         "modelo": v.get("type", ""),
                         "motor": v.get("motorType", ""),
@@ -201,6 +202,7 @@ class BoschProvider(BaseProvider):
         return self.formatar_resultado(
             {
                 "brand": "BOSCH",
+                "codigo": details.get("productNumber", ""),
                 "veiculo": "PRODUTO SEM APLICAÇÃO",
                 "modelo": details.get("name", ""),
                 "referencias": " | ".join(refs),

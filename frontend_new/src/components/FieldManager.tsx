@@ -8,6 +8,7 @@ interface FieldManagerProps {
 
 const ALL_FIELDS = [
   { key: "marca", defaultLabel: "Marca" },
+  { key: "codigo", defaultLabel: "Cód. Peça" },
   { key: "veiculo", defaultLabel: "Montadora" },
   { key: "modelo", defaultLabel: "Veículo" },
   { key: "versao", defaultLabel: "Modelo / Versão" },

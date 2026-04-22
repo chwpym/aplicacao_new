@@ -75,6 +75,10 @@ class DSProvider(BaseProvider):
                 except Exception as e:
                     print(f"[DS] Erro na busca por {cod}: {e}")
 
+        # Injeta o código da peça em todos os resultados antes de formatar
+        for r in resultados_finais:
+            if not r.get("codigo"):
+                r["codigo"] = id_peca.strip().upper()
         return [self.formatar_resultado(r) for r in resultados_finais]
 
     async def _extrair_detalhes_produto(self, client, url):

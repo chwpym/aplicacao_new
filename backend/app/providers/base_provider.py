@@ -171,6 +171,7 @@ class BaseProvider(ABC):
     def formatar_resultado(self, raw_data):
         """Padroniza os campos retornados pelos diferentes provedores."""
         from app.services.automaker_service import automaker_service
+        from app.services.normalization_service import normalization_service
         from app.utils.synonyms import TECHNICAL_BRANDS
         import re
 
@@ -178,48 +179,57 @@ class BaseProvider(ABC):
         montadora_bruta = str(raw_data.get("brand", raw_data.get("montadora", raw_data.get("marca_veiculo", "")))).upper()
         montadora_padronizada = automaker_service.padronizar(montadora_bruta)
 
-        # Trata referências (converte OEM -> ORIGINAL -> Montadora_Padronizada)
+        # Trata referências de forma segura
         referencias_brutas = raw_data.get("originalNumbers", raw_data.get("crossReferences", raw_data.get("referencias", "")))
         referencias_limpas = ""
 
         if referencias_brutas:
-            if isinstance(referencias_brutas, str):
-                parts = []
-                for chunk in referencias_brutas.split(" | "):
-                    if ":" in chunk:
-                        brand, code = chunk.split(":", 1)
-                        brand = brand.strip().upper()
-                        code = code.strip()
+            if isinstance(referencias_brutas, list):
+                referencias_brutas = " | ".join(referencias_brutas)
+                
+            try:
+                referencias_limpas = normalization_service.padronizar_referencias(referencias_brutas, montadora_padronizada)
+            except Exception as e:
+                logging.warning(f"Erro ao padronizar referencias: {e}")
+                referencias_limpas = str(referencias_brutas)
 
-                        if brand == "OEM":
-                            brand = "ORIGINAL"
+        # Dados Brutos de Motor e Modelo
+        modelo_bruto = str(raw_data.get("name", raw_data.get("veiculo", raw_data.get("modelo", "")))).upper()
+        versao_bruta = str(raw_data.get("model", raw_data.get("version", raw_data.get("versao", "")))).upper()
+        motor_bruto = str(raw_data.get("engineName", raw_data.get("motor", ""))).upper()
+        config_bruta = str(raw_data.get("engineConfiguration", raw_data.get("configuracao_motor", ""))).upper()
 
-                        # Se a marca for ORIGINAL e temos a montadora, trocamos pelo nome da montadora
-                        if brand == "ORIGINAL" and montadora_padronizada:
-                            brand = montadora_padronizada
-                        
-                        # Padroniza a montadora da referência se ela não for técnica
-                        elif brand not in TECHNICAL_BRANDS:
-                            brand = automaker_service.padronizar(brand)
+        motor_padrao = motor_bruto
+        config_padrao = config_bruta
+        modelo_padrao = modelo_bruto
+        versao_padrao = versao_bruta
 
-                        parts.append(f"{brand}: {code}")
-                    else:
-                        parts.append(chunk)
-
-                # Remove duplicadas mantendo a ordem
-                seen = set()
-                deduped = [x for x in parts if not (x in seen or seen.add(x))]
-                referencias_limpas = " | ".join(deduped)
-            else:
-                referencias_limpas = referencias_brutas
+        # Extração de motorização com Fallback Seguro
+        try:
+            texto_completo = f"{modelo_bruto} {versao_bruta} {motor_bruto} {config_bruta}"
+            m_p, c_p, _ = normalization_service.extrair_motorizacao(texto_completo)
+            
+            if m_p or c_p:
+                motor_padrao = m_p if m_p else motor_bruto
+                
+                # Limpa as informações de motorização dos campos individuais para não perder dados vitais
+                _, _, modelo_padrao = normalization_service.extrair_motorizacao(modelo_bruto)
+                _, _, versao_padrao = normalization_service.extrair_motorizacao(versao_bruta)
+                _, _, config_limpa = normalization_service.extrair_motorizacao(config_bruta)
+                
+                # Se achou combustível geral, prepende na config que sobrou
+                config_padrao = f"{c_p} {config_limpa}".strip() if c_p else config_limpa
+                
+        except Exception as e:
+            logging.warning(f"Fallback de normalizacao motor ativado: {e}")
 
         res_dict = {
             "marca": str(raw_data.get("marca_peca", raw_data.get("marca", raw_data.get("provedor", "")))).upper(),
             "veiculo": montadora_padronizada,
-            "modelo": str(raw_data.get("name", raw_data.get("veiculo", raw_data.get("modelo", "")))).upper(),
-            "versao": str(raw_data.get("model", raw_data.get("version", raw_data.get("versao", "")))).upper(),
-            "motor": str(raw_data.get("engineName", raw_data.get("motor", ""))).upper(),
-            "configuracao_motor": str(raw_data.get("engineConfiguration", raw_data.get("configuracao_motor", ""))).upper(),
+            "modelo": modelo_padrao,
+            "versao": versao_padrao,
+            "motor": motor_padrao,
+            "configuracao_motor": config_padrao,
             "sistema_freio": str(raw_data.get("brakeSystem", raw_data.get("sistema_freio", ""))).upper(),
             "combustivel": "",
         }

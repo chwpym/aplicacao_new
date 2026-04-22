@@ -35,6 +35,7 @@ Para manter a consistência com o Frontend e as **Siglas/Limpeza**, os dados dev
 | Nome na Tela   | Chave Interna | O que enviar no dicionário             |
 | :------------- | :------------ | :------------------------------------- |
 | **Marca Peça** | `brand`       | Nome do fabricante da peça (ex: Bosch) |
+| **Cód. Peça**  | `codigo`      | Código da peça no catálogo (ex: HF87A) |
 | **Montadora**  | `veiculo`     | Nome da montadora (ex: FIAT, VW)       |
 | **Veículo**    | `modelo`      | Nome do carro (ex: TORO, ONIX)         |
 | **Modelo**     | `versao`      | Especificação (ex: 1.3 GSE, CLASSIC)   |

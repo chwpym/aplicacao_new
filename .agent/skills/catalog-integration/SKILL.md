@@ -34,6 +34,7 @@ Para provedores protegidos como Authomix:
 ### Padronização de Colunas (Grid)
 Para manter o alinhamento visual no Frontend (`Home.tsx`), o dicionário de retorno em `formatar_resultado()` deve seguir estritamente:
 - **`marca`**: Nome da Marca do Produto / Provedor (*Ex: COFAP, NAKATA, PERFECT*).
+- **`codigo`**: Código específico da peça no catálogo (*Ex: HF87A, BD5602, TN3906*). Essencial para diferenciar variações de uma mesma família de peças.
 - **`veiculo`**: Nome da Montadora (*Ex: VW, FIAT, CITROEN*).
 - **`modelo`**: Nome do Veículo / Carro (*Ex: GOL, UNO, XANTIA*).
 - **`versao`**: Versão do Modelo (*Ex: 1.6 16V, GLX*).

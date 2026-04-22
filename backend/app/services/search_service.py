@@ -155,22 +155,40 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
     """
     Lógica interna para agrupar aplicações idênticas e mesclar ranges de anos.
     """
+    extra_fields = ["observacao", "posicao", "lado", "direcao", "sistema_freio", "restricao", "apenas", "referencias"]
     agrupados = {}
+    
     for app in todas_aplicacoes:
+        # Agrupamento Relaxado (ignorando configuracao_motor para a chave primária)
         key = (
-            app["marca"],
-            app["veiculo"],
-            app["modelo"],
+            app.get("marca", ""),
+            app.get("veiculo", ""),
+            app.get("modelo", ""),
             app.get("versao", ""),
-            app["motor"],
-            app["configuracao_motor"],
+            app.get("motor", ""),
         )
 
         if key not in agrupados:
-            agrupados[key] = {**app, "anos": []}
+            agrupados[key] = {**app, "anos": [], "configs": set()}
+            for f in extra_fields:
+                agrupados[key][f + "_set"] = set()
+                
+        # Popula os campos extras no set para não perder info no agrupamento
+        for f in extra_fields:
+            val = app.get(f)
+            if val:
+                if f == "referencias":
+                    for ref_part in str(val).split(" | "):
+                        if ref_part.strip():
+                            agrupados[key][f + "_set"].add(ref_part.strip())
+                else:
+                    agrupados[key][f + "_set"].add(val)
 
         if app.get("ano_inicio") or app.get("ano_fim"):
             agrupados[key]["anos"].append((app.get("ano_inicio"), app.get("ano_fim")))
+            
+        if app.get("configuracao_motor"):
+            agrupados[key]["configs"].add(app.get("configuracao_motor"))
 
     resultados_finais = []
     for key, data in agrupados.items():
@@ -178,6 +196,24 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
         data["ano_inicio"] = str(ano_ini) if ano_ini is not None else None
         data["ano_fim"] = str(ano_fim) if ano_fim is not None else None
         del data["anos"]
+        
+        # Mescla as configurações divergentes
+        configs = [c for c in data["configs"] if c]
+        data["configuracao_motor"] = " / ".join(sorted(configs)) if configs else ""
+        del data["configs"]
+        
+        # Mescla extra_fields
+        for f in extra_fields:
+            if f + "_set" in data:
+                f_items = [v for v in data[f + "_set"] if v]
+                if f_items:
+                    # Referências usa pipe padrão, o resto usa barra
+                    joiner = " | " if f == "referencias" else " / "
+                    data[f] = joiner.join(sorted(f_items))
+                else:
+                    data[f] = ""
+                del data[f + "_set"]
+            
         resultados_finais.append(data)
 
     return resultados_finais

@@ -30,6 +30,7 @@ O `BaseProvider.formatar_resultado()` é inteligente e aceita diversos nomes de 
 | Campo Final | Chaves Aceitas no Raw Data (Sinônimos) |
 | :--- | :--- |
 | **Marca Peça** | `marca_peca`, `marca`, `provedor` |
+| **Cód. Peça** | `codigo` (Código específico da peça no catálogo, ex: HF87A) |
 | **Montadora** | `brand`, `montadora`, `marca_veiculo` |
 | **Veículo** | `name`, `veiculo`, `modelo` |
 | **Versão** | `model`, `version`, `versao` |

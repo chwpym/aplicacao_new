@@ -158,6 +158,7 @@ class MteThomsonProvider(BaseProvider):
 
                     raw = {
                         "brand": "MTE-THOMSON",
+                        "codigo": part_id,
                         "veiculo": montadora,
                         "modelo": veiculo,
                         "motor": motor,
@@ -177,6 +178,7 @@ class MteThomsonProvider(BaseProvider):
                 self.formatar_resultado(
                     {
                         "brand": "MTE-THOMSON",
+                        "codigo": part_id,
                         "veiculo": "PRODUTO ENCONTRADO",
                         "modelo": nome_peca,
                         "referencias": ref_str,

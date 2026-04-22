@@ -83,6 +83,15 @@ export const DataTable: React.FC<DataTableProps> = ({
       ),
     },
     {
+      id: "codigo",
+      getHeader: () => getFieldLabel("codigo"),
+      render: (res: any) => (
+        <td className="px-4 py-2 font-mono text-xs font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+          {res.codigo || "---"}
+        </td>
+      ),
+    },
+    {
       id: "veiculo",
       getHeader: () => getFieldLabel("veiculo"),
       render: (res: any) => (
@@ -498,6 +507,11 @@ export const DataTable: React.FC<DataTableProps> = ({
                     <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
                       {res.marca}
                     </span>
+                    {visibleFields.codigo && res.codigo && (
+                      <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded">
+                        {res.codigo}
+                      </span>
+                    )}
                     <span className="text-sm font-bold text-slate-900 dark:text-white">
                       {res.veiculo}
                     </span>
