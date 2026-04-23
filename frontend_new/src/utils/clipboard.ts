@@ -111,20 +111,34 @@ export const copyToClipboard = (
     text = Array.from(new Set(lines)).join("\n");
   } else {
     const groups: any = {};
-    sortedResults.forEach((res) => {
-      const dynamicKeyParts: any[] = [];
-      orderedKeys.forEach(key => {
-        if (visibleFields[key] && res[key]) dynamicKeyParts.push(res[key]);
-      });
-      // Importante: incluir referências e observações se estiverem ativas e existirem
-      if (visibleFields.referencias && res.referencias) dynamicKeyParts.push(res.referencias);
-      if (visibleFields.observacao && res.observacao) dynamicKeyParts.push(res.observacao);
+    const baseKeysToObs = new Map<string, boolean>();
 
-      const key = dynamicKeyParts.join("|") || "default";
+    sortedResults.forEach((res) => {
+      const baseKeyParts: any[] = [];
+      const keysToUse = mode === "intermediaria" 
+        ? ["marca", "veiculo", "modelo", "versao", "motor", "configuracao_motor"]
+        : orderedKeys;
+
+      keysToUse.forEach(key => {
+        if (visibleFields[key] && res[key]) baseKeyParts.push(res[key]);
+      });
+
+      const baseKeyStr = baseKeyParts.join("|") || "default";
+      
+      const obsText = (mode === "agrupada" && visibleFields.observacao && res.observacao) ? res.observacao : "";
+      if (obsText) {
+        baseKeysToObs.set(baseKeyStr, true);
+      }
+
+      // A chave única do grupo deve incluir a observação (para não mesclar obs diferentes)
+      const key = `${baseKeyStr}|${obsText}`;
 
       if (!groups[key]) {
         groups[key] = {
-          parts: dynamicKeyParts,
+          parts: baseKeyParts, // Só a base, sem a obs
+          baseKey: baseKeyStr,
+          hasObs: !!obsText,
+          obsText: obsText,
           anos: [],
           items: [],
         };
@@ -132,6 +146,16 @@ export const copyToClipboard = (
       groups[key].anos.push({ start: res.ano_inicio, end: res.ano_fim });
       groups[key].items.push(res);
     });
+
+    // Remove redundant empty obs groups if a populated one exists for the same baseKey
+    if (mode === "agrupada") {
+      Object.keys(groups).forEach(key => {
+        const g = groups[key];
+        if (!g.hasObs && baseKeysToObs.get(g.baseKey)) {
+          delete groups[key];
+        }
+      });
+    }
 
     const sortedGroups = Object.values(groups);
 
@@ -145,8 +169,9 @@ export const copyToClipboard = (
         });
         const sortedRanges = Array.from(uniqueRanges).sort();
         sortedRanges.forEach((range) => {
+          const rangeText = range === "..." ? "" : range;
           lines.push(
-            `${g.parts.join(" ")} ${range}`.replace(/\s+/g, " ").trim(),
+            `${g.parts.join(" ")} ${rangeText}`.replace(/\s+/g, " ").trim(),
           );
         });
       });
@@ -172,10 +197,16 @@ export const copyToClipboard = (
               ? Math.max(...ends.map(Number))
               : ends[ends.length - 1]
             : "";
+            
         const yearRange = `${formatYearShort(minStart)}${maxEnd ? "..." + formatYearShort(maxEnd) : "..."}`;
-        return `${g.parts.join(" ")} ${yearRange}`
-          .replace(/\s+/g, " ")
-          .trim();
+        const rangeText = yearRange === "..." ? "" : yearRange;
+        
+        // Monta a linha: Base + Ano + Observacao
+        const finalLineParts = [...g.parts];
+        if (rangeText) finalLineParts.push(rangeText);
+        if (g.obsText) finalLineParts.push(g.obsText);
+
+        return finalLineParts.join(" ").replace(/\s+/g, " ").trim();
       });
       text = lines.join("\n");
     }

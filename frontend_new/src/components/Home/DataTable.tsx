@@ -42,7 +42,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 }) => {
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
   const [selectedFicha, setSelectedFicha] = useState<any>(null);
-  
+
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [galleryTitle, setGalleryTitle] = useState("");
@@ -61,12 +61,12 @@ export const DataTable: React.FC<DataTableProps> = ({
   };
 
   const handleOpenGallery = (res: any) => {
-    const imgs = res.imagens && res.imagens.length > 0 
-      ? res.imagens 
+    const imgs = res.imagens && res.imagens.length > 0
+      ? res.imagens
       : (res.imagem ? [res.imagem] : []);
-    
+
     if (imgs.length === 0) return;
-    
+
     setGalleryImages(imgs);
     setGalleryTitle(`${res.marca} - ${res.veiculo} ${res.modelo}`);
     setGalleryOpen(true);
@@ -236,7 +236,7 @@ export const DataTable: React.FC<DataTableProps> = ({
       getHeader: () => getFieldLabel("referencias"),
       render: (res: any) => {
         if (!res.referencias) return <td className="px-6 py-4 text-slate-300">---</td>;
-        
+
         // Parser para display: Quebra por separadores e limpa
         const parts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/).filter((p: string) => !!p.trim());
         const cleanedRefs = parts.map((p: string) => {
@@ -248,7 +248,7 @@ export const DataTable: React.FC<DataTableProps> = ({
             .replace(/\s+ORIGINAL$/g, "")
             .replace(/^ORIGINAL\s+/g, "");
           const code = p.slice(firstColonIdx + 1).trim();
-          
+
           return `${brand}: ${code}`;
         });
 
@@ -275,8 +275,8 @@ export const DataTable: React.FC<DataTableProps> = ({
               disabled={!res.imagem && (!res.imagens || res.imagens.length === 0)}
               className={`
                 p-2 rounded-lg transition-all flex items-center justify-center
-                ${(!res.imagem && (!res.imagens || res.imagens.length === 0)) 
-                  ? 'text-slate-200 cursor-not-allowed' 
+                ${(!res.imagem && (!res.imagens || res.imagens.length === 0))
+                  ? 'text-slate-200 cursor-not-allowed'
                   : 'bg-primary/5 text-primary hover:bg-primary/10 hover:scale-110 active:scale-95'}
               `}
               title="Ver Galeria de Imagens"
@@ -292,18 +292,18 @@ export const DataTable: React.FC<DataTableProps> = ({
             >
               <Zap size={18} />
             </button>
-            
+
             {/* Link Externo (Opcional se houver raw_response com link) */}
             {res.url && (
-               <a 
-                href={res.url} 
-                target="_blank" 
+              <a
+                href={res.url}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-slate-100 text-slate-500 hover:bg-slate-200 rounded-lg transition-all flex items-center justify-center"
                 title="Ver no site original"
-               >
-                 <ExternalLink size={16} />
-               </a>
+              >
+                <ExternalLink size={16} />
+              </a>
             )}
           </div>
         </td>
@@ -647,50 +647,50 @@ export const DataTable: React.FC<DataTableProps> = ({
       {displayResults.length > 0 && (
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/10">
           <div className="text-xs text-slate-500">
-             Mostrando <span className="font-bold text-slate-700 dark:text-slate-200">{paginatedResults.length}</span> de <span className="font-bold">{displayResults.length}</span> itens
+            Mostrando <span className="font-bold text-slate-700 dark:text-slate-200">{paginatedResults.length}</span> de <span className="font-bold">{displayResults.length}</span> itens
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
-             <button 
-               onClick={() => setCurrentPage(1)}
-               disabled={currentPage === 1}
-               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-               title="Primeira Página"
-             >
-               &lt;&lt;
-             </button>
-             <button 
-               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-               disabled={currentPage === 1}
-               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-             >
-               &lt; Ant
-             </button>
-             <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
-               Pág <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
-             </span>
-             <button 
-               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-               disabled={currentPage === totalPages}
-               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-             >
-               Próx &gt;
-             </button>
-             <button 
-               onClick={() => setCurrentPage(totalPages)}
-               disabled={currentPage === totalPages}
-               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-               title="Última Página"
-             >
-               &gt;&gt;
-             </button>
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              title="Primeira Página"
+            >
+              &lt;&lt;
+            </button>
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              &lt; Ant
+            </button>
+            <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+              Pág <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            >
+              Próx &gt;
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              title="Última Página"
+            >
+              &gt;&gt;
+            </button>
           </div>
         </div>
       )}
 
-      <FichaTecnicaModal 
-        isOpen={fichaModalOpen} 
-        onClose={() => setFichaModalOpen(false)} 
-        item={selectedFicha} 
+      <FichaTecnicaModal
+        isOpen={fichaModalOpen}
+        onClose={() => setFichaModalOpen(false)}
+        item={selectedFicha}
         partId={partId}
       />
 

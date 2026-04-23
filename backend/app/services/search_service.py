@@ -166,6 +166,7 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
             app.get("modelo", ""),
             app.get("versao", ""),
             app.get("motor", ""),
+            app.get("observacao", "") if app.get("provedor") == "DAYCO" else ""
         )
 
         if key not in agrupados:

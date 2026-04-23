@@ -63,4 +63,8 @@ def get_provider(config_model):
         from app.providers.tsa_provider import TSAProvider
         return TSAProvider(config)
 
+    elif config["tipo"] == "dayco":
+        from app.providers.dayco_provider import DaycoProvider
+        return DaycoProvider(config)
+
     return None

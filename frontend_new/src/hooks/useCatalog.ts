@@ -185,7 +185,7 @@ export const useCatalog = () => {
               });
             }
           } catch (err: any) {
-            if (err.name !== 'AbortError') {
+            if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
               console.error(`Erro ao buscar no provedor ${p.nome}:`, err);
             }
           }
@@ -194,8 +194,8 @@ export const useCatalog = () => {
         await Promise.allSettled(promises);
       }
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        console.log("Busca global cancelada pelo usuário.");
+      if (error.name === 'AbortError' || error.name === 'CanceledError') {
+        console.log("Busca global cancelada pelo usuário ou por nova digitação.");
       } else {
         console.error("Erro na busca:", error);
         alert("Erro ao realizar busca. Verifique se o backend está rodando.");
@@ -263,6 +263,7 @@ export const useCatalog = () => {
       if (visibleFields.sistema_freio) keyParts.push(res.sistema_freio);
       if (visibleFields.restricao) keyParts.push(res.restricao);
       if (visibleFields.apenas) keyParts.push(res.apenas);
+      if (visibleFields.observacao) keyParts.push(res.observacao);
 
       const key = keyParts.join("|") || "default";
 
