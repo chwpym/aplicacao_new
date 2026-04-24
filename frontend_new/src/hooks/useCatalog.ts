@@ -264,6 +264,10 @@ export const useCatalog = () => {
       if (visibleFields.restricao) keyParts.push(res.restricao);
       if (visibleFields.apenas) keyParts.push(res.apenas);
       if (visibleFields.observacao) keyParts.push(res.observacao);
+      if (visibleFields.ficha_tecnica && res.ficha_tecnica) {
+        // Serializa a ficha técnica para a chave
+        keyParts.push(JSON.stringify(res.ficha_tecnica));
+      }
 
       const key = keyParts.join("|") || "default";
 

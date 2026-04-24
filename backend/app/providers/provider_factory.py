@@ -67,4 +67,8 @@ def get_provider(config_model):
         from app.providers.dayco_provider import DaycoProvider
         return DaycoProvider(config)
 
+    elif config["tipo"] == "hipper_freios":
+        from app.providers.hipperfreios_provider import HipperFreiosProvider
+        return HipperFreiosProvider(config)
+
     return None

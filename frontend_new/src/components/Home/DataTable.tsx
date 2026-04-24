@@ -264,6 +264,27 @@ export const DataTable: React.FC<DataTableProps> = ({
       },
     },
     {
+      id: "ficha_tecnica",
+      getHeader: () => getFieldLabel("ficha_tecnica"),
+      render: (res: any) => {
+        if (!res.ficha_tecnica || Object.keys(res.ficha_tecnica).length === 0) 
+          return <td className="px-6 py-4 text-slate-300">---</td>;
+
+        return (
+          <td className="px-4 py-4 min-w-[180px]">
+            <div className="flex flex-col gap-1">
+              {Object.entries(res.ficha_tecnica).map(([label, value]: [string, any], idx: number) => (
+                <div key={idx} className="flex items-center gap-1.5 text-[10px] leading-tight">
+                  <span className="font-bold text-slate-500 uppercase shrink-0">{label}:</span>
+                  <span className="text-primary font-medium uppercase">{String(value)}</span>
+                </div>
+              ))}
+            </div>
+          </td>
+        );
+      },
+    },
+    {
       id: "acoes",
       getHeader: () => "Ações",
       render: (res: any) => (
@@ -608,6 +629,21 @@ export const DataTable: React.FC<DataTableProps> = ({
                     <span className="text-primary font-black uppercase text-[11px]">
                       ★ {res.apenas}
                     </span>
+                  </div>
+                )}
+                {visibleFields.ficha_tecnica && res.ficha_tecnica && (
+                  <div className="col-span-2 space-y-1 mt-1 border-t border-slate-50 dark:border-slate-800 pt-1">
+                    <span className="font-bold text-slate-400 uppercase text-[9px] block">
+                      {getFieldLabel("ficha_tecnica")}:
+                    </span>
+                    <div className="grid grid-cols-2 gap-1">
+                      {Object.entries(res.ficha_tecnica).map(([label, value]: [string, any], idx: number) => (
+                        <div key={idx} className="flex items-center gap-1 uppercase">
+                          <span className="text-slate-400 font-bold shrink-0">{label}:</span>
+                          <span className="text-primary font-medium">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {visibleFields.observacao && res.observacao && (

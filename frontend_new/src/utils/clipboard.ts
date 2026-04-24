@@ -266,5 +266,17 @@ export const copyToClipboard = (
     });
   }
 
+  // Bloco de Medidas Técnicas (Específico Hipper Freios)
+  const hipperResults = results.filter(r => r.provedor === "HIPPER FREIOS" && r.ficha_tecnica);
+  if (hipperResults.length > 0) {
+    const ficha = hipperResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\nMEDIDAS TÉCNICAS (HIPPER FREIOS):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        text += `${nome}: ${valor}\n`;
+      });
+    }
+  }
+
   navigator.clipboard.writeText(text.trim());
 };

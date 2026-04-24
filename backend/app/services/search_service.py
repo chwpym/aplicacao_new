@@ -155,18 +155,18 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
     """
     Lógica interna para agrupar aplicações idênticas e mesclar ranges de anos.
     """
-    extra_fields = ["observacao", "posicao", "lado", "direcao", "sistema_freio", "restricao", "apenas", "referencias"]
+    extra_fields = ["observacao", "posicao", "lado", "direcao", "sistema_freio", "restricao", "apenas", "referencias", "combustivel"]
     agrupados = {}
     
     for app in todas_aplicacoes:
         # Agrupamento Relaxado (ignorando configuracao_motor para a chave primária)
         key = (
-            app.get("marca", ""),
-            app.get("veiculo", ""),
-            app.get("modelo", ""),
-            app.get("versao", ""),
-            app.get("motor", ""),
-            app.get("observacao", "") if app.get("provedor") == "DAYCO" else ""
+            str(app.get("marca", "")),
+            str(app.get("veiculo", "")),
+            str(app.get("modelo", "")),
+            str(app.get("versao", "")),
+            str(app.get("motor", "")),
+            str(app.get("observacao", "")) if app.get("provedor") == "DAYCO" else ""
         )
 
         if key not in agrupados:

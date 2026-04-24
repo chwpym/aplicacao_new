@@ -69,26 +69,43 @@ class BaseProvider(ABC):
             return "", ""
         import re
         
-        # Detectar se o texto indica "em diante" ou continuidade
         text_upper = str(ano_str).upper()
-        # "2016 -->" ou "2016 ..." ou "2016 DIANTE"
-        is_onwards = any(x in text_upper for x in ["-->", "...", "DIANTE", "ONWARDS", " ON", "..", "-->"])
+        is_onwards = any(x in text_upper for x in ["-->", "...", "DIANTE", "ONWARDS", " ON", "..", ">"])
         
-        anos = re.findall(r"\b\d{2,4}\b", str(ano_str))
-
+        # Tenta capturar anos em formatos como 10/2000, 01/03 ou apenas 2005
+        # Regex procura por grupos de dígitos que podem estar precedidos por /
+        matches = re.findall(r"(?:/)?(\d{2,4})\b", str(ano_str))
+        
         def normalizar_ano(a):
+            a = str(a).strip()
             if len(a) == 2:
                 val = int(a)
                 return str(2000 + val if val <= 40 else 1900 + val)
             return a
 
-        if not anos:
+        if not matches:
             return str(ano_str), ""
 
-        ano_ini = normalizar_ano(anos[0])
-        # Se houver segundo ano, usa ele. Se for "em diante", deixa vazio (o formatar_resultado cuidará).
-        ano_fim = normalizar_ano(anos[1]) if len(anos) > 1 else ""
+        # Se tiver formato MM/AAAA, o ano é o segundo grupo ou o grupo mais longo
+        # Vamos filtrar para pegar apenas o que parece ano (2 ou 4 dígitos, ignorando meses < 13 se houver ambiguidade)
+        anos_validos = []
+        for m in matches:
+            if len(m) == 4:
+                anos_validos.append(m)
+            elif len(m) == 2 and (not anos_validos or int(m) > 12): # Heurística simples
+                anos_validos.append(normalizar_ano(m))
+
+        if not anos_validos:
+            # Fallback para o primeiro match se nada for ideal
+            ano_ini = normalizar_ano(matches[0])
+            ano_fim = normalizar_ano(matches[1]) if len(matches) > 1 else ""
+        else:
+            ano_ini = anos_validos[0]
+            ano_fim = anos_validos[1] if len(anos_validos) > 1 else ""
         
+        if is_onwards:
+            ano_fim = ""
+            
         return ano_ini, ano_fim
 
     def extrair_combustivel(self, texto: str) -> str:
@@ -114,114 +131,74 @@ class BaseProvider(ABC):
         return ""
 
     def limpar_texto_wega(self, texto: str) -> str:
-        """Remove caracteres de controle ou codificação quebrada (como os da Wega)."""
+        """Remove caracteres de controle ou codificação quebrada."""
         if not texto: return ""
-        # Remove caracteres ASCII de controle e o específico que o usuário reportou
         import re
-        # Substitui padrões comuns de erro de encoding da Wega
-        t = str(texto).replace("\ufffd", "À") # Tenta converter o placeholder comum
-        # Limpa espaços duplos
+        t = str(texto).replace("\ufffd", "À")
         t = re.sub(r'\s+', ' ', t).strip()
         return t
 
     def parse_specifications(self, specifications: any) -> dict:
-        """
-        Parser universal para transformar diferentes formatos de especificações
-        em um dicionário plano { "Rótulo": "Valor" }.
-        Suporta: Lista de objetos (Fraga), Dicionários e Listas simples.
-        """
-        if not specifications:
-            return {}
-
+        """Parser universal para transformar especificações em dicionário plano UPPER CASE."""
+        if not specifications: return {}
         ficha = {}
-
-        # Caso 1: Lista de Dicionários (Padrão Fraga/GraphQL)
         if isinstance(specifications, list):
             for spec in specifications:
                 if isinstance(spec, dict):
-                    # Fraga usa 'description' e 'value'
                     desc = spec.get("description") or spec.get("label") or spec.get("name")
                     val = spec.get("value")
                     if desc and val:
-                        # Limpeza básica
-                        label = str(desc).strip()
-                        # Capitalização amigável (ex: "PESO BRUTO" -> "Peso Bruto")
-                        if label.isupper() and len(label) > 3:
-                            label = label.title()
-                        
-                        # Se houver categoria, podemos anexar se for útil, 
-                        # mas por enquanto vamos manter limpo
-                        ficha[label] = str(val).strip()
-                elif isinstance(spec, str) and ":" in spec:
-                    # Caso venha como "Chave: Valor"
-                    parts = spec.split(":", 1)
-                    ficha[parts[0].strip()] = parts[1].strip()
-
-        # Caso 2: Dicionário Direto (Padrão REST/Scrapers internos)
+                        ficha[str(desc).strip().upper()] = str(val).strip().upper()
         elif isinstance(specifications, dict):
             for k, v in specifications.items():
                 if k and v:
-                    label = str(k).strip()
-                    if label.isupper() and len(label) > 3:
-                        label = label.title()
-                    ficha[label] = str(v).strip()
-
+                    ficha[str(k).strip().upper()] = str(v).strip().upper()
         return ficha
 
     def formatar_resultado(self, raw_data):
-        """Padroniza os campos retornados pelos diferentes provedores."""
+        """Padroniza os campos seguindo a SKILL: veiculo=Montadora, modelo=Carro, versao=Modelo."""
         from app.services.automaker_service import automaker_service
         from app.services.normalization_service import normalization_service
-        from app.utils.synonyms import TECHNICAL_BRANDS
-        import re
+        
+        # 1. Identidade (veiculo=Montadora, modelo=Carro, versao=Modelo)
+        montadora_bruta = str(raw_data.get("veiculo", raw_data.get("montadora", ""))).upper()
+        modelo_bruto = str(raw_data.get("modelo", raw_data.get("model", ""))).upper()
+        versao_bruta = str(raw_data.get("versao", raw_data.get("version", ""))).upper()
 
-        # Identifica a montadora primeiro para aplicar nas referências se necessário
-        montadora_bruta = str(raw_data.get("brand", raw_data.get("montadora", raw_data.get("marca_veiculo", "")))).upper()
+        # Normalização de Montadora
         montadora_padronizada = automaker_service.padronizar(montadora_bruta)
 
-        # Trata referências de forma segura
-        referencias_brutas = raw_data.get("originalNumbers", raw_data.get("crossReferences", raw_data.get("referencias", "")))
+        # 2. Referências
+        referencias_brutas = raw_data.get("referencias", raw_data.get("originalNumbers", raw_data.get("crossReferences", "")))
         referencias_limpas = ""
-
         if referencias_brutas:
             if isinstance(referencias_brutas, list):
                 referencias_brutas = " | ".join(referencias_brutas)
-                
             try:
                 referencias_limpas = normalization_service.padronizar_referencias(referencias_brutas, montadora_padronizada)
-            except Exception as e:
-                logging.warning(f"Erro ao padronizar referencias: {e}")
+            except:
                 referencias_limpas = str(referencias_brutas)
 
-        # Dados Brutos de Motor e Modelo
-        modelo_bruto = str(raw_data.get("name", raw_data.get("veiculo", raw_data.get("modelo", "")))).upper()
-        versao_bruta = str(raw_data.get("model", raw_data.get("version", raw_data.get("versao", "")))).upper()
-        motor_bruto = str(raw_data.get("engineName", raw_data.get("motor", ""))).upper()
-        config_bruta = str(raw_data.get("engineConfiguration", raw_data.get("configuracao_motor", ""))).upper()
+        # 3. Motorização
+        motor_bruto = str(raw_data.get("motor", "")).upper()
+        config_bruta = str(raw_data.get("configuracao_motor", "")).upper()
 
         motor_padrao = motor_bruto
         config_padrao = config_bruta
         modelo_padrao = modelo_bruto
         versao_padrao = versao_bruta
 
-        # Extração de motorização com Fallback Seguro
         try:
             texto_completo = f"{modelo_bruto} {versao_bruta} {motor_bruto} {config_bruta}"
             m_p, c_p, _ = normalization_service.extrair_motorizacao(texto_completo)
-            
             if m_p or c_p:
                 motor_padrao = m_p if m_p else motor_bruto
-                
-                # Limpa as informações de motorização dos campos individuais para não perder dados vitais
                 _, _, modelo_padrao = normalization_service.extrair_motorizacao(modelo_bruto)
                 _, _, versao_padrao = normalization_service.extrair_motorizacao(versao_bruta)
                 _, _, config_limpa = normalization_service.extrair_motorizacao(config_bruta)
-                
-                # Se achou combustível geral, prepende na config que sobrou
                 config_padrao = f"{c_p} {config_limpa}".strip() if c_p else config_limpa
-                
-        except Exception as e:
-            logging.warning(f"Fallback de normalizacao motor ativado: {e}")
+        except:
+            pass
 
         res_dict = {
             "marca": str(raw_data.get("marca_peca", raw_data.get("marca", raw_data.get("provedor", "")))).upper(),
@@ -234,72 +211,41 @@ class BaseProvider(ABC):
             "combustivel": "",
         }
 
-        # Extração de Anos Otimizada
-        start_f = raw_data.get("startYear", raw_data.get("ano_inicio"))
-        end_f = raw_data.get("endYear", raw_data.get("ano_fim"))
-        
-        # Se start e end apontam pro mesmo campo (ex: Wega), extraímos ambos de uma vez
-        y_ini, y_fim = self.extrair_anos(start_f)
-        
-        # Se o fim veio vazio e temos um campo de fim diferente, tentamos buscar dele
-        if not y_fim and end_f and end_f != start_f:
-            y_fim, _ = self.extrair_anos(end_f)
-            
-        # Se for "em diante" (vazio) mas o campo original tinha marcadores, garantimos que y_fim é ""
-        # (A lógica de fallback no UI já cuida de mostrar "...")
-        
+        # 4. Anos
+        y_ini, y_fim = self.extrair_anos(raw_data.get("ano_inicio", raw_data.get("startYear", "")))
+        if not y_fim:
+            y_fim, _ = self.extrair_anos(raw_data.get("ano_fim", raw_data.get("endYear", "")))
         res_dict["ano_inicio"] = y_ini
         res_dict["ano_fim"] = y_fim
-        # Inteligência de Combustível (Busca agressiva em todas as fontes)
-        fontes_combustivel = [
-            raw_data.get("fuel"), 
-            raw_data.get("combustivel"), 
-            res_dict.get("versao"), 
-            res_dict.get("modelo"),
-            raw_data.get("description")
-        ]
-        
-        fuel_val = ""
-        for fonte in fontes_combustivel:
-            if fonte:
-                extracted = self.extrair_combustivel(str(fonte))
-                if extracted:
-                    fuel_val = extracted
-                    break
-        
-        res_dict["combustivel"] = fuel_val or ""
-        
-        # DEBUG - Remover após correção
-        if "WEGA" in str(res_dict.get("marca", "")).upper() or "WEGA" in str(raw_data.get("provedor", "")).upper():
-            print(f"\n[DEBUG WEGA] Modelo: {res_dict['modelo']} | Combustivel Extraído: '{res_dict['combustivel']}'")
-            print(f"[DEBUG WEGA] Fontes verificadas: {fontes_combustivel}\n")
 
-        # Limpeza Final de Textos (Específico Wega + Upper Geral)
+        # 5. Combustível (Agressivo)
+        fuel_val = self.extrair_combustivel(f"{versao_bruta} {modelo_bruto} {raw_data.get('fuel', '')}")
+        res_dict["combustivel"] = fuel_val or ""
+
+        # 6. Limpeza e Campos Extras
         for key in ["modelo", "versao", "veiculo", "observacao"]:
             if key in res_dict:
-                cleaned = self.limpar_texto_wega(res_dict[key])
-                res_dict[key] = cleaned.upper()
+                res_dict[key] = self.limpar_texto_wega(res_dict[key]).upper()
 
         res_dict.update({
-            "observacao": str(raw_data.get("note", raw_data.get("observacao", ""))).upper(),
-            "apenas": str(raw_data.get("only", raw_data.get("apenas", ""))).upper(),
-            "restricao": str(raw_data.get("restriction", raw_data.get("restricao", ""))).upper(),
-            "posicao": str(raw_data.get("position", raw_data.get("posicao", ""))).upper(),
-            "lado": str(raw_data.get("side", raw_data.get("lado", ""))).upper(),
-            "direcao": str(raw_data.get("steering", raw_data.get("direcao", ""))).upper(),
-            "imagem": raw_data.get("image", raw_data.get("imageUrl", raw_data.get("imagem", ""))),
-            "imagens": raw_data.get("images", raw_data.get("imagens", [])),
+            "observacao": str(raw_data.get("observacao", raw_data.get("note", ""))).upper(),
+            "apenas": str(raw_data.get("apenas", raw_data.get("only", ""))).upper(),
+            "restricao": str(raw_data.get("restricao", raw_data.get("restriction", ""))).upper(),
+            "posicao": str(raw_data.get("posicao", raw_data.get("position", ""))).upper(),
+            "lado": str(raw_data.get("lado", raw_data.get("side", ""))).upper(),
+            "direcao": str(raw_data.get("direcao", raw_data.get("steering", ""))).upper(),
+            "imagem": raw_data.get("imagem", raw_data.get("image", raw_data.get("imageUrl", ""))),
+            "imagens": raw_data.get("imagens", raw_data.get("images", [])),
             "referencias": referencias_limpas,
             "ficha_tecnica": self.parse_specifications(raw_data.get("ficha_tecnica") or raw_data.get("specifications")),
-            "provider_id": raw_data.get("provider_id"),
-            "provedor": raw_data.get("provedor"),
+            "provider_id": self.config.get("id"),
+            "provedor": self.config.get("nome"),
             "codigo": raw_data.get("codigo"),
         })
 
-        # Validação Silenciosa
         try:
             PecaSchema(**res_dict)
         except Exception as e:
-            logging.warning(f"Integridade de dados comprometida: {e}")
+            logging.warning(f"Erro Schema: {e}")
 
         return res_dict

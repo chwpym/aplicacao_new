@@ -36,21 +36,16 @@ class TecfilProvider(BaseProvider):
             "Motocicletas": "resultadoMotocicletas.xhtml",
             "Máquinas e Equipamentos": "resultadoMaquinasEquipamentos.xhtml",
             "Marítima": "resultadoMaritima.xhtml",
+            "Conversões": "resultadoConversoes.xhtml",
         }
 
         try:
-            # 1. Start Session & POST
+            # 1. Inicia Sessão e faz o POST de busca
             res_index = await self.client.get(f"{self.base_url}/index.xhtml")
             soup_index = BeautifulSoup(res_index.text, "html.parser")
 
-            form_index = soup_index.find("form", id="j_idt94") or soup_index.find(
-                "form"
-            )
-            vs_input = (
-                form_index.find("input", {"name": "javax.faces.ViewState"})
-                if form_index
-                else None
-            )
+            form_index = soup_index.find("form", id="j_idt94") or soup_index.find("form")
+            vs_input = form_index.find("input", {"name": "javax.faces.ViewState"}) if form_index else None
             view_state_index = vs_input["value"] if vs_input else ""
 
             data_index = {
@@ -59,43 +54,59 @@ class TecfilProvider(BaseProvider):
                 "j_idt94:botaoTermoConsulta1": "Search",
                 "javax.faces.ViewState": view_state_index,
             }
-            res_search = await self.client.post(
-                f"{self.base_url}/index.xhtml", data=data_index
-            )
+            res_search = await self.client.post(f"{self.base_url}/index.xhtml", data=data_index)
 
-            # 2. Get Categories to know which endpoints to visit
+            # 2. Identifica quais categorias têm resultados (incluindo Conversões)
             soup = BeautifulSoup(res_search.text, "html.parser")
             buttons = soup.find_all("input", type="submit")
             categories_to_fetch = []
+            referencias_encontradas = []
 
             for btn in buttons:
                 val = btn.get("value", "")
                 match = re.search(r"Total Resultados\s*\[\s*(\d+)\s*\]", val)
                 if match and int(match.group(1)) > 0:
                     row = btn.find_parent("div", class_="row")
-                    label = (
-                        row.find("label").text.strip().replace(":", "")
-                        if row and row.find("label")
-                        else ""
-                    )
+                    label = row.find("label").text.strip().replace(":", "") if row and row.find("label") else ""
 
                     if label in endpoints_map:
-                        categories_to_fetch.append(
-                            {"label": label, "endpoint": endpoints_map[label]}
-                        )
+                        categories_to_fetch.append({"label": label, "endpoint": endpoints_map[label]})
 
-            print(
-                f"[TECFIL] Categorias ativas para {codigo_buscado}: {[c['label'] for c in categories_to_fetch]}"
-            )
+            # 3. Primeiro, capturamos as Conversões (Similares) para anexar aos veículos depois
+            conv_cat = next((c for c in categories_to_fetch if c["label"] == "Conversões"), None)
+            if conv_cat:
+                print(f"[TECFIL] Extraindo Conversões para {codigo_buscado}...")
+                res_conv = await self.client.get(f"{self.base_url}/{conv_cat['endpoint']}?search-term={codigo_buscado}")
+                if res_conv.status_code == 200:
+                    soup_conv = BeautifulSoup(res_conv.text, "html.parser")
+                    # Tabela de conversão geralmente tem: Marca | Código
+                    trows_conv = soup_conv.find_all("tr", class_=lambda c: c and "ui-widget-content" in c)
+                    for r in trows_conv:
+                        cells = r.find_all("td")
+                        if len(cells) >= 3:
+                            marca_ref = cells[0].text.strip().upper()
+                            codigo_similar = cells[2].text.strip().upper()
+                            
+                            # Se o similar for igual ao buscado, ignoramos (evita TECFIL: ACP903)
+                            if codigo_similar == codigo_buscado.upper():
+                                continue
+
+                            if marca_ref and codigo_similar:
+                                referencias_encontradas.append(f"{marca_ref}: {codigo_similar}")
+                
+                # Remove conversões da lista de categorias de veículos para não tentar processar como carro
+                categories_to_fetch = [c for c in categories_to_fetch if c["label"] != "Conversões"]
+
+            referencias_str = " | ".join(referencias_encontradas)
 
             if not categories_to_fetch:
+                # Se não tem veículos mas tem conversões, retornamos um item genérico? 
+                # Melhor não, para não sujar a busca global se não houver aplicação.
                 return []
 
-            # 3. Handle data extraction using pure HTTP and overriding PrimeFaces pagination limits
+            # 4. Extração das Aplicações (Veículos)
             for cat in categories_to_fetch:
-                print(
-                    f"[TECFIL] Extraindo {cat['label']} via POST Pagination Override..."
-                )
+                print(f"[TECFIL] Extraindo {cat['label']} para {codigo_buscado}...")
 
                 # Fetch first page to grab ViewState and set session context
                 res_cat = await self.client.get(
@@ -142,6 +153,18 @@ class TecfilProvider(BaseProvider):
                     for r in trows:
                         cells = r.find_all("td")
                         if len(cells) >= 7:
+                            # Captura de todos os códigos de peças na linha para validação
+                            codigos_na_linha = [c.text.strip().upper() for c in cells[7:]]
+                            match_found = False
+                            for cod in codigos_na_linha:
+                                if codigo_buscado in cod or cod in codigo_buscado:
+                                    match_found = True
+                                    break
+                            
+                            # Se o código buscado não está em nenhuma coluna de peças, ignoramos a linha
+                            if not match_found:
+                                continue
+
                             montadora = cells[0].text.strip()
                             modelo = cells[1].text.strip()
                             motor = cells[2].text.strip()
@@ -154,17 +177,17 @@ class TecfilProvider(BaseProvider):
                             imagem_url = f"https://www.tecfil.com.br/imagens/tecfil/{codigo_buscado}A.jpg"
 
                             raw = {
-                                "brand": "TECFIL",
-                                "codigo": codigo_buscado,
-                                "veiculo": montadora,
-                                "modelo": modelo,
-                                "versao": desc,
+                                "veiculo": montadora,  # Base espera Montadora aqui
+                                "modelo": modelo,     # Base espera Carro aqui
+                                "versao": desc,       # Base espera Versão aqui
                                 "motor": motor,
                                 "configuracao_motor": config_motor,
                                 "ano_inicio": ano_ini,
                                 "ano_fim": ano_fim,
                                 "observacao": observacao,
                                 "imagem": imagem_url,
+                                "codigo": codigo_buscado,
+                                "referencias": referencias_str
                             }
                             resultados.append(self.formatar_resultado(raw))
 

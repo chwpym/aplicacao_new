@@ -217,24 +217,56 @@ class GraphQLProvider(BaseProvider):
             if val.upper() in ["NONE", "NULL", "AUTH_NOT_AUTHORIZED"]: return ""
             return val.upper()
 
-        # Preparamos os dados para o formatador base
-        raw_data = vehicle.copy()
+        # 1. Mapeamento para o padrão BaseProvider (veiculo=Montadora, modelo=Carro, versao=Modelo)
+        raw_data = {
+            "veiculo": vehicle.get("brand"),  # Montadora
+            "modelo": vehicle.get("name"),    # Carro
+            "versao": vehicle.get("model"),   # Versão
+            **vehicle
+        }
         raw_data["provedor"] = self.config.get("nome", "PROVEDOR").upper()
         
+        # 2. Lógica Técnica Específica ZF/Fraga: 
+        # Movemos o 'engineName' (AP 1600) para configuracao_motor para liberar o Motor para a cilindrada
+        raw_data["motor"] = vehicle.get("engineName")
+        raw_data["configuracao_motor"] = vehicle.get("engineConfiguration")
+
         if product_data:
             raw_data["specifications"] = product_data.get("specifications")
-            raw_data["ficha_tecnica"] = {
-                "Descrição Comercial": product_data.get("applicationDescription"),
-                "Categoria": product_data.get("productGroup", {}).get("name")
-            }
-            # Unifica especificações se existirem
-            parsed_specs = self.parse_specifications(product_data.get("specifications"))
-            raw_data["ficha_tecnica"].update(parsed_specs)
+            
+            # Descrição comercial vai para observação se não houver uma específica do veículo
+            if not raw_data.get("restriction") and not raw_data.get("only"):
+                raw_data["observacao"] = product_data.get("applicationDescription")
 
-        # Chama o formatador base que agora lida corretamente com brand, name e model
+            # Ficha Técnica
+            parsed_specs = self.parse_specifications(product_data.get("specifications"))
+            raw_data["ficha_tecnica"] = {
+                "DESCRIÇÃO COMERCIAL": product_data.get("applicationDescription"),
+                "CATEGORIA": product_data.get("productGroup", {}).get("name"),
+                **parsed_specs
+            }
+
+            # Extração de campos que o Fraga esconde nas especificações
+            if "POSIÇÃO" in parsed_specs: raw_data["posicao"] = parsed_specs["POSIÇÃO"]
+            if "LADO" in parsed_specs: raw_data["lado"] = parsed_specs["LADO"]
+            if "DIREÇÃO" in parsed_specs: raw_data["direcao"] = parsed_specs["DIREÇÃO"]
+
+        # 3. Chama o formatador base (A BASE É SAGRADA)
         res = super().formatar_resultado(raw_data)
         
-        # O Combustível ganha tratamento especial por ser coluna individual
-        res["combustivel"] = safe_label(vehicle.get("fuelType"))
+        # 4. Ajuste Final de Colunas (Motorização ZF Style)
+        # Queremos: MOTOR (1.6 8V), CONFIG (AP 1600), COMBUSTIVEL (FLEX SOHC L4)
+        from app.services.normalization_service import normalization_service
+        
+        m_p, c_p, _ = normalization_service.extrair_motorizacao(f"{vehicle.get('engineName')} {vehicle.get('engineConfiguration')}")
+        _, _, nome_motor = normalization_service.extrair_motorizacao(str(vehicle.get("engineName", "")))
+        _, _, config_detalhada = normalization_service.extrair_motorizacao(str(vehicle.get("engineConfiguration", "")))
+
+        res["motor"] = m_p or str(vehicle.get("engineName", ""))
+        res["configuracao_motor"] = nome_motor
+        
+        # Combustível recebe o que sobrou + fuelType oficial
+        fuel_oficial = safe_label(vehicle.get("fuelType"))
+        res["combustivel"] = f"{fuel_oficial} {c_p} {config_detalhada}".strip().upper()
 
         return res
