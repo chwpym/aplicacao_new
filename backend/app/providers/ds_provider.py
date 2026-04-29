@@ -144,15 +144,17 @@ class DSProvider(BaseProvider):
                 fuel_detected = ""
                 config_motor = val_complemento
                 
-                # Lista de tipos conhecidos de combustível
-                tipos_combustivel = ["FLEX", "GASOLINA", "ALCOOL", "DIESEL", "GNV", "TETRAFUEL"]
+                # Usamos a lista centralizada do NormalizationService para evitar divergências
+                from app.services.normalization_service import normalization_service
+                tipos_combustivel = [c.upper() for c in normalization_service.combustiveis]
                 
+                val_upper = val_complemento.upper()
                 # Se o campo for EXATAMENTE um combustível, movemos para fuel e limpamos o motor
-                if val_complemento.upper() in tipos_combustivel:
+                if val_upper in tipos_combustivel:
                     fuel_detected = val_complemento
                     config_motor = ""
                 # Se contiver o combustível mas tiver algo mais (ex: "FLEX 16V"), mantemos no motor e deixamos o motor de IA extrair
-                elif any(c in val_complemento.upper() for c in tipos_combustivel):
+                elif any(c in val_upper for c in tipos_combustivel):
                     fuel_detected = val_complemento
 
                 res = {
@@ -180,14 +182,10 @@ class DSProvider(BaseProvider):
 
     def formatar_resultado(self, raw_data: dict) -> dict:
         """Padronização final usando a inteligência do BaseProvider."""
-        base = super().formatar_resultado(raw_data)
-        base["marca"] = "DS"
-        base["veiculo"] = str(raw_data.get("brand", "")).upper()
+        # Deixamos o BaseProvider fazer a mágica (Master Catalog, Normalização de Motor, etc.)
+        res = super().formatar_resultado(raw_data)
         
-        modelo_bruto = str(raw_data.get("name", "")).upper()
-        base["modelo"] = modelo_bruto
-        
-        if base.get("versao") == modelo_bruto:
-            base["versao"] = ""
+        # Ajuste fino pós-processamento: se o provedor informou marca DS, garantimos que não seja perdida
+        res["marca"] = "DS"
             
-        return base
+        return res

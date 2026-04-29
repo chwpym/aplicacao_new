@@ -15,7 +15,7 @@ class DaycoProvider(BaseProvider):
 
     async def _post(self, endpoint: str, data: dict, client: httpx.AsyncClient):
         payload = {
-            "area": "area2",
+            "area": "area2", # Voltando para area2 conforme log do usuário (América Latina)
             "sito": "car;moto",
             "lingua": "pt_pt",
             "richiesta": endpoint,
@@ -28,6 +28,37 @@ class DaycoProvider(BaseProvider):
         except Exception as e:
             print(f"[{self.config.get('nome', 'DAYCO')}] Erro na requisição {endpoint}: {e}")
         return {}
+
+    async def get_details(self, codigo_peca: str) -> dict:
+        """
+        Busca detalhes técnicos via ProdottoDettaglio.
+        """
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            data = await self._post("ProdottoDettaglio", {"filter": f"P7CODICE='{codigo_peca.upper()}'"}, client)
+            results = data.get("results", [])
+            if not results:
+                return {"ficha_tecnica": {}, "imagens": []}
+            
+            detalhe = results[0]
+            ficha = {}
+            
+            # Mapeamento de campos técnicos do ProdottoDettaglio
+            if detalhe.get("Dimensioni"): ficha["Dimensões"] = detalhe.get("Dimensioni")
+            if detalhe.get("Funzione"): ficha["Função"] = detalhe.get("Funzione")
+            if detalhe.get("Note"): ficha["Notas Técnicas"] = detalhe.get("Note")
+            if detalhe.get("ApplicazioneProdotto"): ficha["Aplicação"] = detalhe.get("ApplicazioneProdotto")
+            if detalhe.get("DescrizioneProdotto"): ficha["Descrição"] = detalhe.get("DescrizioneProdotto")
+
+            # Imagem
+            imagens = []
+            img = detalhe.get("ImmagineCalc")
+            if img and img != "noimage.png":
+                imagens.append(f"https://www.dayco.com/resources/dayco/images/calc/{img}")
+
+            return {
+                "ficha_tecnica": ficha,
+                "imagens": imagens
+            }
 
     async def buscar(self, id_peca: str) -> list[dict]:
         id_peca = id_peca.upper().strip()
@@ -155,8 +186,8 @@ class DaycoProvider(BaseProvider):
         dados_base = {
             "provedor": self.config.get("nome", "DAYCO"),
             "codigo": produto.get("Title", ""),
-            "marca_veiculo": montadora,
-            "veiculo": modelo,
+            "veiculo": montadora,
+            "modelo": modelo,
             "versao": versao,
             "motor": motor_completo,
             "ano_inicio": ano_inicio,

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 from ..schemas.peca import PecaSchema
+from app.services.logging_service import logger
 
 class BaseProvider(ABC):
     @abstractmethod
@@ -160,13 +161,21 @@ class BaseProvider(ABC):
         from app.services.automaker_service import automaker_service
         from app.services.normalization_service import normalization_service
         
-        # 1. Identidade (veiculo=Montadora, modelo=Carro, versao=Modelo)
-        montadora_bruta = str(raw_data.get("veiculo", raw_data.get("montadora", ""))).upper()
-        modelo_bruto = str(raw_data.get("modelo", raw_data.get("model", ""))).upper()
+        # 1. Identidade (Master Catalog / FIPE Validation)
+        montadora_bruta = str(raw_data.get("montadora", raw_data.get("veiculo", raw_data.get("brand", "")))).upper()
+        modelo_bruto = str(raw_data.get("modelo", raw_data.get("model", raw_data.get("name", "")))).upper()
         versao_bruta = str(raw_data.get("versao", raw_data.get("version", ""))).upper()
 
-        # Normalização de Montadora
-        montadora_padronizada = automaker_service.padronizar(montadora_bruta)
+        logger.info("NORMALIZATION", f"Processando: {montadora_bruta} {modelo_bruto} ({self.config.get('nome')})")
+
+        # Validação Cruzada FIPE (DuckDB)
+        montadora_padronizada, modelo_fipe = automaker_service.validar_aplicacao(montadora_bruta, modelo_bruto)
+        
+        if montadora_padronizada != montadora_bruta:
+            logger.info("NORMALIZATION", f"Marca Corrigida: {montadora_bruta} -> {montadora_padronizada}")
+        
+        # Se o modelo bruto estava vazio e a FIPE retornou algo (via busca por marca), usamos.
+        modelo_final = modelo_fipe if modelo_fipe and not modelo_bruto else modelo_bruto
 
         # 2. Referências
         referencias_brutas = raw_data.get("referencias", raw_data.get("originalNumbers", raw_data.get("crossReferences", "")))
@@ -179,32 +188,52 @@ class BaseProvider(ABC):
             except:
                 referencias_limpas = str(referencias_brutas)
 
-        # 3. Motorização
+        # 3. Motorização e Normalização Técnica
         motor_bruto = str(raw_data.get("motor", "")).upper()
         config_bruta = str(raw_data.get("configuracao_motor", "")).upper()
 
         motor_padrao = motor_bruto
         config_padrao = config_bruta
-        modelo_padrao = modelo_bruto
+        modelo_padrao = modelo_final
         versao_padrao = versao_bruta
 
         try:
-            texto_completo = f"{modelo_bruto} {versao_bruta} {motor_bruto} {config_bruta}"
-            m_p, c_p, _ = normalization_service.extrair_motorizacao(texto_completo)
-            if m_p or c_p:
-                motor_padrao = m_p if m_p else motor_bruto
-                _, _, modelo_padrao = normalization_service.extrair_motorizacao(modelo_bruto)
-                _, _, versao_padrao = normalization_service.extrair_motorizacao(versao_bruta)
-                _, _, config_limpa = normalization_service.extrair_motorizacao(config_bruta)
-                config_padrao = f"{c_p} {config_limpa}".strip() if c_p else config_limpa
+            # Normalizamos o conjunto completo para separar Motor de Configuração de forma inteligente
+            # Concatenamos motor e config para re-extrair padrões (ex: VHC 1.0 8V -> 1.0 8V | VHC)
+            texto_completo_motor = f"{motor_bruto} {config_bruta}".strip()
+            if texto_completo_motor:
+                m_p, c_p, residuo_motor = normalization_service.extrair_motorizacao(texto_completo_motor)
+                
+                # Se conseguimos extrair algo, usamos os valores padronizados
+                # Caso contrário, mantemos os originais (definidos acima)
+                if m_p or c_p or residuo_motor:
+                    motor_padrao = m_p
+                    config_padrao = c_p
+                    
+                    # O que sobrou da limpeza vai para a configuração
+                    if residuo_motor:
+                        config_padrao = f"{config_padrao} {residuo_motor}".strip()
+                    
+                    # Se mesmo após a extração o motor ficou vazio (ex: só tinha siglas), 
+                    # mas o bruto tinha algo, mantemos o bruto para não perder informação,
+                    # a menos que o bruto seja puramente técnico (já movido para config).
+                    if not motor_padrao and motor_bruto and motor_bruto not in config_padrao:
+                        motor_padrao = motor_bruto
+
+            # Limpamos o nome do carro e a versão de resíduos de motor (ex: CELTA 1.0 -> CELTA)
+            _, _, modelo_limpo = normalization_service.extrair_motorizacao(modelo_final)
+            _, _, versao_limpa = normalization_service.extrair_motorizacao(versao_bruta)
+            
+            modelo_padrao = modelo_limpo
+            versao_padrao = versao_limpa
         except:
             pass
 
         res_dict = {
             "marca": str(raw_data.get("marca_peca", raw_data.get("marca", raw_data.get("provedor", "")))).upper(),
-            "veiculo": montadora_padronizada,
-            "modelo": modelo_padrao,
-            "versao": versao_padrao,
+            "veiculo": montadora_padronizada, # Coluna Montadora
+            "modelo": modelo_padrao,         # Coluna Veículo/Carro
+            "versao": versao_padrao,         # Coluna Modelo/Versão
             "motor": motor_padrao,
             "configuracao_motor": config_padrao,
             "sistema_freio": str(raw_data.get("brakeSystem", raw_data.get("sistema_freio", ""))).upper(),
@@ -218,8 +247,9 @@ class BaseProvider(ABC):
         res_dict["ano_inicio"] = y_ini
         res_dict["ano_fim"] = y_fim
 
-        # 5. Combustível (Agressivo)
-        fuel_val = self.extrair_combustivel(f"{versao_bruta} {modelo_bruto} {raw_data.get('fuel', '')}")
+        # 5. Combustível (Fallback via NormalizationService)
+        # Tenta extrair de qualquer campo disponível
+        fuel_val = self.extrair_combustivel(f"{versao_bruta} {modelo_bruto} {config_padrao} {raw_data.get('fuel', '')}")
         res_dict["combustivel"] = fuel_val or ""
 
         # 6. Limpeza e Campos Extras
@@ -239,13 +269,14 @@ class BaseProvider(ABC):
             "referencias": referencias_limpas,
             "ficha_tecnica": self.parse_specifications(raw_data.get("ficha_tecnica") or raw_data.get("specifications")),
             "provider_id": self.config.get("id"),
-            "provedor": self.config.get("nome"),
+            "provedor": str(self.config.get("nome")).upper(),
             "codigo": raw_data.get("codigo"),
         })
 
         try:
+            # Validação rápida de schema antes de retornar
             PecaSchema(**res_dict)
         except Exception as e:
-            logging.warning(f"Erro Schema: {e}")
+            logging.warning(f"Erro Schema em {self.config.get('nome')}: {e}")
 
         return res_dict

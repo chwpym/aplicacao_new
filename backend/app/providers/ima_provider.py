@@ -78,24 +78,25 @@ class IMAProvider(BaseProvider):
                         else:
                             ano_ini = ano_str
 
-                        resultados.append({
+                        # Usamos o formatador base para garantir integridade e normalização
+                        resultados.append(self.formatar_resultado({
                             "marca": "IMA",
                             "provedor": "IMA",
                             "codigo": codigo,
-                            "modelo": app.get("vehicleName", "").upper(), # Veículo (Ex: COURIER)
-                            "veiculo": app.get("vehicleManufacturerName", "").upper(), # Montadora (Ex: FORD)
-                            "versao": app.get("vehicleDescription", "").upper(),
+                            "modelo": app.get("vehicleName", ""), # Veículo (Ex: COURIER)
+                            "montadora": app.get("vehicleManufacturerName", ""), # Montadora (Ex: FORD)
+                            "versao": app.get("vehicleDescription", ""),
                             "ano_inicio": ano_ini,
                             "ano_fim": ano_fim,
                             "motor": "", # API não traz motor separado na aplicação
                             "configuracao_motor": "",
                             "combustivel": "", # API não traz combustível separado
-                            "observacao": app.get("vehicleType", "").upper(),
+                            "observacao": app.get("vehicleType", ""),
                             "referencias": referencias,
                             "imagem": imagem,
                             "imagens": [imagem] if imagem else [],
                             "ficha_tecnica": ficha
-                        })
+                        }))
 
                 return resultados
             except Exception as e:

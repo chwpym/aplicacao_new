@@ -1,6 +1,6 @@
 import re
 from typing import Tuple
-from app.utils.synonyms import TECHNICAL_BRANDS, AUTOMAKER_SYNONYMS
+from app.utils.synonyms import TECHNICAL_BRANDS, AUTOMAKER_SYNONYMS, ENGINE_KEYWORDS, FUEL_SYNONYMS
 
 class NormalizationService:
     """
@@ -8,25 +8,27 @@ class NormalizationService:
     recebidos dos provedores de catálogo antes do agrupamento.
     """
     def __init__(self):
-        # Combustíveis comuns no Brasil
-        self.combustiveis = ["FLEX", "GASOLINA", "DIESEL", "ALCOOL", "ÁLCOOL", "TETRAFUEL", "GNV", "HÍBRIDO", "ELETRICO", "ELÉTRICO"]
+        # Combustíveis comuns no Brasil e Mercosul (nomes completos)
+        self.combustiveis = ["FLEX", "GASOLINA", "DIESEL", "ALCOOL", "ÁLCOOL", "TETRAFUEL", "GNV", "HÍBRIDO", "HIBRIDO", "ELETRICO", "ELÉTRICO", "LPG", "BI-FUEL", "BIFUEL"]
         
     def extrair_motorizacao(self, texto: str) -> Tuple[str, str, str]:
         """
         Extrai cilindrada, válvulas e combustível do texto e limpa o texto original.
         Retorna (motor_padronizado, configuracao_padronizada, texto_limpo).
+        
+        EXEMPLO: "VHC 1.0 8V FLEX" -> ("1.0 8V", "FLEX VHC", "")
         """
         if not texto:
             return "", "", ""
             
-        texto_limpo = str(texto).upper()
+        texto_limpo = str(texto).upper().replace("  ", " ").strip()
         
-        # 1. Extrair Cilindrada (ex: 1.0, 1.4, 2.0, 1.0L)
+        # 1. Extrair Cilindrada (ex: 1.0, 1.4, 2.0, 1.0L, 1,4)
         cilindrada = ""
-        cilindrada_match = re.search(r'\b(\d\.\d)L?\b', texto_limpo)
+        # Regex atualizada: suporta ponto ou vírgula (\d[\.,]\d)
+        cilindrada_match = re.search(r'\b(\d[\.,]\d)L?\b', texto_limpo)
         if cilindrada_match:
-            cilindrada = cilindrada_match.group(1)
-            # Remove a cilindrada do texto para limpar
+            cilindrada = cilindrada_match.group(1).replace(",", ".") # Padroniza para ponto
             texto_limpo = re.sub(r'\b' + re.escape(cilindrada_match.group(0)) + r'\b', '', texto_limpo)
             
         # 2. Extrair Válvulas (ex: 8V, 16V)
@@ -36,25 +38,59 @@ class NormalizationService:
             valvulas = valvulas_match.group(1)
             texto_limpo = re.sub(r'\b' + re.escape(valvulas) + r'\b', '', texto_limpo)
             
-        # 3. Extrair Combustível
-        combustivel = ""
-        for comb in self.combustiveis:
-            if re.search(r'\b' + comb + r'\b', texto_limpo):
-                combustivel = comb
-                texto_limpo = re.sub(r'\b' + comb + r'\b', '', texto_limpo)
+        # 3. Extrair Combustível e Keywords Técnicas
+        config_parts = []
+        
+        # Primeiro tenta os sinônimos de combustível (F -> FLEX)
+        for sigla, nome_completo in FUEL_SYNONYMS.items():
+            # Usamos boundary e escape para segurança
+            pattern = r'\b' + re.escape(sigla) + r'\b'
+            if re.search(pattern, texto_limpo):
+                config_parts.append(nome_completo)
+                texto_limpo = re.sub(pattern, '', texto_limpo)
+                # Removemos do set de keywords para não duplicar se a sigla estiver lá também
                 break
-                
-        # Montar "motor" padronizado
+        
+        # Se não achou por sigla, tenta por nome direto (GASOLINA, DIESEL, HÍBRIDO)
+        for comb in self.combustiveis:
+            pattern = r'\b' + re.escape(comb) + r'\b'
+            if re.search(pattern, texto_limpo):
+                config_parts.append(comb)
+                texto_limpo = re.sub(pattern, '', texto_limpo)
+                # Não damos break aqui para capturar casos como "HÍBRIDO GASOLINA"
+        
+        # 4. Identificar Keywords Técnicas (VHC, MPFI, etc.)
+        # Elas vão para a coluna de configuração/residuo
+        encontradas_kw = []
+        for kw in ENGINE_KEYWORDS:
+             if re.search(r'\b' + re.escape(kw) + r'\b', texto_limpo):
+                encontradas_kw.append(kw)
+                texto_limpo = re.sub(r'\b' + re.escape(kw) + r'\b', '', texto_limpo)
+        
+        # Adiciona as keywords encontradas à configuração
+        if encontradas_kw:
+            config_parts.extend(sorted(encontradas_kw))
+
+        # Montar campos padronizados
         motor_parts = []
         if cilindrada: motor_parts.append(cilindrada)
         if valvulas: motor_parts.append(valvulas)
         motor_padrao = " ".join(motor_parts)
         
-        # A configuração de motor padronizada (combustível)
-        config_padrao = combustivel
+        # Remove duplicatas mantendo ordem (Combustível primeiro)
+        vistos = set()
+        config_final = []
+        for p in config_parts:
+            if p not in vistos:
+                config_final.append(p)
+                vistos.add(p)
+                
+        config_padrao = " ".join(config_final)
         
-        # Limpa espaços extras
+        # Limpa espaços extras e pontuação órfã no resíduo
         texto_limpo = re.sub(r'\s+', ' ', texto_limpo).strip()
+        # Remove separadores soltos no início/fim (- , / |)
+        texto_limpo = re.sub(r'^[\s\-/|,\.]+|[\s\-/|,\.]+$', '', texto_limpo)
         
         return motor_padrao, config_padrao, texto_limpo
 

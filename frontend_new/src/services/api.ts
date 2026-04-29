@@ -28,6 +28,9 @@ export const configApi = {
     getPalavras: () => api.get('/config/palavras'),
     createPalavra: (data: any) => api.post('/config/palavras', data),
     deletePalavra: (id: number) => api.delete(`/config/palavras/${id}`),
+
+    getHealth: () => api.get('/api/health'),
+    exportBackup: () => api.post('/config/backup/export'),
 };
 
 export default api;

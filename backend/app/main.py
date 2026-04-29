@@ -21,6 +21,11 @@ app.add_middleware(
 async def root():
     return {"message": "API de Catálogo de Peças online"}
 
+@app.get("/api/health")
+async def health_check():
+    from app.services.status_service import status_service
+    return await status_service.get_system_status()
+
 from app.api.endpoints import search, config
 app.include_router(search.router)
 app.include_router(config.router)

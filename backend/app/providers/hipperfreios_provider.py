@@ -89,8 +89,8 @@ class HipperFreiosProvider(BaseProvider):
                 app = {
                     "provedor": self.config.get("nome"),
                     "marca_peca": self.config.get("nome"),
-                    "marca_veiculo": montadora,
-                    "veiculo": veiculo,
+                    "montadora": montadora,
+                    "modelo": veiculo,
                     "motor": motor,
                     "ano_inicio": ano_inicio,
                     "ano_fim": ano_fim,

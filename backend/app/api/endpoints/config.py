@@ -85,8 +85,17 @@ def delete_palavra(palavra_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Palavra excluída"}
 
-# --- Montadoras (FIPE) ---
 @router.get("/automakers")
 def get_automakers():
     from app.services.automaker_service import automaker_service
     return {"status": "ok", "automakers": automaker_service._cached_names}
+
+# --- Backup ---
+@router.post("/backup/export")
+def export_backup():
+    try:
+        from scripts.export_system_state import export_state
+        backup_path = export_state()
+        return {"status": "success", "message": f"Backup realizado em: {backup_path}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao realizar backup: {str(e)}")

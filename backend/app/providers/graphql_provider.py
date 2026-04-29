@@ -202,11 +202,9 @@ class GraphQLProvider(BaseProvider):
 
             if ultima_excecao:
                 print(f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}")
-            return []
-
     def formatar_resultado(self, vehicle: dict, product_data: dict = None) -> dict:
         """
-        Padroniza os campos retornados pelo GraphQL/Fraga para o Frontend.
+        Prepara os dados do GraphQL/Fraga para o BaseProvider.
         """
         def safe_label(field_obj):
             if field_obj is None: return ""
@@ -217,24 +215,25 @@ class GraphQLProvider(BaseProvider):
             if val.upper() in ["NONE", "NULL", "AUTH_NOT_AUTHORIZED"]: return ""
             return val.upper()
 
-        # 1. Mapeamento para o padrão BaseProvider (veiculo=Montadora, modelo=Carro, versao=Modelo)
+        # 1. Mapeamento para o padrão BaseProvider
+        # O Fraga costuma mandar Montadora em 'brand' (objeto) e Carro em 'name'.
+        brand_obj = vehicle.get("brand")
+        brand_name = safe_label(brand_obj)
+        
         raw_data = {
-            "veiculo": vehicle.get("brand"),  # Montadora
-            "modelo": vehicle.get("name"),    # Carro
-            "versao": vehicle.get("model"),   # Versão
+            "montadora": brand_name,
+            "modelo": safe_label(vehicle.get("name")),
+            "versao": safe_label(vehicle.get("model")),
+            "motor": safe_label(vehicle.get("engineName")),
+            "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
+            "fuel": safe_label(vehicle.get("fuelType")),
             **vehicle
         }
         raw_data["provedor"] = self.config.get("nome", "PROVEDOR").upper()
         
-        # 2. Lógica Técnica Específica ZF/Fraga: 
-        # Movemos o 'engineName' (AP 1600) para configuracao_motor para liberar o Motor para a cilindrada
-        raw_data["motor"] = vehicle.get("engineName")
-        raw_data["configuracao_motor"] = vehicle.get("engineConfiguration")
-
         if product_data:
             raw_data["specifications"] = product_data.get("specifications")
-            
-            # Descrição comercial vai para observação se não houver uma específica do veículo
+            # Descrição comercial
             if not raw_data.get("restriction") and not raw_data.get("only"):
                 raw_data["observacao"] = product_data.get("applicationDescription")
 
@@ -242,31 +241,15 @@ class GraphQLProvider(BaseProvider):
             parsed_specs = self.parse_specifications(product_data.get("specifications"))
             raw_data["ficha_tecnica"] = {
                 "DESCRIÇÃO COMERCIAL": product_data.get("applicationDescription"),
-                "CATEGORIA": product_data.get("productGroup", {}).get("name"),
+                "CATEGORIA": product_data.get("productGroup", {}).get("name") if isinstance(product_data.get("productGroup"), dict) else "",
                 **parsed_specs
             }
 
-            # Extração de campos que o Fraga esconde nas especificações
+            # Extração de campos estruturados
             if "POSIÇÃO" in parsed_specs: raw_data["posicao"] = parsed_specs["POSIÇÃO"]
             if "LADO" in parsed_specs: raw_data["lado"] = parsed_specs["LADO"]
             if "DIREÇÃO" in parsed_specs: raw_data["direcao"] = parsed_specs["DIREÇÃO"]
 
-        # 3. Chama o formatador base (A BASE É SAGRADA)
-        res = super().formatar_resultado(raw_data)
-        
-        # 4. Ajuste Final de Colunas (Motorização ZF Style)
-        # Queremos: MOTOR (1.6 8V), CONFIG (AP 1600), COMBUSTIVEL (FLEX SOHC L4)
-        from app.services.normalization_service import normalization_service
-        
-        m_p, c_p, _ = normalization_service.extrair_motorizacao(f"{vehicle.get('engineName')} {vehicle.get('engineConfiguration')}")
-        _, _, nome_motor = normalization_service.extrair_motorizacao(str(vehicle.get("engineName", "")))
-        _, _, config_detalhada = normalization_service.extrair_motorizacao(str(vehicle.get("engineConfiguration", "")))
-
-        res["motor"] = m_p or str(vehicle.get("engineName", ""))
-        res["configuracao_motor"] = nome_motor
-        
-        # Combustível recebe o que sobrou + fuelType oficial
-        fuel_oficial = safe_label(vehicle.get("fuelType"))
-        res["combustivel"] = f"{fuel_oficial} {c_p} {config_detalhada}".strip().upper()
-
-        return res
+        # 2. Chama o formatador base (A BASE É SAGRADA E AGORA É INTELIGENTE)
+        # O BaseProvider vai usar o Master Catalog para validar se brand_name é marca ou modelo.
+        return super().formatar_resultado(raw_data)

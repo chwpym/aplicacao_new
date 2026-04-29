@@ -61,3 +61,29 @@ TECHNICAL_BRANDS = [
     "HENGST",
     "PURFLUX"
 ]
+
+# Palavras-chave técnicas de motor que devem ser movidas para a coluna de Configuração
+ENGINE_KEYWORDS = {
+    "VHC", "VHC-E", "VHCE", "MPFI", "SFI", "DOHC", "SOHC", "E-TORQ", "ETORQ",
+    "MIVEC", "VVT", "VVTI", "TIVCT", "THP", "TSI", "TFSI", "ECONOFLEX", "FLEXPOWER",
+    "MCE", "MCE2", "FIRE", "FIREFLY", "EVO", "ZETEC", "ROCAM", "SIGMA", "DURATEC",
+    "AP", "CHT", "POWER", "AT", "EA111", "EA211", "K4M", "F4R", "H4M", "5N", 
+    "C10NE", "C14SE", "C16SE", "C18XE", "111L", "E-TECH", "SCE", "H4K", "SMARTFIRE",
+    "L3", "L4", "V6", "V8", "W12", "TURBO", "BITURBO", "SUPERCHARGER",
+    "3CIL", "4CIL", "5CIL", "6CIL", "8CIL", "10CIL", "12CIL"
+}
+
+# Sinônimos de combustível para padronização
+FUEL_SYNONYMS = {
+    "G": "GASOLINA",
+    "D": "DIESEL",
+    "A": "ÁLCOOL",
+    "F": "FLEX",
+    "GSL": "GASOLINA",
+    "ALC": "ÁLCOOL",
+    "GAS": "GASOLINA",
+    "DSL": "DIESEL",
+    "FLEXPOWER": "FLEX",
+    "ECONOFLEX": "FLEX",
+    "BIFUEL": "FLEX"
+}

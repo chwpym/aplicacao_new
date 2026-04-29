@@ -3,6 +3,7 @@ import httpx
 from bs4 import BeautifulSoup
 from typing import List, Dict, Any
 from app.providers.base_provider import BaseProvider
+from app.services.logging_service import logger
 
 
 class TSAProvider(BaseProvider):
@@ -100,7 +101,7 @@ class TSAProvider(BaseProvider):
         """
         url = f"{self.BASE_URL}/resultado"
         params = {"q": codigo_busca}
-        print(f"[TSA] Etapa 1 - Buscando: {url}?q={codigo_busca}")
+        logger.info("SCRAPER", f"[TSA] Buscando: {url}?q={codigo_busca}")
 
         try:
             resp = await client.get(url, params=params, headers=self.headers)
@@ -135,10 +136,10 @@ class TSAProvider(BaseProvider):
                     full_url = (
                         href if href.startswith("http") else f"{self.BASE_URL}{href}"
                     )
-                    print(f"[TSA] Produto encontrado: {full_url}")
+                    logger.info("SCRAPER", f"[TSA] Produto encontrado: {full_url}")
                     return full_url
 
-        print(f"[TSA] Código '{codigo_busca}' não encontrado nos resultados.")
+        logger.warning("SCRAPER", f"[TSA] Código '{codigo_busca}' não encontrado nos resultados.")
         return None
 
     # ------------------------------------------------------------------
@@ -156,14 +157,14 @@ class TSAProvider(BaseProvider):
           - Observações (span 'Observações' + p.compatible seguinte)
           - Tabela de aplicações (tr → Montadora, Veículo, Modelo, Motor, Ano, Combustível)
         """
-        print(f"[TSA] Etapa 2 - Detalhes: {produto_url}")
+        logger.info("SCRAPER", f"[TSA] Extraindo detalhes de: {produto_url}")
         try:
             resp = await client.get(produto_url, headers=self.headers)
             if resp.status_code != 200:
-                print(f"[TSA] Detalhe retornou HTTP {resp.status_code}")
+                logger.error("SCRAPER", f"[TSA] Detalhe retornou HTTP {resp.status_code}")
                 return []
         except Exception as e:
-            print(f"[TSA] Erro nos detalhes: {repr(e)}")
+            logger.error("SCRAPER", f"[TSA] Erro nos detalhes: {repr(e)}")
             return []
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -273,6 +274,7 @@ class TSAProvider(BaseProvider):
 
         tbody = app_table_div.find("tbody")
         if not tbody:
+            logger.warning("SCRAPER", "[TSA] Tabela de aplicações vazia.")
             return []
 
         for tr in tbody.find_all("tr"):
@@ -298,10 +300,10 @@ class TSAProvider(BaseProvider):
             res = {
                 "marca": self.config.get("nome", "TSA"),
                 "montadora": montadora,
-                "veiculo": veiculo,
-                "modelo": modelo,
+                "modelo": veiculo,   # O campo 'veiculo' da TSA é o nome do carro
+                "versao": modelo,    # O campo 'modelo' da TSA é a versão (ex: SPIRIT)
                 "motor": motor,
-                "configuracao_motor": combustivel,  # Combustível vai na coluna Motor/Config
+                "configuracao_motor": combustivel,
                 "ano_inicio": ano_inicio,
                 "ano_fim": ano_fim,
                 "posicao": "",
@@ -336,5 +338,5 @@ class TSAProvider(BaseProvider):
                         r["codigo"] = id_peca.strip().upper()
                     return resultados
 
-        print(f"[TSA] Nenhum resultado encontrado para '{id_peca}'.")
+        logger.warning("SCRAPER", f"[TSA] Nenhum resultado encontrado para '{id_peca}'.")
         return []

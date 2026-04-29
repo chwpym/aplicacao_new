@@ -130,9 +130,8 @@ class ViemarProvider(BaseProvider):
                         if not applications:
                             # Se não tiver aplicações específicas, cria uma entrada genérica
                             res = {
-                                "marca": self.config.get("nome", "VIEMAR"),  # Nome do provedor como Marca Peça
-                                "montadora": brand,  # BaseProvider procura 'montadora' para coluna Montadora
-                                "veiculo": model,
+                                "marca": self.config.get("nome", "VIEMAR"),
+                                "montadora": brand,
                                 "modelo": model,
                                 "motor": "",
                                 "configuracao_motor": "",
@@ -188,15 +187,18 @@ class ViemarProvider(BaseProvider):
                                                 if val and val not in direcao_values:
                                                     direcao_values.append(val)
 
+                                # Pega o motor do primeiro app do grupo (Viemar costuma ter motor no nível de app)
+                                app_first = apps_group[0]
+                                motor_app = get_val(app_first, "engine") or ""
+
                                 posicao_str = " | ".join(positions) or catalog_positions
                                 direcao = " / ".join(direcao_values)
 
                                 res = {
-                                    "marca": self.config.get("nome", "VIEMAR"),  # Nome do provedor como Marca Peça
-                                    "montadora": brand,  # BaseProvider procura 'montadora' para coluna Montadora
-                                    "veiculo": model,
+                                    "marca": self.config.get("nome", "VIEMAR"),
+                                    "montadora": brand,
                                     "modelo": model,
-                                    "motor": "",
+                                    "motor": motor_app,
                                     "configuracao_motor": "",
                                     "ano_inicio": str(
                                         self._parse_ano(start_year, True) or ""

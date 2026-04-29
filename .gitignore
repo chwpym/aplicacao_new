@@ -56,6 +56,14 @@ debug_analysis/
 *.db
 *.sqlite
 *.duckdb
+backend/backups/
+backend/logs/
+backend/scratch/
+test_*.py
+check_*.py
+get_*.py
+update_*.py
+tmp/
 
 # Agent/Gemini Data
 .gemini/

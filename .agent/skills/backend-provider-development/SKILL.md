@@ -27,38 +27,31 @@ class MeuNovoProvider(BaseProvider):
 ## 2. Padronização de Retorno (Smart Mapping)
 O `BaseProvider.formatar_resultado()` é inteligente e aceita diversos nomes de chaves (sinônimos) para preencher os campos do Frontend. O desenvolvedor deve retornar um dicionário com os dados brutos; o sistema cuidará da normalização (Upper Case, limpeza Wega, extração de anos e combustíveis).
 
-| Campo Final | Chaves Aceitas no Raw Data (Sinônimos) |
-| :--- | :--- |
-| **Marca Peça** | `marca_peca`, `marca`, `provedor` |
-| **Cód. Peça** | `codigo` (Código específico da peça no catálogo, ex: HF87A) |
-| **Montadora** | `brand`, `montadora`, `marca_veiculo` |
-| **Veículo** | `name`, `veiculo`, `modelo` |
-| **Versão** | `model`, `version`, `versao` |
-| **Motor** | `engineName`, `motor` |
-| **Combustível** | `fuel`, `combustivel` (Também extraído da `versao` via regex) |
-| **Anos** | `startYear` / `endYear` ou `ano_inicio` / `ano_fim` |
-| **Referências** | `originalNumbers`, `crossReferences`, `referencias` (Padrão `Marca: Código`) |
-| **Imagens** | `image`, `imageUrl`, `imagem` (Single) ou `images`, `imagens` (List) |
-| **Especificações**| `ficha_tecnica`, `specifications` (Dicionário ou Lista) |
+| Campo Final | Chaves Aceitas no Raw Data (Sinônimos) | Descrição |
+| :--- | :--- | :--- |
+| **Marca Peça** | `marca_peca`, `marca`, `provedor` | Marca da peça (ex: NAKATA, COFAP) |
+| **Cód. Peça** | `codigo` | Código do fabricante |
+| **Montadora** | `montadora`, `brand` | A marca do veículo (**CHEVROLET**, **GM**) |
+| **Veículo** | `modelo`, `name` | O nome do carro (**CELTA**, **CORSA**) |
+| **Versão** | `versao`, `model`, `version` | Versão/Detalhe (**SPIRIT**, **LIFE**) |
+| **Motor** | `motor`, `engineName` | Cilindrada e Válvulas (**1.0 8V**) |
+| **Config.** | `configuracao_motor` | Siglas técnicas e combustível (**VHC FLEX**) |
 
-> [!TIP]
-> **Inteligência de Anos:** Se você enviar `2014 -->` no campo `startYear`, o sistema automaticamente preencherá o `ano_inicio` como `2014` e o `ano_fim` como vazio.
+> [!CAUTION]
+> **NÃO USE A CHAVE `veiculo` PARA MARCA**: Historicamente, a chave `veiculo` causou inversão de colunas. Use sempre `montadora` para a marca e `modelo` para o nome do carro. O `BaseProvider` possui um **Master Catalog (DuckDB)** que validará se o que você enviou é realmente uma marca FIPE ou um modelo trocado, corrigindo automaticamente se necessário.
 
-## 3. Registro e Ativação
-Para que o sistema reconheça o novo provedor:
-1. Importe-o no `backend/app/services/provider_service.py` (ou onde o Factory estiver).
-2. Adicione ao mapeamento de tipos no `ProviderManager`.
+## 3. Inteligência de Normalização (Master Catalog)
+O sistema utiliza o **DuckDB** com dados da FIPE para garantir a integridade:
+- **Maker Guard**: Valida se a Montadora informada existe. Se você enviar "CELTA" na montadora, o sistema detectará que é um modelo da "GM" e fará o swap automático.
+- **Resíduo de Motor**: O `NormalizationService` remove termos como "VHC", "MPFI" e "FLEX" da coluna de motor e os move para a coluna de configuração, mantendo a busca padronizada.
 
-## 4. Tratamento de Erros
-- Use blocos `try/except` para capturar falhas de rede.
-- Retorne uma lista vazia `[]` em caso de erro, para não interromper a busca nos outros provedores.
-- Use logs para registrar o status do request.
+## 4. Registro e Ativação
+1. Adicione a classe ao diretório `backend/app/providers/`.
+2. Registre o novo tipo no `ProviderFactory` (ou similar).
+3. Ative o provedor no banco de dados `catalogo.db` (tabela `provedores`).
 
 ## 5. Arquitetura de Busca em 2 Níveis (Discovery-Hydration)
 Para sites complexos onde a lista de resultados não traz todos os dados técnicos:
-
-1.  **Discovery (Passo 1):** Captura o ID interno ou a URL da peça no site.
-    -   *Dica (Mira Laser):* Use atributos como `alt` das imagens ou links específicos para filtrar apenas o resultado exato e ignorar sugestões do site.
-2.  **Hydration (Passo 2):** Realiza uma segunda requisição para a página de detalhes.
-    -   Extraia: Tabelas de aplicação, Referências OE, Fichas Técnicas e Galeria de Imagens.
-3.  **Performance:** Realize o Hydration apenas para os itens que passaram no filtro do Discovery. Use `asyncio.gather` se precisar hidratar múltiplos itens validados simultaneamente.
+1.  **Discovery:** Captura o ID interno ou a URL da peça no site.
+2.  **Hydration:** Realiza uma segunda requisição para a página de detalhes para extrair Referências OE e Fichas Técnicas.
+3.  **Performance:** Use `asyncio.gather` para hidratar múltiplos itens se necessário, mas prefira hidratar apenas o primeiro se as referências forem globais para o código.

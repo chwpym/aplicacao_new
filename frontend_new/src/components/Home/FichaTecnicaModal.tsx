@@ -31,7 +31,9 @@ const getFriendlyLabel = (key: string): string => {
     "By Pass": "By Pass",
     furos: "Quantidade de Furos",
     referencia: "Cód. Fabricante",
-    "Tipo de Filtro": "Tipo de Filtro"
+    "Tipo de Filtro": "Tipo de Filtro",
+    "Descrição Técnica": "Descrição Técnica",
+    "Código Wega": "Código Wega"
   };
 
   const cleanKey = key.toLowerCase();

@@ -107,12 +107,8 @@ class RESTProvider(BaseProvider):
                                 "configuracao_motor": str(
                                     resolve(map_config.get("configuracao_motor")) or ""
                                 ),
-                                "ano_inicio": str(
-                                    resolve(map_config.get("ano_inicio")) or ""
-                                ),
-                                "ano_fim": str(
-                                    resolve(map_config.get("ano_fim")) or ""
-                                ),
+                                "ano_inicio": str(resolve(map_config.get("ano_inicio")) or ""),
+                                "ano_fim": str(resolve(map_config.get("ano_fim")) or ""),
                                 "combustivel": str(
                                     resolve(map_config.get("combustivel")) or ""
                                 ),
@@ -124,11 +120,15 @@ class RESTProvider(BaseProvider):
                                 "imagens": [],
                                 "ficha_tecnica": resolve(map_config.get("ficha_tecnica")),
                                 "codigo": str(
-                                    resolve(map_config.get("codigo_peca")) or ""
+                                    resolve(map_config.get("codigo_peca")) or id_peca
                                 ),
                                 "provider_id": self.config.get("id"),
                                 "provedor": self.config.get("nome", "").upper()
                             }
+
+                            # Correção para Wega: se o ano é único e tem "-->", o fim deve ser aberto
+                            if res["ano_inicio"] == res["ano_fim"] and "-->" in res["ano_inicio"]:
+                                res["ano_fim"] = ""
 
                             # Injetar referências globais se o campo local estiver vazio
                             if not res["referencias"] and global_refs:
@@ -189,100 +189,111 @@ class RESTProvider(BaseProvider):
 
     async def get_details(self, codigo_peca: str) -> dict:
         """
-        Implementação específica para Wega que faz Scraping da página de produto
-        para obter dados técnicos (ficha técnica) e imagens extras.
+        Scraper especializado para Wega Motors usando estrutura real li.tit/li.desc
         """
         if "WEGA" not in str(self.config.get("nome", "")).upper():
             return {"ficha_tecnica": {}, "imagens": []}
 
-        # Para Detalhes Wega, o código com hífen é crucial (ex: WO-130)
-        url = f"https://www.wegamotors.com/produto/?cod={codigo_peca.strip().upper()}"
+        import httpx
+        from bs4 import BeautifulSoup
         
-        try:
-            import httpx
-            from bs4 import BeautifulSoup
-            
-            async with httpx.AsyncClient(timeout=15.0, verify=False) as client:
-                headers = {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                }
-                response = await client.get(url, headers=headers, follow_redirects=True)
-                
-                if response.status_code != 200:
-                    return {"ficha_tecnica": {}, "imagens": []}
+        # Tenta com o código original e com uma versão com hífen se necessário
+        codigos_tentar = [codigo_peca.strip().upper()]
+        # Se não tem hífen e parece um código Wega (ex: AKX1967), tenta injetar o hífen (AKX-1967)
+        if "-" not in codigo_peca and len(codigo_peca) > 4:
+            # Padrão comum: 3 letras + números
+            import re
+            match = re.match(r"^([A-Z]{2,3})(\d+)$", codigo_peca.strip().upper())
+            if match:
+                codigos_tentar.append(f"{match.group(1)}-{match.group(2)}")
 
-                soup = BeautifulSoup(response.text, 'html.parser')
-                ficha_tecnica = {}
-                
-                # Lista de rótulos técnicos para capturar
-                labels_alvo = [
-                    "Altura", "Diâmetro Externo", "Diâmetro Interno", 
-                    "Rosca", "Válvula Anti-retorno", "Válvula By-pass",
-                    "Comprimento", "Largura", "Espessura", "Tipo de Filtro"
-                ]
-                
-                # Estratégia 1: Buscar o título "Dados Técnicos" e capturar os itens seguintes
-                dados_tecnicos_anchor = soup.find(string=lambda t: t and "Dados Técnicos" in t)
-                if dados_tecnicos_anchor:
-                    # No Elementor/Wega, os dados costumam vir em uma lista (ul/li) ou divs adjacentes
-                    container = dados_tecnicos_anchor.find_parent(['div', 'section'])
-                    if container:
-                        # Busca todos os itens que pareçam rótulos ou valores
-                        items = container.find_all(['li', 'span', 'p', 'div'], recursive=True)
-                        current_label = None
-                        for item in items:
-                            text = item.get_text(strip=True)
-                            if not text or len(text) > 50: continue
-                            
-                            # Se o texto for um dos nossos labels conhecidos, marcamos como label atual
-                            is_label = any(l.lower() in text.lower() for l in labels_alvo)
-                            if is_label:
-                                # Limpa o label (remove ":" se tiver)
-                                current_label = text.split(":")[0].strip()
-                            elif current_label:
-                                # Se temos um label e o texto atual não é label, é o valor!
-                                ficha_tecnica[current_label] = text
-                                current_label = None # Reseta para o próximo par
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Referer": "https://www.wegamotors.com/"
+        }
 
-                # Estratégia 2 (Fallback): Se an an Estratégia 1 falhou, tentamos o mapeamento direto de texto
-                if not ficha_tecnica:
-                    all_text_nodes = [t.strip() for t in soup.find_all(string=True) if t.strip()]
-                    for i in range(len(all_text_nodes) - 1):
-                        txt = all_text_nodes[i]
-                        # Se achou um label, o próximo costuma ser o valor
-                        if any(l.lower() == txt.lower() or (l.lower() + ":") == txt.lower() for l in labels_alvo):
-                            val = all_text_nodes[i+1]
-                            if val and len(val) < 50:
-                                label_clean = txt.replace(":", "").strip()
-                                ficha_tecnica[label_clean] = val
+        for cod in codigos_tentar:
+            url = f"https://www.wegamotors.com/produto/?cod={cod}"
+            try:
+                async with httpx.AsyncClient(timeout=15.0, verify=False) as client:
+                    response = await client.get(url, headers=headers, follow_redirects=True)
+                    if response.status_code != 200: continue
 
-                # Imagens: Scraper real de tags <img> e fallback para o padrão conhecido
-                imagens = []
-                # OG Image é sempre uma boa candidata para an an principal
-                og_image = soup.find("meta", property="og:image")
-                if og_image:
-                    imagens.append(og_image["content"])
-                
-                # Scraper de imagens do produto
-                for img in soup.find_all("img"):
-                    src = img.get("src") or img.get("data-src")
-                    if src and ("produto" in src or "uploads" in src) and ".jpg" in src:
-                        if src not in imagens:
-                            imagens.append(src)
+                    # Garante encoding correto para evitar caracteres quebrados ()
+                    response.encoding = 'utf-8'
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    ficha_tecnica = {}
+                    
+                    def limpar_wega(t):
+                        if not t: return ""
+                        # Remove o caractere de substituição comum  e normaliza espaços
+                        res = t.replace("\ufffd", "ó").replace("\ufffd", "á").replace("\ufffd", "ç").replace("\ufffd", "ã")
+                        # Heurística para palavras comuns quebradas
+                        res = res.replace("Cdigo", "Código").replace("Descrio", "Descrição").replace("Tcnica", "Técnica")
+                        return res.strip()
 
-                # Mantém o gerador de variantes se não achou nada no scraping
-                if len(imagens) < 2:
-                    canonical_cod = self.canonicalizar_id_para_imagem(codigo_peca)
-                    img_pattern = f"https://www.wegamotors.com/wp-content/uploads/pecas/{canonical_cod}.jpg"
-                    if img_pattern not in imagens: imagens.append(img_pattern)
-                    imagens.append(img_pattern.replace(".jpg", "B.jpg"))
-                    imagens.append(img_pattern.replace(".jpg", "C.jpg"))
+                    # Estratégia 1: Estrutura real li.tit -> li.desc
+                    dados_container = soup.find("div", class_="dados")
+                    if dados_container:
+                        tits = dados_container.find_all("li", class_="tit")
+                        descs = dados_container.find_all("li", class_="desc")
+                        for t, d in zip(tits, descs):
+                            label = limpar_wega(t.get_text(strip=True).replace(":", ""))
+                            val = limpar_wega(d.get_text(strip=True))
+                            if label and val:
+                                ficha_tecnica[label] = val
+                    
+                    # Fallback: Estratégia Omni-Search
+                    if not ficha_tecnica:
+                        labels_alvo = [
+                            "Altura", "Comprimento", "Largura", "Espessura", "Tipo de Filtro",
+                            "Descrição Técnica", "Código Wega", "Diâmetro Externo", "Rosca"
+                        ]
+                        all_li = soup.find_all("li")
+                        for i in range(len(all_li) - 1):
+                            txt = limpar_wega(all_li[i].get_text(strip=True).replace(":", ""))
+                            if any(l.lower() in txt.lower() for l in labels_alvo):
+                                val = limpar_wega(all_li[i+1].get_text(strip=True))
+                                if val and len(val) < 100:
+                                    ficha_tecnica[txt] = val
 
-                return {
-                    "ficha_tecnica": ficha_tecnica,
-                    "imagens": list(dict.fromkeys(imagens))[:6] # Limita e remove duplicatas
-                }
+                    # Captura de Imagens
+                    imagens = []
+                    # 1. Galeria Principal (como no HTML enviado pelo usuário)
+                    galeria = soup.find("div", class_="carousel-inner")
+                    if galeria:
+                        for img in galeria.find_all("img"):
+                            src = img.get("src") or img.get("data-src")
+                            if src:
+                                if src.startswith("/"): src = "https://www.wegamotors.com" + src
+                                if src not in imagens: imagens.append(src)
+                    
+                    # 2. Imagens soltas na div da esquerda
+                    esquerda = soup.find("div", class_="esquerda")
+                    if esquerda:
+                        for img in esquerda.find_all("img"):
+                            src = img.get("src") or img.get("data-src")
+                            if src and src not in imagens:
+                                if src.startswith("/"): src = "https://www.wegamotors.com" + src
+                                imagens.append(src)
 
-        except Exception as e:
-            print(f"Erro ao fazer scraping da Wega para {codigo_peca}: {e}")
-            return {"ficha_tecnica": {}, "imagens": []}
+                    # 3. Fallback determinístico
+                    if not imagens:
+                        canonical_cod = self.canonicalizar_id_para_imagem(cod)
+                        img_pattern = f"https://www.wegamotors.com/wp-content/uploads/pecas/{canonical_cod}.jpg"
+                        imagens = [img_pattern, img_pattern.replace(".jpg", "B.jpg"), img_pattern.replace(".jpg", "C.jpg")]
+
+                    # Se encontrou dados, retorna agora
+                    if ficha_tecnica or imagens:
+                        return {
+                            "ficha_tecnica": ficha_tecnica,
+                            "imagens": list(dict.fromkeys(imagens))[:6]
+                        }
+            except Exception as e:
+                print(f"Erro no scraper Wega para {cod}: {e}")
+                continue
+        
+        return {"ficha_tecnica": {}, "imagens": []}

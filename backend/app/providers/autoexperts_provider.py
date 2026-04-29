@@ -89,7 +89,7 @@ class AutoExpertsProvider(BaseProvider):
                         app = base_res.copy()
                         app.update(
                             {
-                                "veiculo": v.get("brand", ""),
+                                "montadora": v.get("brand", ""),
                                 "modelo": v.get("name", ""),
                                 "versao": v.get("model", ""),
                                 "motor": v.get("engineName", ""),
@@ -98,7 +98,8 @@ class AutoExpertsProvider(BaseProvider):
                                 "ano_fim": str(v.get("endYear", "")),
                             }
                         )
-                        results.append(app)
+                        # CRITICAL: Always use formatar_resultado to trigger Master Catalog and Normalization
+                        results.append(self.formatar_resultado(app))
 
                 return results
 
