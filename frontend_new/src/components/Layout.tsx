@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   HelpCircle,
-  Download
+  Download,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -96,6 +97,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Siglas', path: '/siglas', icon: <Hash size={20} /> },
     { name: 'Playground', path: '/playground', icon: <FlaskConical size={20} /> },
     { name: 'Limpeza', path: '/palavras', icon: <Trash2 size={20} /> },
+    { name: 'Configurações', path: '/configuracoes', icon: <SlidersHorizontal size={20} /> },
     { name: 'Backup', path: '#', icon: <Download size={20} />, action: 'backup' },
     { name: 'Ajuda', path: '/ajuda', icon: <HelpCircle size={20} /> },
   ];
