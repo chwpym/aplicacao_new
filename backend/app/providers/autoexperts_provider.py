@@ -41,27 +41,34 @@ class AutoExpertsProvider(BaseProvider):
                     return []
 
                 # 2. Busca detalhada de cada produto para pegar Motores e Referências OE
-                # Usamos gather para performance
                 detail_tasks = [
                     self._get_product_detail(client, p.get("id")) for p in search_data
                 ]
                 detailed_products = await asyncio.gather(*detail_tasks)
 
+                # Cache local para evitar queries repetitivas ao DuckDB (Performance p/ NKJ659)
+                norm_cache = {}
+
                 for prod in detailed_products:
                     if not prod:
                         continue
 
-                    # Normalização
+                    part_no = prod.get("partNumber", "")
+                    
+                    # Base do resultado para este produto
+                    brand_data = prod.get("brand") or {}
+                    image_data = prod.get("mainImage") or {}
+                    
                     base_res = {
-                        "marca": prod.get("brand", {}).get("name", "AUTOEXPERTS"),
-                        "codigo": prod.get("partNumber", ""),
-                        "imagem": prod.get("mainImage", {}).get("imageUrl", ""),
+                        "marca": brand_data.get("name", "AUTOEXPERTS"),
+                        "codigo": part_no,
+                        "imagem": image_data.get("imageUrl", ""),
                         "posicao": "",
                         "configuracao_motor": "",
                         "referencias": "",
                     }
 
-                    # Extrair Posição e outras especificações
+                    # Extrair Especificações Técnicas (Ficha)
                     specs = prod.get("specifications", [])
                     spec_list = []
                     for s in specs:
@@ -75,31 +82,47 @@ class AutoExpertsProvider(BaseProvider):
                     if spec_list:
                         base_res["observacao"] = " | ".join(spec_list)
 
-                    # Extrair Referências OE
-                    cross = prod.get("crossReferences", [])
-                    refs = [
-                        f"{c.get('brand', {}).get('name')}: {c.get('partNumber')}"
-                        for c in cross
-                    ]
+                    # Extrair Referências Cruzadas
+                    cross = prod.get("crossReferences") or []
+                    refs = []
+                    for c in cross:
+                        c_brand = c.get("brand") or {}
+                        refs.append(f"{c_brand.get('name', 'N/A')}: {c.get('partNumber')}")
+                    
                     base_res["referencias"] = ", ".join(refs)
 
-                    # Veículos (Aplicações)
+                    # Processar Veículos (Aplicações)
                     vehicles = prod.get("vehicles", [])
                     for v in vehicles:
+                        montadora_raw = v.get("brand", "").upper()
+                        modelo_raw = v.get("name", "").upper()
+                        
+                        # Chave única para o cache de normalização
+                        cache_key = f"{montadora_raw}|{modelo_raw}"
+                        
                         app = base_res.copy()
-                        app.update(
-                            {
-                                "montadora": v.get("brand", ""),
-                                "modelo": v.get("name", ""),
-                                "versao": v.get("model", ""),
-                                "motor": v.get("engineName", ""),
-                                "configuracao_motor": v.get("engineConfiguration", ""),
-                                "ano_inicio": str(v.get("startYear", "")),
-                                "ano_fim": str(v.get("endYear", "")),
-                            }
-                        )
-                        # CRITICAL: Always use formatar_resultado to trigger Master Catalog and Normalization
-                        results.append(self.formatar_resultado(app))
+                        app.update({
+                            "montadora": montadora_raw,
+                            "modelo": modelo_raw,
+                            "versao": v.get("model", "").upper(),
+                            "motor": v.get("engineName", "").upper(),
+                            "configuracao_motor": v.get("engineConfiguration", "").upper(),
+                            "ano_inicio": str(v.get("startYear", "")),
+                            "ano_fim": str(v.get("endYear", "")),
+                        })
+
+                        # Se já normalizamos essa combinação neste loop, usamos o cache
+                        if cache_key in norm_cache:
+                            m_padrao, mod_padrao = norm_cache[cache_key]
+                            app["montadora"] = m_padrao
+                            app["modelo"] = mod_padrao
+                            # Formata o resto (referências, motorização) sem re-validar montadora
+                            results.append(self.formatar_resultado(app, skip_automaker=True))
+                        else:
+                            # Primeira vez: Formata normalmente e salva no cache
+                            res_formatado = self.formatar_resultado(app)
+                            norm_cache[cache_key] = (res_formatado["veiculo"], res_formatado["modelo"])
+                            results.append(res_formatado)
 
                 return results
 

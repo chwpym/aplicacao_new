@@ -11,6 +11,10 @@ class NormalizationService:
         # Combustíveis comuns no Brasil e Mercosul (nomes completos)
         self.combustiveis = ["FLEX", "GASOLINA", "DIESEL", "ALCOOL", "ÁLCOOL", "TETRAFUEL", "GNV", "HÍBRIDO", "HIBRIDO", "ELETRICO", "ELÉTRICO", "LPG", "BI-FUEL", "BIFUEL"]
         
+        # Cache de regras de limpeza customizadas (id_campo -> lista de palavras)
+        self.regras_limpeza = {}
+        self.ultima_atualizacao_regras = 0
+        
     def extrair_motorizacao(self, texto: str) -> Tuple[str, str, str]:
         """
         Extrai cilindrada, válvulas e combustível do texto e limpa o texto original.
@@ -155,5 +159,46 @@ class NormalizationService:
             resultado_final.extend(sorted(outras_refs))
             
         return " | ".join(resultado_final)
+
+    def carregar_regras_limpeza(self, db):
+        """Carrega as regras de limpeza da tabela palavras_remover para o cache."""
+        from app.models.models import PalavraRemover
+        import time
+        
+        # Evita recarregar se foi atualizado nos últimos 60 segundos
+        if time.time() - self.ultima_atualizacao_regras < 60:
+            return
+
+        try:
+            termos = db.query(PalavraRemover).all()
+            regras = {}
+            for t in termos:
+                campo = t.campo.lower()
+                if campo not in regras:
+                    regras[campo] = []
+                regras[campo].append(t.palavra.upper())
+            
+            self.regras_limpeza = regras
+            self.ultima_atualizacao_regras = time.time()
+            # logger.info("NORMALIZATION", f"Regras de limpeza carregadas: {len(termos)} termos.")
+        except Exception as e:
+            print(f"Erro ao carregar regras de limpeza: {e}")
+
+    def aplicar_limpeza_customizada(self, campo: str, texto: str) -> str:
+        """Remove termos customizados cadastrados pelo usuário para um campo específico."""
+        if not texto:
+            return ""
+        
+        campo = campo.lower()
+        if campo not in self.regras_limpeza:
+            return texto
+        
+        texto_limpo = str(texto).upper()
+        for termo in self.regras_limpeza[campo]:
+            # Regex para remover a palavra exata com boundaries
+            pattern = r'\b' + re.escape(termo) + r'\b'
+            texto_limpo = re.sub(pattern, '', texto_limpo)
+        
+        return re.sub(r'\s+', ' ', texto_limpo).strip()
 
 normalization_service = NormalizationService()

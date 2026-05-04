@@ -18,7 +18,7 @@ const Palavras = () => {
         { id: 'modelo', label: 'Veículo' },
         { id: 'versao', label: 'Modelo' },
         { id: 'motor', label: 'Motor' },
-        { id: 'configuracao_motor', label: 'Combustível' },
+        { id: 'configuracao_motor', label: 'Configuração Motor' },
         { id: 'ano', label: 'Ano' },
         { id: 'imagem', label: 'Imagens' },
         { id: 'referencias', label: 'Referências' },

@@ -156,7 +156,7 @@ class BaseProvider(ABC):
                     ficha[str(k).strip().upper()] = str(v).strip().upper()
         return ficha
 
-    def formatar_resultado(self, raw_data):
+    def formatar_resultado(self, raw_data, skip_automaker=False):
         """Padroniza os campos seguindo a SKILL: veiculo=Montadora, modelo=Carro, versao=Modelo."""
         from app.services.automaker_service import automaker_service
         from app.services.normalization_service import normalization_service
@@ -166,13 +166,16 @@ class BaseProvider(ABC):
         modelo_bruto = str(raw_data.get("modelo", raw_data.get("model", raw_data.get("name", "")))).upper()
         versao_bruta = str(raw_data.get("versao", raw_data.get("version", ""))).upper()
 
-        logger.info("NORMALIZATION", f"Processando: {montadora_bruta} {modelo_bruto} ({self.config.get('nome')})")
-
-        # Validação Cruzada FIPE (DuckDB)
-        montadora_padronizada, modelo_fipe = automaker_service.validar_aplicacao(montadora_bruta, modelo_bruto)
-        
-        if montadora_padronizada != montadora_bruta:
-            logger.info("NORMALIZATION", f"Marca Corrigida: {montadora_bruta} -> {montadora_padronizada}")
+        # Validação Cruzada FIPE (DuckDB) - Com bypass opcional para performance
+        if skip_automaker:
+            montadora_padronizada = montadora_bruta
+            modelo_fipe = modelo_bruto
+        else:
+            logger.info("NORMALIZATION", f"Processando: {montadora_bruta} {modelo_bruto} ({self.config.get('nome')})")
+            montadora_padronizada, modelo_fipe = automaker_service.validar_aplicacao(montadora_bruta, modelo_bruto)
+            
+            if montadora_padronizada != montadora_bruta:
+                logger.info("NORMALIZATION", f"Marca Corrigida: {montadora_bruta} -> {montadora_padronizada}")
         
         # Se o modelo bruto estava vazio e a FIPE retornou algo (via busca por marca), usamos.
         modelo_final = modelo_fipe if modelo_fipe and not modelo_bruto else modelo_bruto
@@ -253,9 +256,12 @@ class BaseProvider(ABC):
         res_dict["combustivel"] = fuel_val or ""
 
         # 6. Limpeza e Campos Extras
-        for key in ["modelo", "versao", "veiculo", "observacao"]:
+        for key in ["modelo", "versao", "veiculo", "motor", "configuracao_motor", "observacao"]:
             if key in res_dict:
-                res_dict[key] = self.limpar_texto_wega(res_dict[key]).upper()
+                # Primeiro a limpeza técnica padrão
+                val = self.limpar_texto_wega(res_dict[key]).upper()
+                # Depois a limpeza customizada (Demanda 1)
+                res_dict[key] = normalization_service.aplicar_limpeza_customizada(key, val)
 
         res_dict.update({
             "observacao": str(raw_data.get("observacao", raw_data.get("note", ""))).upper(),
