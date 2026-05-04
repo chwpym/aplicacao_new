@@ -15,7 +15,7 @@ export const useCatalog = () => {
   const [selectedProvedor, setSelectedProvedor] = useState<number | "">("");
   const [agrupar, setAgrupar] = useState(true);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const [visibleFields, setVisibleFields] = useState<any>({
+  const defaultFields: Record<string, boolean> = {
     marca: true,
     codigo: false,
     veiculo: true,
@@ -35,7 +35,24 @@ export const useCatalog = () => {
     restricao: false,
     apenas: false,
     ficha_tecnica: true,
+  };
+
+  const [visibleFields, setVisibleFieldsState] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('visibleFieldsDefault');
+      if (saved) return { ...defaultFields, ...JSON.parse(saved) };
+    } catch {}
+    return defaultFields;
   });
+
+  // Wrapper que salva no localStorage toda vez que o usuário altera
+  const setVisibleFields = (updater: any) => {
+    setVisibleFieldsState((prev: any) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try { localStorage.setItem('visibleFieldsDefault', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchProvedores();
