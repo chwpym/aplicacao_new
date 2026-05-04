@@ -54,9 +54,11 @@ class NotusProvider(BaseProvider):
             return []
 
         if not os.path.exists(self.cache_path):
-            logger.error("NOTUS", f"Arquivo de cache não encontrado em: {self.cache_path}")
-            # Aqui poderíamos implementar um download automático se houvesse uma URL pública
-            return []
+            logger.info("NOTUS", "Cache não encontrado. Iniciando download automático...")
+            await self._update_cache()
+            # Se mesmo após o download não existir, aí sim retornamos vazio
+            if not os.path.exists(self.cache_path):
+                return []
 
         try:
             with open(self.cache_path, "r", encoding="utf-8") as f:
