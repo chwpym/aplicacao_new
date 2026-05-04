@@ -75,4 +75,8 @@ def get_provider(config_model):
     elif config["tipo"] == "notus":
         return NotusProvider(config)
 
+    elif config["tipo"] == "nakata":
+        from app.providers.nakata_provider import NakataProvider
+        return NakataProvider(config)
+
     return None
