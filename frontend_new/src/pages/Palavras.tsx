@@ -14,14 +14,16 @@ const Palavras = () => {
     const campos = [
         { id: 'todos', label: 'Todos os Campos' },
         { id: 'marca', label: 'Marca Peça' },
+        { id: 'codigo', label: 'Cód. Peça' },
         { id: 'veiculo', label: 'Montadora' },
         { id: 'modelo', label: 'Veículo' },
         { id: 'versao', label: 'Modelo' },
         { id: 'motor', label: 'Motor' },
-        { id: 'configuracao_motor', label: 'Configuração Motor' },
+        { id: 'configuracao_motor', label: 'Config. Motor' },
+        { id: 'combustivel', label: 'Combustível' },
         { id: 'ano', label: 'Ano' },
         { id: 'imagem', label: 'Imagens' },
-        { id: 'referencias', label: 'Referências' },
+        { id: 'referencias', label: 'Referências OE' },
         { id: 'observacao', label: 'Observações' },
         { id: 'posicao', label: 'Posição' },
         { id: 'lado', label: 'Lado' },
@@ -29,6 +31,7 @@ const Palavras = () => {
         { id: 'sistema_freio', label: 'Sistema Freio' },
         { id: 'restricao', label: 'Restrição' },
         { id: 'apenas', label: 'Apenas' },
+        { id: 'ficha_tecnica', label: 'Ficha Técnica' },
     ];
 
     useEffect(() => {
