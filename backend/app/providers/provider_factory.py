@@ -6,6 +6,7 @@ from app.providers.generic_scraper_provider import GenericScraperProvider
 from app.providers.bosch_provider import BoschProvider
 from app.providers.autoexperts_provider import AutoExpertsProvider
 from app.providers.mte_thomson_provider import MteThomsonProvider
+from app.providers.notus_provider import NotusProvider
 
 
 def get_provider(config_model):
@@ -70,5 +71,8 @@ def get_provider(config_model):
     elif config["tipo"] == "hipper_freios":
         from app.providers.hipperfreios_provider import HipperFreiosProvider
         return HipperFreiosProvider(config)
+
+    elif config["tipo"] == "notus":
+        return NotusProvider(config)
 
     return None

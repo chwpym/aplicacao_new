@@ -130,6 +130,9 @@ class NormalizationService:
                 if marca == "ORIGINAL" and montadora_padronizada:
                     marca = montadora_padronizada
                 
+                # Garante que códigos internos (ex: COD1:COD2) usem o separador ' - '
+                codigo = str(codigo).replace(":", " - ").strip()
+
                 # Se for marca técnica, vai pro aftermarket
                 if marca in TECHNICAL_BRANDS:
                     aftermarket_refs.append(f"{marca}: {codigo}")
@@ -139,8 +142,8 @@ class NormalizationService:
                         marca = AUTOMAKER_SYNONYMS[marca]
                     oem_refs.append(f"{marca}: {codigo}")
             else:
-                # Não tem ":", jogamos em outras
-                outras_refs.append(parte)
+                # Não tem ":", limpamos colons órfãos também
+                outras_refs.append(str(parte).replace(":", " - ").strip())
                 
         # Junta na ordem solicitada (OEM/Originais primeiro)
         resultado_final = []

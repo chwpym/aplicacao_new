@@ -34,7 +34,11 @@ export const generateUniqueReferences = (results: any[]) => {
             }
 
             if (!brands[cleanBrand]) brands[cleanBrand] = new Set();
-            brands[cleanBrand].add(code);
+            // Split codes that might have been joined with ":" or " - " and add individually to the set
+            // Isso garante que códigos como "123:456" virem ["123", "456"] e sejam unidos por " - " depois
+            code.split(/\s*:\s*|\s+-\s+/).forEach(c => {
+              if (c.trim()) brands[cleanBrand].add(c.trim());
+            });
           }
         }
       });
@@ -271,9 +275,22 @@ export const copyToClipboard = (
   if (hipperResults.length > 0) {
     const ficha = hipperResults[0].ficha_tecnica;
     if (Object.keys(ficha).length > 0) {
-      text += "\nMEDIDAS TÉCNICAS (HIPPER FREIOS):\n";
+      text += "\n\n...\nMEDIDAS TÉCNICAS (HIPPER FREIOS):\n";
       Object.entries(ficha).forEach(([nome, valor]) => {
         text += `${nome}: ${valor}\n`;
+      });
+    }
+  }
+
+  // Bloco de Ficha Técnica (Específico NOTUS)
+  const notusResults = results.filter(r => r.provedor === "NOTUS" && r.ficha_tecnica);
+  if (notusResults.length > 0) {
+    const ficha = notusResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (NOTUS):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        const valFinal = (valor && String(valor).trim() !== "") ? valor : "-";
+        text += `${nome}: ${valFinal}\n`;
       });
     }
   }

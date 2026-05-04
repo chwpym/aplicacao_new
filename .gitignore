@@ -63,6 +63,7 @@ test_*.py
 check_*.py
 get_*.py
 update_*.py
+backend/data/providers/notus_cache.json
 tmp/
 
 # Agent/Gemini Data

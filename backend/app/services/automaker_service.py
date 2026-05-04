@@ -23,7 +23,22 @@ class AutomakerService:
 
     def _initialize(self):
         try:
+            # Tenta conectar normalmente (leitura e escrita)
             self._connection = duckdb.connect(DB_PATH)
+        except Exception as e:
+            # Se falhar (ex: arquivo em uso), tenta modo READ_ONLY para permitir acesso concorrente
+            if "used by another process" in str(e) or "IO Error" in str(e):
+                try:
+                    self._connection = duckdb.connect(DB_PATH, read_only=True)
+                    logger.info("DATABASE", "Master Catalog (DuckDB) aberto em modo SOMENTE LEITURA.")
+                except Exception as e2:
+                    logger.error("DATABASE", f"Erro fatal ao inicializar duckdb: {e2}")
+                    return
+            else:
+                logger.error("DATABASE", f"Erro ao inicializar duckdb: {e}")
+                return
+
+        try:
             # Verifica se as tabelas existem
             tables = self._connection.execute("SELECT table_name FROM information_schema.tables WHERE table_name IN ('montadoras', 'modelos')").fetchall()
             existing_tables = [t[0] for t in tables]
@@ -42,7 +57,7 @@ class AutomakerService:
             self._load_cache()
             logger.info("DATABASE", "Master Catalog (DuckDB) inicializado com sucesso.")
         except Exception as e:
-            logger.error("DATABASE", f"Erro ao inicializar duckdb: {e}")
+            logger.error("DATABASE", f"Erro ao configurar tabelas duckdb: {e}")
 
     def _setup_db(self):
         logger.info("DATABASE", "Carregando base de montadoras da BrasilAPI FIPE...")
@@ -206,6 +221,9 @@ class AutomakerService:
                     return self.padronizar(target), mod_clean.replace(f"{syn} ", "").strip()
 
         # 4. Caso: A montadora informada é na verdade um MODELO conhecido no DuckDB
+        if not self._connection:
+            return self.padronizar(m_clean), mod_clean
+
         res = self._connection.execute("""
             SELECT m.nome as marca_nome 
             FROM modelos mod
