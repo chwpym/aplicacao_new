@@ -38,9 +38,9 @@ class NotusProvider(BaseProvider):
                             f.write(resp.text)
                         logger.info("NOTUS", "Cache Notus atualizado com sucesso.")
                     else:
-                        logger.error("NOTUS", f"Erro ao baixar catálogo Notus: {resp.status_code}")
+                        logger.error("NOTUS", f"Erro ao baixar catálogo Notus (Status {resp.status_code}) da URL: {self.url_json}")
             except Exception as e:
-                logger.error("NOTUS", f"Falha na conexão ao baixar JSON: {str(e)}")
+                logger.error("NOTUS", f"Falha na conexão ao baixar JSON de {self.url_json}: {str(e)}")
 
     async def buscar(self, termo: str) -> list[dict]:
         """
