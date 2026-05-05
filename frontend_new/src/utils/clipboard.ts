@@ -295,5 +295,43 @@ export const copyToClipboard = (
     }
   }
 
+  // Bloco de Ficha Técnica (Específico MULTIQUALITÀ)
+  const multiResults = results.filter(r => 
+    (r.provedor?.toUpperCase() === "MULTIQUALITA" || r.marca_peca === "MULTIQUALITÀ" || r.marca === "MULTIQUALITÀ") 
+    && r.ficha_tecnica
+  );
+  if (multiResults.length > 0) {
+    const ficha = multiResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (MULTIQUALITÀ):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
+  // Bloco de Ficha Técnica (Específico AUTAFASTAR)
+  const autafastarResults = results.filter(r => 
+    (r.provedor?.toUpperCase() === "AUTAFASTAR" || r.marca?.toUpperCase() === "AUTAFASTAR") 
+    && r.ficha_tecnica
+  );
+  if (autafastarResults.length > 0) {
+    const ficha = autafastarResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (AUTAFASTAR):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
   navigator.clipboard.writeText(text.trim());
 };

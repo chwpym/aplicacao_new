@@ -37,6 +37,11 @@ export const configApi = {
 
     getPreferencias: (chave: string) => api.get(`/config/preferencias/${chave}`),
     savePreferencias: (chave: string, valor: any) => api.post('/config/preferencias', { chave, valor: JSON.stringify(valor) }),
+    
+    getAutomakersInfo: () => api.get('/config/automakers'),
+    syncFipe: () => api.post('/config/fipe/sync'),
+    addModel: (brand: string, model: string) => api.post('/config/automakers/model', { brand, model }),
+    deleteModel: (brand: string, model: string) => api.delete('/config/automakers/model', { params: { brand, model } }),
 };
 
 

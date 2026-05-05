@@ -14,7 +14,8 @@ import {
   X,
   HelpCircle,
   Download,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Car
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -82,6 +83,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Listener para Toasts Globais
+  useEffect(() => {
+    const handleToast = (e: any) => {
+      const { message, type } = e.detail;
+      setNotification({ message, type });
+      // Auto-hide após 5 segundos
+      setTimeout(() => setNotification(null), 5000);
+    };
+
+    window.addEventListener('app-toast', handleToast);
+    return () => window.removeEventListener('app-toast', handleToast);
+  }, []);
+
   const getStatusColor = () => {
     switch (systemStatus) {
       case 'healthy': return 'bg-emerald-500 shadow-emerald-500/50';
@@ -97,6 +111,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Siglas', path: '/siglas', icon: <Hash size={20} /> },
     { name: 'Playground', path: '/playground', icon: <FlaskConical size={20} /> },
     { name: 'Limpeza', path: '/palavras', icon: <Trash2 size={20} /> },
+    { name: 'Biblioteca', path: '/automakers', icon: <Car size={20} /> },
     { name: 'Configurações', path: '/configuracoes', icon: <SlidersHorizontal size={20} /> },
     { name: 'Backup', path: '#', icon: <Download size={20} />, action: 'backup' },
     { name: 'Ajuda', path: '/ajuda', icon: <HelpCircle size={20} /> },

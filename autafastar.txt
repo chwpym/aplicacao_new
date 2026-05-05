@@ -1,0 +1,1104 @@
+url inicial https://www.autafastar.com.br/ az vezes abre baner
+
+segunda url https://www.autafastar.com.br/busca/acx01003/
+
+url bash
+
+curl 'https://www.autafastar.com.br/busca/acx01003/' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -b 'svSession=42d8d4120bc46f68724edf57685b0003681552f4f0642aea216cbf9cabcf3232dc4000ad520468e62951f07bc9259bb61e60994d53964e647acf431e4f798bcdd0a6a8f04528183cf0dbbb20d56623522ac811f248d6cc1e11ec1d5736254954c7909a256b60eb960486a8acb8924eeb9e6b48e3e069a9fd14e61749348cb594d2bd2c144ef17cf6edbd9bf5a208a2c0; _ga=GA1.1.1913420234.1774873685; PHPSESSID=uvoubdlgi7e0rvlelgg17fpl3q; _ga_5LGX7Y9V88=GS2.1.s1778001508$o4$g1$t1778001664$j60$l0$h0' \
+  -H 'priority: u=0, i' \
+  -H 'referer: https://www.autafastar.com.br/' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+
+  header
+
+  Request URL
+https://www.autafastar.com.br/busca/acx01003/
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+45.132.157.49:443
+Referrer Policy
+strict-origin-when-cross-origin
+cache-control
+no-store, no-cache, must-revalidate
+content-encoding
+br
+content-security-policy
+upgrade-insecure-requests
+content-type
+text/html;charset=UTF-8
+date
+Tue, 05 May 2026 17:22:51 GMT
+expires
+Thu, 19 Nov 1981 08:52:00 GMT
+panel
+hpanel
+platform
+hostinger
+pragma
+no-cache
+server
+LiteSpeed
+vary
+Accept-Encoding
+x-powered-by
+PHP/8.2.30
+:authority
+www.autafastar.com.br
+:method
+GET
+:path
+/busca/acx01003/
+:scheme
+https
+accept
+text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+cookie
+svSession=42d8d4120bc46f68724edf57685b0003681552f4f0642aea216cbf9cabcf3232dc4000ad520468e62951f07bc9259bb61e60994d53964e647acf431e4f798bcdd0a6a8f04528183cf0dbbb20d56623522ac811f248d6cc1e11ec1d5736254954c7909a256b60eb960486a8acb8924eeb9e6b48e3e069a9fd14e61749348cb594d2bd2c144ef17cf6edbd9bf5a208a2c0; _ga=GA1.1.1913420234.1774873685; PHPSESSID=uvoubdlgi7e0rvlelgg17fpl3q; _ga_5LGX7Y9V88=GS2.1.s1778001508$o4$g1$t1778001664$j60$l0$h0
+priority
+u=0, i
+referer
+https://www.autafastar.com.br/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+document
+sec-fetch-mode
+navigate
+sec-fetch-site
+same-origin
+sec-fetch-user
+?1
+upgrade-insecure-requests
+1
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+
+response
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="A Autafastar Importadora de peças de reposição automotivo atua no mercado de autopeças e está desde 2007 no mercado">
+    <meta name="keywords" content="Importadora de autopeças, Metal-Borracha, Arrefecimento, Direção, Suspensão, Transmissão">
+
+    
+    <link rel="shortcut icon" type="image/x-icon" href="/standard/img/layout/favicon.png" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap">
+    
+    <link rel="stylesheet" type="text/css" href="/standard/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/standard/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/standard/css/jquery.typeahead.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/slick.css"/> 
+    <link rel="stylesheet" type="text/css" href="/standard/css/slick-theme.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/fancybox/source/jquery.fancybox.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/default.css?1753991392" />
+    <link rel="stylesheet" type="text/css" href="/standard/css/produtos.css?1753910084" />
+
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NN37VWFB');</script>
+<!-- End Google Tag Manager -->
+    <title>Produtos - Autafastar Importadora de peças de reposição automotivo</title>
+</head>
+
+<body relative-path="/">
+
+    
+<div id="faixa-header" class="container-fluid relative hidden-xs">  
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="disclaimer">NÃO ATENDEMOS A CONSUMIDORES E VAREJOS, PROCURE UM DISTRIBUIDOR NA SUA REGIÃO</p>
+                <div id="google_translate_element" class="hidden-xs"></div>            
+                <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+                <script type="text/javascript">
+                    function googleTranslateElementInit() {
+                        new google.translate.TranslateElement({pageLanguage: 'pt', includedLanguages: 'en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+                    }
+                </script>
+            </div> 
+        </div>               
+    </div>
+</div>
+<nav id="nav-principal" class="navbar"> 
+    <div class="container relative">
+        <div class="navbar-header">            
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="/" class="navbar-brand"><img src="/standard/img/layout/logo-autafastar.png?1757604674"/></a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse"> 
+            <ul class="nav navbar-nav relative">                
+                <li><a href="/">Home</a></li>
+                <li><a href="/quem-somos/">Empresa</a></li>
+                <li><a href="/produtos/">Produtos</a></li>   
+                <!-- <li><a href="/representante">Representante</a></li> -->
+                <li><a href="/contato">Contato</a></li>                
+                <!-- <li>
+                    <a href="#" id="toggle-search" class="hidden-xs"><i class="fa fa-search"></i></a>
+                    <form id="navbar-search" class="navbar-form" role="search">
+                        <div class="form-group relative"> 
+                            <button type="button" class="btn btn-default close-search-expanded hidden-xs"><i class="fa fa-times"></i></button>                             
+                            <div class="typeahead__container">
+                                <div class="typeahead__field">
+                                    <span class="typeahead__query">
+                                        <input type="search" class="form-control typeahead" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+                        </div>
+                    </form>
+                </li>
+                <li class="hidden-xs">
+                    <a href="https://www.facebook.com/autafastar/" id="facebook-nav-principal" target="_blank"><i class="fa fa-facebook-official"></i></a>
+                </li> -->
+            </ul>
+            <form id="navbar-search" class="navbar-form navbar-right hidden-xs" role="search">
+                <div class="form-group relative"> 
+                    <div class="typeahead__container">
+                        <div class="typeahead__field">
+                            <span class="typeahead__query">
+                                <input type="search" class="form-control typeahead" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                            </span>
+                        </div>
+                    </div> 
+                    <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+                </div>
+            </form>            
+        </div> 
+        <form id="navbar-search-mobile" class="navbar-form hidden-sm hidden-md hidden-lg" role="search">
+            <div class="form-group relative">                
+                <div class="typeahead__container">
+                    <div class="typeahead__field">
+                        <span class="typeahead__query">
+                            <input type="search" class="form-control typeahead-2" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                        </span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+            </div>
+        </form>
+    </div>    
+</nav>    
+<div id="section-busca-por-carro" class="container-fluid hidden-xs">
+    <div class="container">
+        <form method="get" action="#" name="form-select" id="form-busca-carro">
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="categorias" class="form-control" id="select-categorias">
+                    <option value="selecione">Selecione o produto</option>
+                                            <option value="42">ACOPLAMENTO DO CARDAN</option>                        
+                                            <option value="1">ARTICULADOR DA COLUNA DE DIREÇÃO</option>                        
+                                            <option value="34">BASE DO CARBURADOR</option>                        
+                                            <option value="53">BATENTE
+</option>                        
+                                            <option value="43">BATENTE AMORTECEDOR</option>                        
+                                            <option value="40">BOMBA DE DIREÇÃO HIDRÁULICA</option>                        
+                                            <option value="32">BOMBA DO COMBUSTÍVEL</option>                        
+                                            <option value="3">BRAÇO DA SUSPENSÃO</option>                        
+                                            <option value="47">BUCHA
+</option>                        
+                                            <option value="4">CONJUNTO PLANETÁRIA E SATÉLITE</option>                        
+                                            <option value="5">CONJUNTO TRIZETA E TULIPA</option>                        
+                                            <option value="6">COROA E PINHÃO</option>                        
+                                            <option value="22">COXIM DA BUCHA</option>                        
+                                            <option value="19">COXIM DO AMORTECEDOR</option>                        
+                                            <option value="29">COXIM DO BATENTE</option>                        
+                                            <option value="21">COXIM DO CÂMBIO</option>                        
+                                            <option value="27">COXIM DO KIT DA BUCHA</option>                        
+                                            <option value="24">COXIM DO LIMITADOR</option>                        
+                                            <option value="20">COXIM DO MOTOR</option>                        
+                                            <option value="28">COXIM DO MOTOR/CÂMBIO</option>                        
+                                            <option value="26">COXIM DO REFIL DO CÂMBIO</option>                        
+                                            <option value="23">COXIM DO SUPORTE</option>                        
+                                            <option value="38">CRUZETA</option>                        
+                                            <option value="7">ELETROVENTILADOR</option>                        
+                                            <option value="30">EMBREAGEM</option>                        
+                                            <option value="8">JUNTA DESLIZANTE</option>                        
+                                            <option value="9">JUNTA HOMOCINÉTICA</option>                        
+                                            <option value="52">KIT JUNTA HOMOCINÉTICA DESLIZANTES
+</option>                        
+                                            <option value="10">MOTOR DO VENTILADOR INTERNO</option>                        
+                                            <option value="12">PIVO DE SUSPENSÃO</option>                        
+                                            <option value="50">PRATO DE ASSENTO
+</option>                        
+                                            <option value="49">RADIADOR DO ÓLEO
+</option>                        
+                                            <option value="44">RADIADOR DO ÓLEO CÂMBIO</option>                        
+                                            <option value="45">RADIADOR DO ÓLEO MOTOR</option>                        
+                                            <option value="41">RESFRIADOR DO ÓLEO</option>                        
+                                            <option value="35">RESISTÊNCIA DO ELETROVENTILADOR</option>                        
+                                            <option value="48">ROLAMENTO DUPLO DO CÂMBIO
+</option>                        
+                                            <option value="14">SEMI-EIXO</option>                        
+                                            <option value="51">SEMI-EIXO HOMOCINÉTICA
+</option>                        
+                                            <option value="39">SERVO FREIO</option>                        
+                                            <option value="46">SUPORTE DO CARDAN
+</option>                        
+                                            <option value="16">TERMINAL AXIAL</option>                        
+                                            <option value="17">TERMINAL DE DIREÇÃO</option>                        
+                                            <option value="18">TRIZETA</option>                        
+                                            <option value="36">VÁLVULA EQUALIZADORA</option>                        
+                                            <option value="37">VÁLVULA TERMOSTÁTICA</option>                        
+                                    </select>
+            </div>        
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="montadoras" class="form-control" id="select-montadoras" disabled="disabled">
+                    <option value="selecione">Selecione</option>                    
+                </select>
+            </div>
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="carros" class="form-control" id="select-carros" disabled="disabled">
+                    <option value="selecione">Selecione</option>
+                </select>
+            </div>        
+            <div class="form-group col-lg-2">
+                <button type="submit" class="btn" id="submit-form-busca-carro" disabled="disabled">BUSCAR</button>
+            </div>
+            <span class="clearfix"></span>
+        </form>        
+    </div>
+</div>    
+    
+
+
+
+    <div id="content" class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <ol class="breadcrumb">
+                    <li><a href="/"><i class="fa fa-home"></i></a></li>
+                                            <li><span>Busca por "acx01003"</span></li>
+                                                                                                                    </ol>
+            </div>
+        </div>
+
+        
+        <div class="row">
+            <div class="bg-fixed"></div>
+            <button type="button" id="filtros-toggle" class="btn btn-primary collapsed">
+                <span class="glyphicon glyphicon-filter"></span> FILTRAR                
+            </button>
+            
+            <div id="filtros" class="col-sm-4 col-md-3 sidebar">
+                <div class="bg-filtros-close">
+                    <h4 class="pull-left titulo-filtros">FILTROS</h4>
+                    <button type="button" id="filtros-close" class="btn btn-danger pull-right">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
+                <ul class="nav nav-sidebar collapse navbar-collapse">
+                    <li class="icon-divisao metal_borracha"><a href="#div-7" class="btn-link divisao ajaxRequest " ajaxRequest="/produtos/metal-borracha/" role="button" data-collapse="lv1">METAL BORRACHA</a><ul class="submenu collapse " id="div-7"><li><a href="#cat-20" class="btn-link categoria ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/" role="button" data-collapse="lv2"><i class="fa fa-caret-right"></i> COXIM DO MOTOR</a><ul class="submenu-2 collapse " id="cat-20"><li><a href="#mon-21" class="btn-link montadora ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/" role="button" data-collapse="lv3"><i class="fa fa-caret-right"></i> VOLKSWAGEN</a><ul class="submenu-3 collapse " id="mon-21"><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/crossfox/" data-collapse="lv4"><i class="fa fa-caret-right"></i> CROSSFOX</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/fox/" data-collapse="lv4"><i class="fa fa-caret-right"></i> FOX</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/gol/" data-collapse="lv4"><i class="fa fa-caret-right"></i> GOL</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/polo/" data-collapse="lv4"><i class="fa fa-caret-right"></i> POLO</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/saveiro/" data-collapse="lv4"><i class="fa fa-caret-right"></i> SAVEIRO</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/spacefox/" data-collapse="lv4"><i class="fa fa-caret-right"></i> SPACEFOX</a></li><li><a href="#" class="btn-link carro ajaxRequest " ajaxRequest="/produtos/metal-borracha/coxim-do-motor/volkswagen/voyage/" data-collapse="lv4"><i class="fa fa-caret-right"></i> VOYAGE</a></li></ul></li></ul></li></ul></li>                </ul>
+            </div>
+
+            <div class="col-sm-8 col-md-9 main">
+                <div class="row produtos">
+                                            
+                                                                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3386/coxim-do-motor-crossfox-2009-ld/" data-sku="ACX01003" title="Crossfox 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor crossfox 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3387/coxim-do-motor-fox-2009-ld/" data-sku="ACX01003" title="Fox 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor fox 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3388/coxim-do-motor-gol-2009-ld/" data-sku="ACX01003" title="Gol 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor gol 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3389/coxim-do-motor-polo-2009-ld/" data-sku="ACX01003" title="Polo 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor polo 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3390/coxim-do-motor-saveiro-2009-ld/" data-sku="ACX01003" title="Saveiro 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor saveiro 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3391/coxim-do-motor-spacefox-2009-ld/" data-sku="ACX01003" title="Spacefox 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor spacefox 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 produto animation-element">
+                             
+<div class="wrapper-produto">
+    <a href="/3392/coxim-do-motor-voyage-2009-ld/" data-sku="ACX01003" title="Voyage 2009/... LD">
+        <img src="/standard/img/produtos/ACX01003.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor voyage 2009/... ld</p>
+    </a>
+    <p class="codigo">acx01003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                        </div>
+                                    </div>
+
+                            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+    <div class="container-fluid footer-blue">
+        <div class="container relative text-center">
+            <img src="/standard/img/layout/logo-autafastar-footer.png" id="logo-footer" />
+        </div>
+    </div>
+
+    <div class="container-fluid footer-red">
+        <div class="container text-center">
+            <ul id="nav-footer" class="list-inline">
+                <li><a href="/">Home</a></li>
+                <li><a href="#">Empresa</a></li>
+                <li><a href="#">Produtos</a></li>
+                <!--<li><a href="#">Representantes</a></li>-->
+                <li><a href="#">Contato</a></li>
+            </ul>
+            <div class="row">
+                <div id="social">
+                    <a href="https://www.facebook.com/autafastar/" target="_blank">
+                        <i class="fa fa-facebook-official"></i>
+                    </a>
+                    <a href="https://www.instagram.com/autafastar/" target="_blank">
+                        <i class="fa fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-note" class="container-fluid">
+        <div class="container">
+            <p>&copy AUTAFASTAR - Todos os direitos reservados 2026</p>
+            <a href="http://www.garagemidia.com.br" target="_blank" id="link-garagemidia">Desenvolvido por: Garagemidia</a>
+        </div>
+    </div>
+</footer>
+
+    
+    <script type="text/javascript" src="/standard/js/jquery.js"></script> 
+    <script type="text/javascript" src="/standard/js/bootstrap.min.js"></script> 
+    <script type="text/javascript" src="/standard/js/jquery.typeahead.min.js"></script>
+    <script type="text/javascript" src="/standard/js/slick.min.js"></script>
+    <script type="text/javascript" src="/standard/js/fancybox/source/jquery.fancybox.js"></script>
+    <script type="text/javascript" src="/standard/js/jquery.mask.js"></script>
+    <script type="text/javascript" src="/standard/js/valida_form.js"></script>
+    <script type="text/javascript" src="/standard/js/jquery.form.min.js"></script>
+    <script type="text/javascript" src="/standard/js/default.js?1757379180"></script>
+    <script type="text/javascript" src="/standard/js/produtos.js?1753730354"></script>
+
+</body>
+
+</html>
+
+url imagem https://www.autafastar.com.br/standard/img/produtos/ACX01003.jpg?v=1759431572
+url bash imagem
+curl 'https://www.autafastar.com.br/standard/img/produtos/ACX01003.jpg?v=1759431572' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'Referer: https://www.autafastar.com.br/busca/acx01003/' \
+  -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0'
+
+  aparece multiplas repostas
+
+  3 url https://www.autafastar.com.br/3386/coxim-do-motor-crossfox-2009-ld/
+
+  url bash
+  curl 'https://www.autafastar.com.br/3386/coxim-do-motor-crossfox-2009-ld/' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -b 'svSession=42d8d4120bc46f68724edf57685b0003681552f4f0642aea216cbf9cabcf3232dc4000ad520468e62951f07bc9259bb61e60994d53964e647acf431e4f798bcdd0a6a8f04528183cf0dbbb20d56623522ac811f248d6cc1e11ec1d5736254954c7909a256b60eb960486a8acb8924eeb9e6b48e3e069a9fd14e61749348cb594d2bd2c144ef17cf6edbd9bf5a208a2c0; _ga=GA1.1.1913420234.1774873685; PHPSESSID=uvoubdlgi7e0rvlelgg17fpl3q; _ga_5LGX7Y9V88=GS2.1.s1778001508$o4$g1$t1778001827$j48$l0$h0' \
+  -H 'priority: u=0, i' \
+  -H 'referer: https://www.autafastar.com.br/busca/acx01003/' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+
+  header
+  Request URL
+https://www.autafastar.com.br/3386/coxim-do-motor-crossfox-2009-ld/
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+45.132.157.49:443
+Referrer Policy
+strict-origin-when-cross-origin
+alt-svc
+h3=":443"; ma=2592000, h3-29=":443"; ma=2592000, h3-Q050=":443"; ma=2592000, h3-Q046=":443"; ma=2592000, h3-Q043=":443"; ma=2592000, quic=":443"; ma=2592000; v="43,46"
+cache-control
+no-store, no-cache, must-revalidate
+content-encoding
+br
+content-security-policy
+upgrade-insecure-requests
+content-type
+text/html;charset=UTF-8
+date
+Tue, 05 May 2026 17:27:23 GMT
+expires
+Thu, 19 Nov 1981 08:52:00 GMT
+panel
+hpanel
+platform
+hostinger
+pragma
+no-cache
+server
+LiteSpeed
+vary
+Accept-Encoding
+x-powered-by
+PHP/8.2.30
+:authority
+www.autafastar.com.br
+:method
+GET
+:path
+/3386/coxim-do-motor-crossfox-2009-ld/
+:scheme
+https
+accept
+text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+cookie
+svSession=42d8d4120bc46f68724edf57685b0003681552f4f0642aea216cbf9cabcf3232dc4000ad520468e62951f07bc9259bb61e60994d53964e647acf431e4f798bcdd0a6a8f04528183cf0dbbb20d56623522ac811f248d6cc1e11ec1d5736254954c7909a256b60eb960486a8acb8924eeb9e6b48e3e069a9fd14e61749348cb594d2bd2c144ef17cf6edbd9bf5a208a2c0; _ga=GA1.1.1913420234.1774873685; PHPSESSID=uvoubdlgi7e0rvlelgg17fpl3q; _ga_5LGX7Y9V88=GS2.1.s1778001508$o4$g1$t1778001827$j48$l0$h0
+priority
+u=0, i
+referer
+https://www.autafastar.com.br/busca/acx01003/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+document
+sec-fetch-mode
+navigate
+sec-fetch-site
+same-origin
+sec-fetch-user
+?1
+upgrade-insecure-requests
+1
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+
+
+response
+
+<!DOCTYPE html>
+<html lang="pt-br" prefix="og: http://ogp.me/ns#">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">         
+        <meta name="keywords" content="COXIM DO MOTOR, ACX01003" />
+        <meta name="description" content="CROSSFOX 2009/... LD | AUTAFASTAR - Os melhores produtos em Metal-Borracha, Arrefecimento, Dire&ccedil;&atilde;o, Suspens&atilde;o e Transmiss&atilde;o ao mercado de reposi&ccedil;&atilde;o automotivo.">
+        
+        <meta property="og:title" content="CROSSFOX 2009/... LD - AUTAFASTAR - Os melhores produtos em Metal-Borracha, Arrefecimento, Dire&ccedil;&atilde;o, Suspens&atilde;o e Transmiss&atilde;o ao mercado de reposi&ccedil;&atilde;o automotivo." />
+        <meta property="og:description" content="AUTAFASTAR - Os melhores produtos em Metal-Borracha, Arrefecimento, Dire&ccedil;&atilde;o, Suspens&atilde;o e Transmiss&atilde;o ao mercado de reposi&ccedil;&atilde;o automotivo., CROSSFOX 2009/... LD" />
+        <meta property="og:url" content="https://www.autafastar.com.br/3386/crossfox-2009-ld/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" itemprop="image" content="https://www.autafastar.com.br/standard/img/produtos/ACX01003.jpg?v=1759431572" />
+        <meta property="og:image:alt" content="AUTAFASTAR - Os melhores produtos em Metal-Borracha, Arrefecimento, Dire&ccedil;&atilde;o, Suspens&atilde;o e Transmiss&atilde;o ao mercado de reposi&ccedil;&atilde;o automotivo., CROSSFOX 2009/... LD" />
+        <meta property="og:locale" content="pt_BR" />
+        <meta property="og:site_name" content="Autafastar" />
+        
+        
+    <link rel="shortcut icon" type="image/x-icon" href="/standard/img/layout/favicon.png" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap">
+    
+    <link rel="stylesheet" type="text/css" href="/standard/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/standard/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/standard/css/jquery.typeahead.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/slick.css"/> 
+    <link rel="stylesheet" type="text/css" href="/standard/css/slick-theme.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/fancybox/source/jquery.fancybox.css"/>
+    <link rel="stylesheet" type="text/css" href="/standard/css/default.css?1753991392" />
+        <link rel="stylesheet" type="text/css" href="/standard/css/fotorama.css"/>
+        <link rel="stylesheet" type="text/css" href="/standard/css/info-produto.css?1753730353"/> 
+
+        <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-NN37VWFB');</script>
+<!-- End Google Tag Manager --> 
+                
+        <title>COXIM DO MOTOR CROSSFOX 2009/... LD | Autafastar Importadora de peças de reposição automotivo</title>
+    </head>
+
+    <body relative-path="/">
+        
+        
+<div id="faixa-header" class="container-fluid relative hidden-xs">  
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="disclaimer">NÃO ATENDEMOS A CONSUMIDORES E VAREJOS, PROCURE UM DISTRIBUIDOR NA SUA REGIÃO</p>
+                <div id="google_translate_element" class="hidden-xs"></div>            
+                <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+                <script type="text/javascript">
+                    function googleTranslateElementInit() {
+                        new google.translate.TranslateElement({pageLanguage: 'pt', includedLanguages: 'en,es', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+                    }
+                </script>
+            </div> 
+        </div>               
+    </div>
+</div>
+<nav id="nav-principal" class="navbar"> 
+    <div class="container relative">
+        <div class="navbar-header">            
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="/" class="navbar-brand"><img src="/standard/img/layout/logo-autafastar.png?1757604674"/></a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse"> 
+            <ul class="nav navbar-nav relative">                
+                <li><a href="/">Home</a></li>
+                <li><a href="/quem-somos/">Empresa</a></li>
+                <li><a href="/produtos/">Produtos</a></li>   
+                <!-- <li><a href="/representante">Representante</a></li> -->
+                <li><a href="/contato">Contato</a></li>                
+                <!-- <li>
+                    <a href="#" id="toggle-search" class="hidden-xs"><i class="fa fa-search"></i></a>
+                    <form id="navbar-search" class="navbar-form" role="search">
+                        <div class="form-group relative"> 
+                            <button type="button" class="btn btn-default close-search-expanded hidden-xs"><i class="fa fa-times"></i></button>                             
+                            <div class="typeahead__container">
+                                <div class="typeahead__field">
+                                    <span class="typeahead__query">
+                                        <input type="search" class="form-control typeahead" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+                        </div>
+                    </form>
+                </li>
+                <li class="hidden-xs">
+                    <a href="https://www.facebook.com/autafastar/" id="facebook-nav-principal" target="_blank"><i class="fa fa-facebook-official"></i></a>
+                </li> -->
+            </ul>
+            <form id="navbar-search" class="navbar-form navbar-right hidden-xs" role="search">
+                <div class="form-group relative"> 
+                    <div class="typeahead__container">
+                        <div class="typeahead__field">
+                            <span class="typeahead__query">
+                                <input type="search" class="form-control typeahead" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                            </span>
+                        </div>
+                    </div> 
+                    <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+                </div>
+            </form>            
+        </div> 
+        <form id="navbar-search-mobile" class="navbar-form hidden-sm hidden-md hidden-lg" role="search">
+            <div class="form-group relative">                
+                <div class="typeahead__container">
+                    <div class="typeahead__field">
+                        <span class="typeahead__query">
+                            <input type="search" class="form-control typeahead-2" id="query" placeholder="Pesquisar produto, carro ou código" autocomplete="off">
+                        </span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-default search-submit"><i class="fa fa-search"></i></button>
+            </div>
+        </form>
+    </div>    
+</nav>    
+<div id="section-busca-por-carro" class="container-fluid hidden-xs">
+    <div class="container">
+        <form method="get" action="#" name="form-select" id="form-busca-carro">
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="categorias" class="form-control" id="select-categorias">
+                    <option value="selecione">Selecione o produto</option>
+                                            <option value="42">ACOPLAMENTO DO CARDAN</option>                        
+                                            <option value="1">ARTICULADOR DA COLUNA DE DIREÇÃO</option>                        
+                                            <option value="34">BASE DO CARBURADOR</option>                        
+                                            <option value="53">BATENTE
+</option>                        
+                                            <option value="43">BATENTE AMORTECEDOR</option>                        
+                                            <option value="40">BOMBA DE DIREÇÃO HIDRÁULICA</option>                        
+                                            <option value="32">BOMBA DO COMBUSTÍVEL</option>                        
+                                            <option value="3">BRAÇO DA SUSPENSÃO</option>                        
+                                            <option value="47">BUCHA
+</option>                        
+                                            <option value="4">CONJUNTO PLANETÁRIA E SATÉLITE</option>                        
+                                            <option value="5">CONJUNTO TRIZETA E TULIPA</option>                        
+                                            <option value="6">COROA E PINHÃO</option>                        
+                                            <option value="22">COXIM DA BUCHA</option>                        
+                                            <option value="19">COXIM DO AMORTECEDOR</option>                        
+                                            <option value="29">COXIM DO BATENTE</option>                        
+                                            <option value="21">COXIM DO CÂMBIO</option>                        
+                                            <option value="27">COXIM DO KIT DA BUCHA</option>                        
+                                            <option value="24">COXIM DO LIMITADOR</option>                        
+                                            <option value="20">COXIM DO MOTOR</option>                        
+                                            <option value="28">COXIM DO MOTOR/CÂMBIO</option>                        
+                                            <option value="26">COXIM DO REFIL DO CÂMBIO</option>                        
+                                            <option value="23">COXIM DO SUPORTE</option>                        
+                                            <option value="38">CRUZETA</option>                        
+                                            <option value="7">ELETROVENTILADOR</option>                        
+                                            <option value="30">EMBREAGEM</option>                        
+                                            <option value="8">JUNTA DESLIZANTE</option>                        
+                                            <option value="9">JUNTA HOMOCINÉTICA</option>                        
+                                            <option value="52">KIT JUNTA HOMOCINÉTICA DESLIZANTES
+</option>                        
+                                            <option value="10">MOTOR DO VENTILADOR INTERNO</option>                        
+                                            <option value="12">PIVO DE SUSPENSÃO</option>                        
+                                            <option value="50">PRATO DE ASSENTO
+</option>                        
+                                            <option value="49">RADIADOR DO ÓLEO
+</option>                        
+                                            <option value="44">RADIADOR DO ÓLEO CÂMBIO</option>                        
+                                            <option value="45">RADIADOR DO ÓLEO MOTOR</option>                        
+                                            <option value="41">RESFRIADOR DO ÓLEO</option>                        
+                                            <option value="35">RESISTÊNCIA DO ELETROVENTILADOR</option>                        
+                                            <option value="48">ROLAMENTO DUPLO DO CÂMBIO
+</option>                        
+                                            <option value="14">SEMI-EIXO</option>                        
+                                            <option value="51">SEMI-EIXO HOMOCINÉTICA
+</option>                        
+                                            <option value="39">SERVO FREIO</option>                        
+                                            <option value="46">SUPORTE DO CARDAN
+</option>                        
+                                            <option value="16">TERMINAL AXIAL</option>                        
+                                            <option value="17">TERMINAL DE DIREÇÃO</option>                        
+                                            <option value="18">TRIZETA</option>                        
+                                            <option value="36">VÁLVULA EQUALIZADORA</option>                        
+                                            <option value="37">VÁLVULA TERMOSTÁTICA</option>                        
+                                    </select>
+            </div>        
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="montadoras" class="form-control" id="select-montadoras" disabled="disabled">
+                    <option value="selecione">Selecione</option>                    
+                </select>
+            </div>
+            <div class="form-group col-sm-4 col-lg-3">
+                <select name="carros" class="form-control" id="select-carros" disabled="disabled">
+                    <option value="selecione">Selecione</option>
+                </select>
+            </div>        
+            <div class="form-group col-lg-2">
+                <button type="submit" class="btn" id="submit-form-busca-carro" disabled="disabled">BUSCAR</button>
+            </div>
+            <span class="clearfix"></span>
+        </form>        
+    </div>
+</div>    
+    
+
+
+        
+        <div id="content" class="container"> 
+            <div class="row">                
+                <div class="col-xs-12 col-sm-12">
+                    <ol class="breadcrumb">
+                        <li><a href="/"><i class="fa fa-home"></i></a></li> 
+                                                
+                            <li>                                
+                                <span>COXIM DO MOTOR</span>
+                            </li>
+                                                                        
+                            <li>
+                                <span>CROSSFOX 2009/... LD</span>
+                            </li>
+                               
+                    </ol>
+                </div>
+            </div>
+                        
+            <div class="row">                                  
+                <div class="col-md-6 col-sm-6" id="galeria">
+                    <div class="fotorama">                    
+                                                    <img src="/standard/img/produtos/zoom/ACX01003.jpg?v=1759431686"/>
+                                                    <img src="/standard/img/produtos/zoom/ACX01003-1.jpg?v=1759431686"/>
+                                                              
+                    </div>      
+                </div>
+                
+                <div class="col-md-6 col-sm-6" id="info-produto">
+                    <div class="container-info-produto">
+                        <h1 class="titulo">COXIM DO MOTOR CROSSFOX 2009/... LD</h1>
+                        <p class="info-codigo">
+                            <b>ACX01003</b>                            
+                        </p>             
+                    </div>        
+                     
+                                            <div class="row" id="relacionados">                            
+                            <h3 class="title titulo-relacionados">
+                                <span class="title-label">OUTROS MODELOS</span>
+                                <span class="underline"></span>
+                            </h3>
+                            <div id="carrossel-categoria">                            
+                                 
+                                    <div class="produto col-lg-4 col-md-4 col-sm-6 col-xs-6">                                
+                                        
+<div class="wrapper-produto">
+    <a href="/3377/coxim-do-motor-crossfox-2005-2008-ld/" data-sku="ACX01001" title="Crossfox 2005/2008 LD">
+        <img src="/standard/img/produtos/ACX01001.jpg?v=1759431572" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">coxim do motor crossfox 2005/2008 ld</p>
+    </a>
+    <p class="codigo">acx01001</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                                    </div>        
+                                 
+                            </div>                                   
+                        </div>
+                         
+                </div>
+            </div> 
+            
+                            
+                                
+                <div id="especificacoes" class="section">
+                    <h3 class="subtitle">Especificações</h3>                
+                                            
+                                                                                                                            <p>- <b>Posição: </b> Dianteiro - Superior</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>Sem Suporte</b></p>
+                                                
+                                    </div>
+               
+
+               
+                <div id="compativeis" class="section">
+                    <h3 class="subtitle">Compatíveis</h3>                
+                                            
+                        <p>- <b>CROSSFOX 2009/... LD</b></p>     
+                                            
+                        <p>- <b>FOX 2009/... LD</b></p>     
+                                            
+                        <p>- <b>GOL 2009/... LD</b></p>     
+                                            
+                        <p>- <b>POLO 2009/... LD</b></p>     
+                                            
+                        <p>- <b>SAVEIRO 2009/... LD</b></p>     
+                                            
+                        <p>- <b>SPACEFOX 2009/... LD</b></p>     
+                                            
+                        <p>- <b>VOYAGE 2009/... LD</b></p>     
+                                    </div>
+                 
+
+              
+                <div id="similares" class="section">
+                    <h3 class="subtitle">Número de referência</h3>                
+                                            
+                                                                                                                            <p>- <b>AXIOS: </b>5212382</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>BORFLEX: </b>2022</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>GETOFLEX: </b>GTX3003</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>MOBENSANI: </b>MB3003</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>NAKATA: </b>NB31076</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>SAMPEL: </b>4953</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>VW: </b>5U0199185</p>
+                                                
+                                            
+                                                                                                                            <p>- <b>VW: </b>5U0199167B</p>
+                                                
+                                    </div>
+                                              
+            
+                            <div id="produtos-relacionados" class="section"> 
+                    <h2 class="title">
+                        <span class="title-label">relacionados</span>
+                        <span class="underline"></span>
+                    </h2>                  
+                    <div id="carrossel-relacionados" class="row">  
+                         
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/4747/trizeta-march-versa-2017-2020-16-16v/" data-sku="ATP15002" title="MARCH/  VERSA 2017/2020 1.6-16V">
+        <img src="/standard/img/produtos/ATP15002.jpg?v=1759356962" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">trizeta march/  versa 2017/2020 1.6-16v</p>
+    </a>
+    <p class="codigo">atp15002</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/864/eletroventilador-polo-2003-2006-16/" data-sku="AVLD01007" title="Polo 2003/2006 1.6 ">
+        <img src="/standard/img/produtos/AVLD01007.jpg?v=1759356963" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">eletroventilador polo 2003/2006 1.6 </p>
+    </a>
+    <p class="codigo">avld01007</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/2487/terminal-de-direcao-cobalt-2011-ld-le/" data-sku="ATD02027" title="Cobalt 2011/... LD/LE">
+        <img src="/standard/img/produtos/ATD02027.jpg?v=1759356957" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">terminal de direção cobalt 2011/... ld/le</p>
+    </a>
+    <p class="codigo">atd02027</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/1173/junta-homocinetica-gol-10-8v-10-1992-1996-le-ld/" data-sku="AJH01001" title="Gol 1.0 8V 10-1992/1996 LE/ LD">
+        <img src="/standard/img/produtos/AJH01001.jpg?v=1759356918" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">junta homocinética gol 1.0 8v 10-1992/1996 le/ ld</p>
+    </a>
+    <p class="codigo">ajh01001</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/2966/trizeta-bravo-18-e-torq-2010/" data-sku="ATP03009" title="Bravo 1.8 E torq 2010/...">
+        <img src="/standard/img/produtos/ATP03009.jpg?v=1759356962" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">trizeta bravo 1.8 e torq 2010/...</p>
+    </a>
+    <p class="codigo">atp03009</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/4760/eletroventilador-focus-2009-2014-16/" data-sku="AVLD06009" title="FOCUS 2009/2014 1.6">
+        <img src="/standard/img/produtos/AVLD06009.jpg?v=1759356965" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">eletroventilador focus 2009/2014 1.6</p>
+    </a>
+    <p class="codigo">avld06009</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/4367/bomba-de-direcao-hidraulica-punto-14-2008-2017/" data-sku="ABDH03005" title="Punto 1.4 2008/2017">
+        <img src="/standard/img/produtos/ABDH03005.jpg?v=1759431552" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">bomba de direção hidráulica punto 1.4 2008/2017</p>
+    </a>
+    <p class="codigo">abdh03005</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/5754/resfriador-do-oleo-wrangler-2013-2013-36-v6/" data-sku="AORD03010" title="WRANGLER 2013/2013 3.6 V6">
+        <img src="/standard/img/produtos/AORD03010.jpg?v=1759431605" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">resfriador do óleo wrangler 2013/2013 3.6 v6</p>
+    </a>
+    <p class="codigo">aord03010</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-shockbras-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                                                            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-6 produto animation-element">                                
+                                    
+<div class="wrapper-produto">
+    <a href="/9/articulador-da-coluna-de-direcao-fiesta-class-streeet-1999-2007-dir-mec/" data-sku="AACD06003" title="Fiesta Class/Streeet 1999/2007 Dir Mec">
+        <img src="/standard/img/produtos/AACD06003.jpg?v=1759356905" loading="lazy" class="thumbnail-produto img-responsive center-block" width="350" height="350" />
+        <p class="aplicacao">articulador da coluna de direção fiesta class/streeet 1999/2007 dir mec</p>
+    </a>
+    <p class="codigo">aacd06003</p>
+    <p class="fornecedor">
+        <img src="/standard/img/layout/logo-autafastar-produto.png">
+    </p>    
+</div>                                </div>   
+                                                     
+                    </div>            
+                </div>
+                    </div>   
+        
+        <footer>
+    <div class="container-fluid footer-blue">
+        <div class="container relative text-center">
+            <img src="/standard/img/layout/logo-autafastar-footer.png" id="logo-footer" />
+        </div>
+    </div>
+
+    <div class="container-fluid footer-red">
+        <div class="container text-center">
+            <ul id="nav-footer" class="list-inline">
+                <li><a href="/">Home</a></li>
+                <li><a href="#">Empresa</a></li>
+                <li><a href="#">Produtos</a></li>
+                <!--<li><a href="#">Representantes</a></li>-->
+                <li><a href="#">Contato</a></li>
+            </ul>
+            <div class="row">
+                <div id="social">
+                    <a href="https://www.facebook.com/autafastar/" target="_blank">
+                        <i class="fa fa-facebook-official"></i>
+                    </a>
+                    <a href="https://www.instagram.com/autafastar/" target="_blank">
+                        <i class="fa fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-note" class="container-fluid">
+        <div class="container">
+            <p>&copy AUTAFASTAR - Todos os direitos reservados 2026</p>
+            <a href="http://www.garagemidia.com.br" target="_blank" id="link-garagemidia">Desenvolvido por: Garagemidia</a>
+        </div>
+    </div>
+</footer>
+
+    
+    <script type="text/javascript" src="/standard/js/jquery.js"></script> 
+    <script type="text/javascript" src="/standard/js/bootstrap.min.js"></script> 
+    <script type="text/javascript" src="/standard/js/jquery.typeahead.min.js"></script>
+    <script type="text/javascript" src="/standard/js/slick.min.js"></script>
+    <script type="text/javascript" src="/standard/js/fancybox/source/jquery.fancybox.js"></script>
+    <script type="text/javascript" src="/standard/js/jquery.mask.js"></script>
+    <script type="text/javascript" src="/standard/js/valida_form.js"></script>
+    <script type="text/javascript" src="/standard/js/jquery.form.min.js"></script>
+    <script type="text/javascript" src="/standard/js/default.js?1757379180"></script>               
+        <script type="text/javascript" src="/standard/js/fotorama.js"></script> 
+        <script type="text/javascript" src="/standard/js/info-produto.js?1753730354"></script> 
+        
+    </body>
+</html>

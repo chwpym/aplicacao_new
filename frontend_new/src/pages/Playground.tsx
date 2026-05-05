@@ -45,6 +45,27 @@ const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   }
 }`;
 
+const API_OPTIONS = [
+    { id: 'graphql', label: 'GraphQL Fraga' },
+    { id: 'rest', label: 'REST API' },
+    { id: 'scraper', label: 'Scraper' },
+    { id: 'ds', label: 'Site DS' },
+    { id: 'viemar', label: 'Viemar' },
+    { id: 'bosch', label: 'Bosch' },
+    { id: 'mte_thomson', label: 'MTE Thomson' },
+    { id: 'tecfil', label: 'Tecfil' },
+    { id: 'ima', label: 'IMA' },
+    { id: 'tsa', label: 'TSA' },
+    { id: 'dayco', label: 'Dayco' },
+    { id: 'hipper_freios', label: 'Hipper Freios' },
+    { id: 'notus', label: 'Notus' },
+    { id: 'nakata', label: 'Nakata' },
+    { id: 'autoexperts', label: 'AutoExperts' },
+    { id: 'multiqualita', label: 'Multiqualità' },
+    { id: 'autafastar', label: 'Autafastar' },
+    { id: 'native', label: 'Nativo' }
+].sort((a, b) => a.label.localeCompare(b.label));
+
 const TEMPLATES = [
     {
         id: 'authomix-template',
@@ -67,41 +88,22 @@ const TEMPLATES = [
         }, null, 2)
     },
     {
-        id: 'nakata-template',
-        nome: 'Nakata (API REST)',
-        tipo: 'rest',
-        url: 'https://www.catalogonakata.com.br/detalhe/{id}',
-        headers: JSON.stringify({
-            "origin": "https://www.catalogonakata.com.br",
-            "referer": "https://www.catalogonakata.com.br/detalhe/{id}"
-        }, null, 2),
+        id: 'autafastar-template',
+        nome: 'Autafastar (Hydration)',
+        tipo: 'autafastar',
+        url: 'https://www.autafastar.com.br/busca/{id}/',
         mapeamento: JSON.stringify({
-            "container": "Obj.DetailApl",
-            "marca": "Montadora",
-            "veiculo": "Modelo",
-            "modelo": "DescModelo",
-            "motor": "Motor",
-            "ano_inicio": "Ano",
-            "referencias": "root:Obj.DetailConv"
+            container: '.wrapper-produto',
+            detalhes: 'Hydration automática de Refs e Ficha Técnica'
         }, null, 2)
     },
     {
-        id: 'wega-template',
-        nome: 'WEGA (API REST)',
-        tipo: 'rest',
-        url: 'https://wega.wedigi.com.br/api/v1/produto?cod={id}',
-        headers: JSON.stringify({
-            "origin": "https://wegamotors.com",
-            "referer": "https://wegamotors.com/"
-        }, null, 2),
+        id: 'autoexperts-template',
+        nome: 'AutoExperts Parts',
+        tipo: 'autoexperts',
+        url: 'API INTEGRADA',
         mapeamento: JSON.stringify({
-            "container": "Obj.DetailApl",
-            "marca": "Montadora",
-            "veiculo": "Modelo",
-            "modelo": "DescModelo",
-            "motor": "Motor",
-            "ano_inicio": "Ano",
-            "referencias": "root:Obj.DetailConv"
+            note: 'Usa lógica nativa do sistema'
         }, null, 2)
     },
     {
@@ -145,21 +147,35 @@ const TEMPLATES = [
         }, null, 2)
     },
     {
-        id: 'spicer-template',
-        nome: 'Spicer (GraphQL)',
-        tipo: 'graphql',
-        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
-        headers: JSON.stringify({
-            "origin": "https://spicer.catalogofraga.com.br",
-            "referer": "https://spicer.catalogofraga.com.br/"
-        }, null, 2),
-        query: GRAPHQL_TEMPLATE,
+        id: 'multiqualita-template',
+        nome: 'Multiqualità (Scraper)',
+        tipo: 'multiqualita',
+        url: 'https://multiqualita.com.br/MULTIQUALITA/sessioncode/?SESSION=WEB_LISTAPRODUTOS',
         mapeamento: JSON.stringify({
-            marca: 'brand',
-            veiculo: 'name',
-            motor: 'engineName',
-            ano_inicio: 'startYear',
-            imagem: 'images'
+            container: '.CADAPRODUTOX',
+            veiculo: '.NIGs (Labels)',
+            motor: '.NIGs (Labels)',
+            referencias: '.NIGs (Labels)',
+            ficha_tecnica: '.NIGs (Labels)'
+        }, null, 2)
+    },
+    {
+        id: 'nakata-template',
+        nome: 'Nakata (API REST)',
+        tipo: 'rest',
+        url: 'https://www.catalogonakata.com.br/detalhe/{id}',
+        headers: JSON.stringify({
+            "origin": "https://www.catalogonakata.com.br",
+            "referer": "https://www.catalogonakata.com.br/detalhe/{id}"
+        }, null, 2),
+        mapeamento: JSON.stringify({
+            "container": "Obj.DetailApl",
+            "marca": "Montadora",
+            "veiculo": "Modelo",
+            "modelo": "DescModelo",
+            "motor": "Motor",
+            "ano_inicio": "Ano",
+            "referencias": "root:Obj.DetailConv"
         }, null, 2)
     },
     {
@@ -199,12 +215,40 @@ const TEMPLATES = [
         }, null, 2)
     },
     {
-        id: 'autoexperts-template',
-        nome: 'AutoExperts Parts',
-        tipo: 'autoexperts',
-        url: 'API INTEGRADA',
+        id: 'spicer-template',
+        nome: 'Spicer (GraphQL)',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "origin": "https://spicer.catalogofraga.com.br",
+            "referer": "https://spicer.catalogofraga.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
         mapeamento: JSON.stringify({
-            note: 'Usa lógica nativa do sistema'
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    {
+        id: 'wega-template',
+        nome: 'WEGA (API REST)',
+        tipo: 'rest',
+        url: 'https://wega.wedigi.com.br/api/v1/produto?cod={id}',
+        headers: JSON.stringify({
+            "origin": "https://wegamotors.com",
+            "referer": "https://wegamotors.com/"
+        }, null, 2),
+        mapeamento: JSON.stringify({
+            "container": "Obj.DetailApl",
+            "marca": "Montadora",
+            "veiculo": "Modelo",
+            "modelo": "DescModelo",
+            "motor": "Motor",
+            "ano_inicio": "Ano",
+            "referencias": "root:Obj.DetailConv"
         }, null, 2)
     }
 ];
@@ -586,22 +630,9 @@ export default function Playground() {
                             value={configs.tipo}
                             onChange={(e) => handleTypeChange(e.target.value)}
                         >
-                            <option value="graphql">GraphQL Fraga</option>
-                            <option value="rest">REST API</option>
-                            <option value="scraper">Scraper</option>
-                            <option value="ds">Site DS</option>
-                            <option value="viemar">Viemar</option>
-                            <option value="bosch">Bosch</option>
-                            <option value="mte_thomson">MTE Thomson</option>
-                            <option value="tecfil">Tecfil</option>
-                            <option value="ima">IMA</option>
-                            <option value="tsa">TSA</option>
-                            <option value="dayco">Dayco</option>
-                            <option value="hipper_freios">Hipper Freios</option>
-                            <option value="notus">Notus</option>
-                            <option value="nakata">Nakata</option>
-                            <option value="autoexperts">AutoExperts</option>
-                            <option value="native">Nativo</option>
+                            {API_OPTIONS.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="md:col-span-5">
@@ -789,7 +820,7 @@ export default function Playground() {
                     <div>
                         <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">Templates Originais</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {TEMPLATES.map(tpl => (
+                            {[...TEMPLATES].sort((a, b) => a.nome.localeCompare(b.nome)).map(tpl => (
                                 <button
                                     key={tpl.id}
                                     onClick={() => handleLoadTemplate(tpl)}

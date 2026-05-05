@@ -1,19 +1,20 @@
 import os
+import json
 import duckdb
-import httpx
+from typing import Dict, List, Tuple
 from thefuzz import process
-import logging
 from app.services.logging_service import logger
-
 from app.utils.synonyms import AUTOMAKER_SYNONYMS
 
+CATALOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "automakers_catalog.json")
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", ".automakers.duckdb")
 
 class AutomakerService:
     _instance = None
+    _catalog = {}
+    _model_to_brand = {}
+    _brands = []
     _connection = None
-    _cached_names = []
-    _cached_models = {}  # Cache de modelos por marca
 
     def __new__(cls):
         if cls._instance is None:
@@ -22,227 +23,188 @@ class AutomakerService:
         return cls._instance
 
     def _initialize(self):
+        """Carrega o catálogo JSON mestre e prepara o DuckDB como fallback."""
+        # 1. Carregar JSON (Prioridade 1 - Performance e Estabilidade)
         try:
-            # Tenta conectar normalmente (leitura e escrita)
-            self._connection = duckdb.connect(DB_PATH)
-        except Exception as e:
-            # Se falhar (ex: arquivo em uso), tenta modo READ_ONLY para permitir acesso concorrente
-            if "used by another process" in str(e) or "IO Error" in str(e):
-                try:
-                    self._connection = duckdb.connect(DB_PATH, read_only=True)
-                    logger.info("DATABASE", "Master Catalog (DuckDB) aberto em modo SOMENTE LEITURA.")
-                except Exception as e2:
-                    logger.error("DATABASE", f"Erro fatal ao inicializar duckdb: {e2}")
-                    return
-            else:
-                logger.error("DATABASE", f"Erro ao inicializar duckdb: {e}")
-                return
-
-        try:
-            # Verifica se as tabelas existem
-            tables = self._connection.execute("SELECT table_name FROM information_schema.tables WHERE table_name IN ('montadoras', 'modelos')").fetchall()
-            existing_tables = [t[0] for t in tables]
-            
-            if 'montadoras' not in existing_tables:
-                self._setup_db()
-            
-            if 'modelos' not in existing_tables:
-                self._setup_modelos()
-            else:
-                # Se a tabela existe mas está vazia, força a carga
-                count = self._connection.execute("SELECT COUNT(*) FROM modelos").fetchone()[0]
-                if count == 0:
-                    self._setup_modelos()
-            
-            self._load_cache()
-            logger.info("DATABASE", "Master Catalog (DuckDB) inicializado com sucesso.")
-        except Exception as e:
-            logger.error("DATABASE", f"Erro ao configurar tabelas duckdb: {e}")
-
-    def _setup_db(self):
-        logger.info("DATABASE", "Carregando base de montadoras da BrasilAPI FIPE...")
-        self._connection.execute("CREATE TABLE IF NOT EXISTS montadoras (id INTEGER PRIMARY KEY, nome TEXT, tipo TEXT)")
-        self._connection.execute("CREATE TABLE IF NOT EXISTS modelos (id INTEGER PRIMARY KEY, marca_id INTEGER, nome TEXT, FOREIGN KEY(marca_id) REFERENCES montadoras(id))")
-        
-        print("[AutomakerService] Carregando marcas FIPE...", flush=True)
-        for tipo in ["carros", "motos", "caminhoes"]:
-            try:
-                url = f"https://brasilapi.com.br/api/fipe/marcas/v1/{tipo}"
-                resp = httpx.get(url, timeout=15.0)
-                if resp.status_code == 200:
-                    marcas = resp.json()
-                    for m in marcas:
-                        self._connection.execute(
-                            "INSERT OR IGNORE INTO montadoras (id, nome, tipo) VALUES (?, ?, ?)",
-                            [int(m["valor"]), m["nome"].upper(), tipo]
-                        )
-            except Exception as e:
-                logger.error("FIPE_API", f"Erro ao carregar marcas de {tipo}: {e}")
-
-    def _setup_modelos(self):
-        """Carrega todos os modelos da FIPE via BrasilAPI"""
-        logger.info("FIPE_API", "Iniciando carga de modelos FIPE (Master Catalog)...")
-        
-        # Pega as marcas do DB com o tipo correspondente
-        montadoras = self._connection.execute("SELECT id, nome, tipo FROM montadoras").fetchall()
-        total_marcas = len(montadoras)
-        processed = 0
-        
-        with httpx.Client(timeout=30.0) as client:
-            for m_id, m_nome, tipo in montadoras:
-                try:
-                    # Se o tipo estiver vazio (marcas legadas), assume carros
-                    tipo = tipo or "carros"
+            if os.path.exists(CATALOG_PATH):
+                with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self._catalog = data.get("catalog", {})
                     
-                    # Endpoint correto: /fipe/veiculos/v1/{tipo}/{codigoMarca}
-                    url = f"https://brasilapi.com.br/api/fipe/veiculos/v1/{tipo}/{m_id}"
-                    resp = client.get(url)
-                    if resp.status_code == 200:
-                        modelos = resp.json()
-                        if isinstance(modelos, list):
-                            for mod in modelos:
-                                mod_nome = mod.get("modelo", "").upper()
-                                if mod_nome:
-                                    self._connection.execute("INSERT INTO modelos (nome, marca_id) VALUES (?, ?)", [mod_nome, m_id])
-                            
-                            processed += 1
-                            if processed % 10 == 0:
-                                logger.info("FIPE_API", f"Progresso: {processed}/{total_marcas} marcas processadas...")
-                except Exception as e:
-                    logger.warning("FIPE_API", f"Falha na marca {m_nome} ({m_id}): {e}")
-                    continue
+                self._brands = list(self._catalog.keys())
+                self._model_to_brand = {}
+                
+                for brand, models in self._catalog.items():
+                    for model in models:
+                        self._model_to_brand[model.upper()] = brand.upper()
+                
+                # Guarda a data da última atualização para exibir na interface
+                self._last_update = data.get("last_update", "N/A")
+                
+                logger.info("DATABASE", f"Master Catalog JSON carregado: {len(self._brands)} marcas e {len(self._model_to_brand)} modelos.")
+        except Exception as e:
+            logger.error("DATABASE", f"Erro ao carregar JSON: {e}")
 
-    def _load_cache(self):
-        if self._connection:
-            resultados = self._connection.execute("SELECT nome FROM montadoras").fetchall()
-            self._cached_names = [row[0] for row in resultados]
+        # 2. Preparar DuckDB (Fallback / Segurança Profunda)
+        try:
+            if os.path.exists(DB_PATH):
+                # Abre sempre em modo READ_ONLY para evitar travas de concorrência
+                self._connection = duckdb.connect(DB_PATH, read_only=True)
+                logger.info("DATABASE", "Segurança DuckDB ativada (Modo Leitura).")
+        except Exception as e:
+            logger.warning("DATABASE", f"DuckDB de segurança indisponível: {e}")
+
+    def reload(self):
+        """Recarrega os dados do JSON (útil após sincronização)."""
+        logger.info("DATABASE", "Recarregando catálogo Automaker (Manual)...")
+        self._initialize()
+
+    def add_model_manual(self, brand: str, model: str):
+        """Adiciona um modelo manualmente ao JSON."""
+        brand = brand.strip().upper()
+        model = model.strip().upper()
+        
+        try:
+            with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            
+            if brand not in data["catalog"]:
+                data["catalog"][brand] = []
+            
+            if model not in data["catalog"][brand]:
+                data["catalog"][brand].append(model)
+                data["catalog"][brand].sort()
+                
+            with open(CATALOG_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            
+            self.reload()
+            return True
+        except Exception as e:
+            logger.error("DATABASE", f"Erro ao adicionar modelo manual: {e}")
+            return False
+
+    def remove_model_manual(self, brand: str, model: str):
+        """Remove um modelo do JSON."""
+        brand = brand.strip().upper()
+        model = model.strip().upper()
+        
+        try:
+            with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            
+            if brand in data["catalog"] and model in data["catalog"][brand]:
+                data["catalog"][brand].remove(model)
+                
+                with open(CATALOG_PATH, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                
+                self.reload()
+                return True
+            return False
+        except Exception as e:
+            logger.error("DATABASE", f"Erro ao remover modelo manual: {e}")
+            return False
 
     def padronizar(self, nome_bruto: str) -> str:
+        """Padroniza o nome da montadora."""
         if not nome_bruto:
             return ""
             
         nome_clean = nome_bruto.strip().upper()
-        resultado = nome_clean
         
-        # 1. Verifica Dicionário Central (Sinônimos Básicos)
         if nome_clean in AUTOMAKER_SYNONYMS:
-            resultado = AUTOMAKER_SYNONYMS[nome_clean]
+            return AUTOMAKER_SYNONYMS[nome_clean]
             
-        # 2. Busca Exata
-        elif nome_clean in self._cached_names:
-            resultado = nome_clean
+        if nome_clean in self._brands:
+            return nome_clean
             
-        # 3. Fuzzy Matching (Aproximação) contra o Cache
-        elif self._cached_names:
-            best_match, score = process.extractOne(nome_clean, self._cached_names)
-            if score >= 85:
-                resultado = best_match
+        if self._brands:
+            best_match, score = process.extractOne(nome_clean, self._brands)
+            if score >= 90:
+                return best_match
 
-        # 4. Preferências de Exibição Interna
-        if any(x in resultado for x in ["CHEVROLET", "GM ", "GM-"]) or resultado == "GM":
+        if any(x in nome_clean for x in ["CHEVROLET", "GM ", "GM-"]) or nome_clean == "GM":
             return "GM"
-        if any(x in resultado for x in ["VOLKSWAGEN", "VW "]) or resultado == "VW":
+        if any(x in nome_clean for x in ["VOLKSWAGEN", "VW "]) or nome_clean == "VW":
             return "VW"
             
-        return resultado
+        return nome_clean
 
-    def validar_aplicacao(self, montadora_bruta: str, modelo_bruto: str):
+    def validar_aplicacao(self, montadora_bruta: str, modelo_bruto: str) -> Tuple[str, str]:
         """
-        A 'Mágica' do Master Catalog:
-        Verifica se a montadora e o modelo estão invertidos ou se a montadora é na verdade um modelo.
+        Dedução inteligente de montadora em camadas:
+        Camada 1: JSON Mestre (Memória) - Rápido e editável
+        Camada 2: DuckDB (Banco de Dados) - Consulta SQL profunda
+        Camada 3: Sinônimos e Fallbacks - Dicionário de emergência
         """
         m_clean = str(montadora_bruta).strip().upper()
         mod_clean = str(modelo_bruto).strip().upper()
 
-        # Dicionário de emergência para modelos ultra-comuns caso a base FIPE falhe ou esteja incompleta
-        KNOWN_MODELS_FALLBACK = {
-            "FOX": "VW",
-            "CROSS FOX": "VW",
-            "CROSSFOX": "VW",
-            "SPACE FOX": "VW",
-            "SPACEFOX": "VW",
-            "GOL": "VW",
-            "SAVEIRO": "VW",
-            "PARATI": "VW",
-            "VOYAGE": "VW",
-            "CORSA": "GM",
-            "CELTA": "GM",
-            "ASTRA": "GM",
-            "VECTRA": "GM",
-            "ONIX": "GM",
-            "PRISMA": "GM",
-            "PALIO": "FIAT",
-            "UNO": "FIAT",
-            "STRADA": "FIAT",
-            "SIENA": "FIAT",
-            "MOBI": "FIAT",
-            "ARGO": "FIAT",
-            "FIESTA": "FORD",
-            "KA": "FORD",
-            "ECOSPORT": "FORD",
-            "RANGER": "FORD",
-            "CIVIC": "HONDA",
-            "FIT": "HONDA",
-            "COROLLA": "TOYOTA",
-            "HILUX": "TOYOTA",
-            "HB20": "HYUNDAI",
-            "TUCSON": "HYUNDAI",
-            "SANDERO": "RENAULT",
-            "LOGAN": "RENAULT",
-            "DUSTER": "RENAULT",
-            "KWID": "RENAULT",
-            "CLIO": "RENAULT",
-            "206": "PEUGEOT",
-            "207": "PEUGEOT",
-            "208": "PEUGEOT",
-            "307": "PEUGEOT",
-            "308": "PEUGEOT",
-            "C3": "CITROEN",
-            "C4": "CITROEN"
-        }
-
-        # 0. Verificação rápida em dicionário de emergência (antes mesmo de tentar DuckDB)
-        if m_clean in KNOWN_MODELS_FALLBACK:
-            return KNOWN_MODELS_FALLBACK[m_clean], (mod_clean if mod_clean and mod_clean != m_clean else m_clean)
-
-        # 1. Caso: Swapped Columns (Montadora no Modelo e vice-versa)
-        if (mod_clean in self._cached_names or mod_clean in AUTOMAKER_SYNONYMS) and \
-           (m_clean not in self._cached_names and m_clean not in AUTOMAKER_SYNONYMS):
-            return self.padronizar(mod_clean), m_clean
-
-        # 2. Caso: Montadora reconhecida, vida que segue
-        if m_clean in self._cached_names or m_clean in AUTOMAKER_SYNONYMS:
+        # --- CAMADA 1: JSON MESTRE ---
+        if m_clean in self._brands or m_clean in AUTOMAKER_SYNONYMS:
             return self.padronizar(m_clean), mod_clean
 
-        # 3. Caso: Montadora vazia ou suspeita, mas Modelo contém a marca
-        if not m_clean or len(m_clean) < 2:
-            for syn, target in AUTOMAKER_SYNONYMS.items():
-                if mod_clean.startswith(f"{syn} "):
-                    return self.padronizar(target), mod_clean.replace(f"{syn} ", "").strip()
+        if mod_clean in self._model_to_brand:
+            return self.padronizar(self._model_to_brand[mod_clean]), mod_clean
+            
+        if m_clean in self._model_to_brand:
+            brand = self._model_to_brand[m_clean]
+            return self.padronizar(brand), (mod_clean if mod_clean and mod_clean != m_clean else m_clean)
 
-        # 4. Caso: A montadora informada é na verdade um MODELO conhecido no DuckDB
-        if not self._connection:
-            return self.padronizar(m_clean), mod_clean
+        # Melhora: Tenta ver se a primeira palavra da montadora bruta é um modelo conhecido
+        # Ex: "COURIER ROCAM" -> "COURIER" -> FORD
+        m_parts = m_clean.split()
+        if m_parts and m_parts[0] in self._model_to_brand:
+            brand = self._model_to_brand[m_parts[0]]
+            return self.padronizar(brand), mod_clean
 
-        res = self._connection.execute("""
-            SELECT m.nome as marca_nome 
-            FROM modelos mod
-            JOIN montadoras m ON mod.marca_id = m.id
-            WHERE mod.nome = ? OR mod.nome LIKE ? || ' %' OR ? = mod.nome
-            LIMIT 1
-        """, [m_clean, m_clean, m_clean]).fetchone()
-
-        if res:
-            return self.padronizar(res[0]), mod_clean
-
-        return self.padronizar(m_clean), mod_clean
-
-    def __del__(self):
+        # --- CAMADA 2: DUCKDB FALLBACK ---
         if self._connection:
             try:
-                self._connection.close()
+                # Busca por montadora que na verdade é modelo
+                res = self._connection.execute("""
+                    SELECT m.nome 
+                    FROM modelos mod
+                    JOIN montadoras m ON mod.marca_id = m.id
+                    WHERE mod.nome = ? OR mod.nome LIKE ? || ' %'
+                    LIMIT 1
+                """, [m_clean, m_clean]).fetchone()
+                
+                if res:
+                    return self.padronizar(res[0]), mod_clean
+
+                # Busca por modelo na coluna correta
+                res_mod = self._connection.execute("""
+                    SELECT m.nome 
+                    FROM modelos mod
+                    JOIN montadoras m ON mod.marca_id = m.id
+                    WHERE mod.nome = ? OR mod.nome LIKE ? || ' %'
+                    LIMIT 1
+                """, [mod_clean, mod_clean]).fetchone()
+                
+                if res_mod:
+                    return self.padronizar(res_mod[0]), mod_clean
             except:
                 pass
+
+        # --- CAMADA 3: SINÔNIMOS E FALLBACKS ---
+        for brand in self._brands:
+            if mod_clean.startswith(f"{brand} "):
+                return self.padronizar(brand), mod_clean.replace(f"{brand} ", "").strip()
+
+        # Fallback de emergência (Hardcoded para modelos ultra-comuns se tudo falhar)
+        KNOWN_MODELS_FALLBACK = {
+            "FOX": "VW", "GOL": "VW", "SAVEIRO": "VW", "VOYAGE": "VW",
+            "CORSA": "GM", "CELTA": "GM", "ONIX": "GM",
+            "PALIO": "FIAT", "UNO": "FIAT", "STRADA": "FIAT",
+            "FIESTA": "FORD", "KA": "FORD", "COURIER": "FORD",
+            "208": "PEUGEOT", "C3": "CITROEN"
+        }
+        if mod_clean in KNOWN_MODELS_FALLBACK:
+            return KNOWN_MODELS_FALLBACK[mod_clean], mod_clean
+
+        return self.padronizar(m_clean), mod_clean
 
 # Singleton handler
 automaker_service = AutomakerService()

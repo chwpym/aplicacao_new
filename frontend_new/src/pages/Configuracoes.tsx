@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { Save, RotateCcw, Eye, EyeOff, Database, RefreshCw } from 'lucide-react';
 import { configApi } from '../services/api';
+import { toast } from '../utils/toast';
+import ConfirmModal from '../components/ConfirmModal';
 
 const PREF_KEY = 'colunas_visiveis';
 
@@ -38,10 +40,38 @@ const Configuracoes = () => {
     const [fields, setFields] = useState<Record<string, boolean>>({});
     const [saved, setSaved] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [syncing, setSyncing] = useState(false);
+    const [automakerInfo, setAutomakerInfo] = useState<any>(null);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
     useEffect(() => {
         loadPreferences();
+        loadAutomakerInfo();
     }, []);
+
+    const loadAutomakerInfo = async () => {
+        try {
+            const response = await configApi.getAutomakersInfo();
+            setAutomakerInfo(response.data);
+        } catch (error) {
+            console.error("Erro ao carregar info de montadoras:", error);
+        }
+    };
+
+    const handleSyncFipe = async () => {
+        setSyncing(true);
+        try {
+            const response = await configApi.syncFipe();
+            toast.success(response.data.message || "Sincronização iniciada com sucesso!");
+            // Polling simples: busca info novamente após 5 segundos para ver se já mudou algo
+            setTimeout(loadAutomakerInfo, 5000);
+        } catch (error) {
+            console.error("Erro ao sincronizar FIPE:", error);
+            toast.error("Falha ao iniciar sincronização. Tente novamente mais tarde.");
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     const loadPreferences = async () => {
         setLoading(true);
@@ -57,6 +87,7 @@ const Configuracoes = () => {
             }
         } catch (error) {
             console.error("Erro ao carregar preferências:", error);
+            toast.error("Erro ao carregar suas preferências padrão.");
             setFields({ ...factoryDefaults });
         } finally {
             setLoading(false);
@@ -74,10 +105,11 @@ const Configuracoes = () => {
             // Também salva no localStorage para garantir carregamento instantâneo no useCatalog
             localStorage.setItem('visibleFieldsDefault', JSON.stringify(fields));
             setSaved(true);
+            toast.success("Suas preferências padrão foram salvas!");
             setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error("Erro ao salvar preferências:", error);
-            alert("Erro ao salvar preferências no banco de dados.");
+            toast.error("Erro ao salvar preferências no banco de dados.");
         }
     };
 
@@ -112,6 +144,17 @@ const Configuracoes = () => {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <ConfirmModal 
+                isOpen={isConfirmOpen}
+                title="Sincronizar com FIPE?"
+                message="Isso buscará novos modelos e marcas na API oficial. O processo ocorre em segundo plano e pode levar alguns minutos."
+                confirmText="Sincronizar Agora"
+                cancelText="Agora não"
+                type="warning"
+                onConfirm={handleSyncFipe}
+                onCancel={() => setIsConfirmOpen(false)}
+            />
+
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold">Configurações</h1>
@@ -179,6 +222,43 @@ const Configuracoes = () => {
                         </button>
                     );
                 })}
+            </div>
+
+            {/* Manutenção do Sistema */}
+            <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <Database size={20} className="text-primary" /> Manutenção do Sistema
+                </h2>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-1">
+                            <h3 className="font-bold text-slate-800 dark:text-slate-100">Catálogo Mestre (FIPE)</h3>
+                            <p className="text-sm text-slate-500">
+                                Sincronize marcas e modelos para garantir o reconhecimento automático de montadoras.
+                            </p>
+                            <div className="flex gap-4 pt-2">
+                                <div className="text-xs">
+                                    <span className="text-slate-400">Modelos:</span> <span className="font-bold text-primary">{automakerInfo?.count || 0}</span>
+                                </div>
+                                <div className="text-xs">
+                                    <span className="text-slate-400">Atualização:</span> <span className="font-bold text-slate-500">{automakerInfo?.last_update ? new Date(automakerInfo.last_update).toLocaleDateString() : 'Nunca'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setIsConfirmOpen(true)}
+                            disabled={syncing}
+                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap shadow-lg ${
+                                syncing 
+                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+                            }`}
+                        >
+                            <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                            {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Nota */}

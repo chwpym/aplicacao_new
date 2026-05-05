@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import models, schemas
@@ -88,7 +88,47 @@ def delete_palavra(palavra_id: int, db: Session = Depends(get_db)):
 @router.get("/automakers")
 def get_automakers():
     from app.services.automaker_service import automaker_service
-    return {"status": "ok", "automakers": automaker_service._cached_names}
+    return {
+        "status": "ok", 
+        "count": len(automaker_service._model_to_brand),
+        "last_update": getattr(automaker_service, "_last_update", "N/A"),
+        "catalog": automaker_service._catalog, # Retorna o dicionário completo {Marca: [Modelos]}
+        "brands": automaker_service._brands
+    }
+
+@router.post("/fipe/sync")
+async def sync_fipe(background_tasks: BackgroundTasks):
+    try:
+        from scripts.sync_fipe_catalog import sync_catalog
+        from app.services.automaker_service import automaker_service
+        
+        async def run_sync_and_reload():
+            await sync_catalog()
+            automaker_service.reload()
+            
+        background_tasks.add_task(run_sync_and_reload)
+        return {"status": "success", "message": "Sincronização FIPE iniciada em segundo plano."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao iniciar sincronização: {str(e)}")
+
+@router.post("/automakers/model")
+def add_custom_model(data: dict):
+    brand = data.get("brand")
+    model = data.get("model")
+    if not brand or not model:
+        raise HTTPException(status_code=400, detail="Marca e modelo são obrigatórios")
+    
+    from app.services.automaker_service import automaker_service
+    if automaker_service.add_model_manual(brand, model):
+        return {"status": "success", "message": f"Modelo {model} adicionado à {brand}"}
+    raise HTTPException(status_code=500, detail="Erro ao salvar modelo")
+
+@router.delete("/automakers/model")
+def remove_custom_model(brand: str, model: str):
+    from app.services.automaker_service import automaker_service
+    if automaker_service.remove_model_manual(brand, model):
+        return {"status": "success", "message": f"Modelo {model} removido de {brand}"}
+    raise HTTPException(status_code=500, detail="Erro ao remover modelo")
 
 # --- Backup ---
 @router.post("/backup/export")

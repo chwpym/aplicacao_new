@@ -27,13 +27,17 @@ class NormalizationService:
             
         texto_limpo = str(texto).upper().replace("  ", " ").strip()
         
-        # 1. Extrair Cilindrada (ex: 1.0, 1.4, 2.0, 1.0L, 1,4)
+        # 1. Extrair Cilindrada (ex: 1.0, 1.4, 2.0, 1.0L, 1,4 ou múltiplos 1.0/1.3)
         cilindrada = ""
-        # Regex atualizada: suporta ponto ou vírgula (\d[\.,]\d)
-        cilindrada_match = re.search(r'\b(\d[\.,]\d)L?\b', texto_limpo)
+        # Regex aprimorada: suporta ponto/vírgula e padrões múltiplos como 1.0/1.3 ou 1.6-2.0
+        pattern_cil = r'\b(\d[\.,]\d(?:[/\-]\d[\.,]\d)*)L?\b'
+        cilindrada_match = re.search(pattern_cil, texto_limpo)
         if cilindrada_match:
             cilindrada = cilindrada_match.group(1).replace(",", ".") # Padroniza para ponto
-            texto_limpo = re.sub(r'\b' + re.escape(cilindrada_match.group(0)) + r'\b', '', texto_limpo)
+            texto_limpo = re.sub(pattern_cil, '', texto_limpo)
+            
+        # Limpeza extra: Remove anos residuais que podem ter sobrado no texto (ex: 1996/1999)
+        texto_limpo = re.sub(r'\b\d{4}(?:/\d{2,4})?\b', '', texto_limpo)
             
         # 2. Extrair Válvulas (ex: 8V, 16V)
         valvulas = ""

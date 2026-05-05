@@ -1,0 +1,127 @@
+{
+  "last_update": "2026-05-05T00:00:00Z",
+  "catalog": {
+    "FORD": [
+      "COURIER",
+      "COURIER ROCAM",
+      "ECOSPORT",
+      "ESCORT",
+      "FIESTA",
+      "FOCUS",
+      "FUSION",
+      "KA",
+      "RANGER"
+    ],
+    "GM": [
+      "CORSA",
+      "CELTA",
+      "ASTRA",
+      "VECTRA",
+      "ONIX",
+      "PRISMA",
+      "MERIVA",
+      "ZAFIRA",
+      "MONTANA",
+      "S10"
+    ],
+    "FIAT": [
+      "PALIO",
+      "UNO",
+      "STRADA",
+      "SIENA",
+      "MOBI",
+      "ARGO",
+      "CRONOS",
+      "PULSE",
+      "TORO",
+      "DUCATO"
+    ],
+    "VW": [
+      "GOL",
+      "SAVEIRO",
+      "PARATI",
+      "VOYAGE",
+      "FOX",
+      "CROSSFOX",
+      "SPACEFOX",
+      "POLO",
+      "GOLF",
+      "UP"
+    ],
+    "RENAULT": [
+      "SANDERO",
+      "LOGAN",
+      "DUSTER",
+      "KWID",
+      "CLIO",
+      "CAPTUR",
+      "OROCH",
+      "MASTER"
+    ],
+    "PEUGEOT": [
+      "206",
+      "207",
+      "208",
+      "2008",
+      "307",
+      "308",
+      "3008",
+      "408"
+    ],
+    "CITROEN": [
+      "C3",
+      "C4",
+      "C5",
+      "AIRCROSS",
+      "PICASSO",
+      "BERLINGO"
+    ],
+    "HONDA": [
+      "CIVIC",
+      "FIT",
+      "CITY",
+      "HRV",
+      "CRV"
+    ],
+    "TOYOTA": [
+      "COROLLA",
+      "HILUX",
+      "ETIOS",
+      "YARIS",
+      "SW4"
+    ],
+    "HYUNDAI": [
+      "HB20",
+      "HB20S",
+      "CRETA",
+      "TUCSON",
+      "IX35",
+      "I30"
+    ],
+    "NISSAN": [
+      "MARCH",
+      "VERSA",
+      "KICKS",
+      "SENTRA",
+      "FRONTIER"
+    ],
+    "JEEP": [
+      "RENEGADE",
+      "COMPASS",
+      "COMMANDER",
+      "CHEROKEE"
+    ],
+    "MITSUBISHI": [
+      "L200",
+      "PAJERO",
+      "ASX",
+      "LANCER"
+    ],
+    "KIA": [
+      "SPORTAGE",
+      "SORENTO",
+      "PICANTO",
+      "CERATO"
+    ]
+  }
+}

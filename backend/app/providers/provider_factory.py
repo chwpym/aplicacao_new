@@ -89,6 +89,14 @@ def get_provider(config_model):
             mapeamento=config["mapeamento"]
         )
 
+    elif config["tipo"] == "multiqualita":
+        from app.providers.multiqualita_provider import MultiqualitaProvider
+        return MultiqualitaProvider(config)
+
+    elif config["tipo"] == "autafastar":
+        from app.providers.autafastar_provider import AutafastarProvider
+        return AutafastarProvider(config)
+
 
     return None
 

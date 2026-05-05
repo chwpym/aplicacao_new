@@ -9,6 +9,7 @@ import Ajuda from './pages/Ajuda';
 import Configuracoes from './pages/Configuracoes';
 import ManualProvedores from './pages/ManualProvedores';
 import Documentacao from './pages/Documentacao';
+import Automakers from './pages/Automakers';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/siglas" element={<Siglas />} />
           <Route path="/palavras" element={<Palavras />} />
           <Route path="/playground" element={<Playground />} />
+          <Route path="/automakers" element={<Automakers />} />
           <Route path="/ajuda" element={<Ajuda />} />
           <Route path="/manual-provedores" element={<ManualProvedores />} />
           <Route path="/documentacao" element={<Documentacao />} />
