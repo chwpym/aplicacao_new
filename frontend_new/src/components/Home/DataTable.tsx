@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, FileDown, Loader2, FileSpreadsheet, FileText } from "lucide-react";
+import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX } from "lucide-react";
 import { FichaTecnicaModal } from "./FichaTecnicaModal";
 import { ImageGalleryModal } from "./ImageGalleryModal";
 import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
@@ -471,8 +471,21 @@ export const DataTable: React.FC<DataTableProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={12} className="px-6 py-12 text-center text-slate-400 italic">
-                    Nenhum resultado para exibir.
+                  <td colSpan={12} className="px-6 py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center">
+                        <SearchX size={28} className="text-amber-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                          Nenhum produto encontrado{partId ? ` para "${partId}"` : "."}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                          A busca foi realizada com sucesso no servidor, mas o provedor não retornou resultados.
+                          Verifique se o <strong>código está correto</strong> ou tente outro provedor.
+                        </p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               )
@@ -512,8 +525,20 @@ export const DataTable: React.FC<DataTableProps> = ({
               </div>
             ))
           ) : (
-            <div className="px-6 py-12 text-center text-slate-400 italic">
-              Nenhum resultado para exibir.
+            <div className="px-6 py-12 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center">
+                  <SearchX size={24} className="text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-600 dark:text-slate-300">
+                    Nenhum produto encontrado{partId ? ` para "${partId}"` : "."}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Verifique se o código está correto ou tente outro provedor.
+                  </p>
+                </div>
+              </div>
             </div>
           )
         ) : (
