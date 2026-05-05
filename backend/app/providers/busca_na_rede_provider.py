@@ -126,7 +126,9 @@ class BuscaNaRedeProvider(BaseProvider):
                     continue
                 if b.startswith("-"):
                     refs = [r.strip().upper() for r in b.split("-") if r.strip()]
-                    referencias.extend(refs)
+                    for ref in refs:
+                        if self._is_reference_code(ref):
+                            referencias.append(ref)
                     continue
                 cleaned.append(b)
 
@@ -150,17 +152,18 @@ class BuscaNaRedeProvider(BaseProvider):
                             merged_blocks.append(f"{block} {next_block}")
                             i += 2
                             continue
-                    # Sem anos adjacentes -> é referência/metadado
+                    # Sem anos adjacentes -> pode ser código de referência ou texto de marketing
                     clean_upper = block.strip().upper()
-                    if len(clean_upper) > 2 and clean_upper not in ("INFERIOR", "SUPERIOR", "DIANTEIRO", "TRASEIRO"):
+                    # Só aceita como referência se parecer um código (curto, poucas palavras)
+                    if self._is_reference_code(clean_upper):
                         referencias.append(clean_upper)
                 elif has_year and not has_letters:
                     # Bloco de anos sozinho sem veículo anterior -> ignora
                     pass
                 else:
-                    # Bloco sem nada útil
+                    # Bloco sem nada útil - tenta como referência se for código
                     clean_upper = block.strip().upper()
-                    if len(clean_upper) > 2:
+                    if self._is_reference_code(clean_upper):
                         referencias.append(clean_upper)
                 i += 1
 
@@ -182,11 +185,31 @@ class BuscaNaRedeProvider(BaseProvider):
                     }
                     items.append(raw_data)
 
-            # Injeta referências em todos os itens
+            # Injeta referências em todos os itens (limpar e deduplicar)
             if referencias:
-                ref_str = " | ".join(referencias)
-                for item in items:
-                    item["referencias"] = ref_str
+                clean_refs = []
+                seen_refs = set()
+                for ref in referencias:
+                    # Limpar referências com palavras repetidas (ex: "180696 180696" -> "180696")
+                    words = ref.split()
+                    unique_words = []
+                    for w in words:
+                        if w not in unique_words:
+                            unique_words.append(w)
+                    ref = " ".join(unique_words)
+                    
+                    # Não incluir o próprio código buscado
+                    if ref.replace(".", "").replace("-", "") == query.upper().replace(".", "").replace("-", ""):
+                        continue
+                    
+                    if ref not in seen_refs and len(ref) > 1:
+                        seen_refs.add(ref)
+                        clean_refs.append(ref)
+                
+                if clean_refs:
+                    ref_str = " | ".join(clean_refs)
+                    for item in items:
+                        item["referencias"] = ref_str
 
             # Deduplica aplicações iguais (o site repete blocos)
             seen = set()
@@ -292,3 +315,39 @@ class BuscaNaRedeProvider(BaseProvider):
             i += count  # Pula todas as repetições
 
         return groups
+
+    def _is_reference_code(self, text: str) -> bool:
+        """
+        Verifica se um texto parece ser um código de referência (ex: GTX9523, 180696, MB9383)
+        e não um texto de marketing/descrição (ex: "GARANTINDO CONFORTO E ESTABILIDADE...").
+        
+        Regras:
+        - Máximo 50 caracteres
+        - Máximo 4 palavras
+        - Deve conter pelo menos um dígito OU ter no máximo 2 palavras curtas
+        - Não pode ser uma palavra posicional genérica
+        """
+        if not text or len(text) < 3:
+            return False
+        if len(text) > 50:
+            return False
+        
+        words = text.split()
+        if len(words) > 4:
+            return False
+        
+        # Palavras posicionais que não são referências
+        ignore = {"INFERIOR", "SUPERIOR", "DIANTEIRO", "TRASEIRO", "ESQUERDO", "DIREITO"}
+        if text in ignore:
+            return False
+        
+        # Se contém números, é provavelmente um código
+        has_digit = any(c.isdigit() for c in text)
+        if has_digit:
+            return True
+        
+        # Se tem no máximo 2 palavras curtas sem números, pode ser uma marca (ex: "SK DIANTEIRO")
+        if len(words) <= 2 and all(len(w) <= 12 for w in words):
+            return True
+        
+        return False
