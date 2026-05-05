@@ -1,5 +1,5 @@
 import React from "react";
-import { Copy, Check, Trash2 } from "lucide-react";
+import { Copy, Check, Trash2, Save, RotateCcw } from "lucide-react";
 
 interface FilterSectionProps {
   visibleFields: any;
@@ -9,6 +9,8 @@ interface FilterSectionProps {
   getFieldLabel: (field: string) => string;
   copyToClipboard: (mode: "completa" | "intermediaria" | "agrupada") => void;
   clearResults: () => void;
+  saveCurrentAsDefault: () => void;
+  restoreDefault: () => void;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
@@ -19,6 +21,8 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   getFieldLabel,
   copyToClipboard,
   clearResults,
+  saveCurrentAsDefault,
+  restoreDefault,
 }) => {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
@@ -57,6 +61,26 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
               </label>
             );
           })}
+        </div>
+        
+        {/* Ações de Preferência */}
+        <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-4 ml-2">
+          <button
+            type="button"
+            onClick={saveCurrentAsDefault}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all"
+            title="Salvar estas colunas como meu Padrão de Fábrica"
+          >
+            <Save size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={restoreDefault}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
+            title="Restaurar meu Padrão de Fábrica"
+          >
+            <RotateCcw size={14} />
+          </button>
         </div>
       </div>
 

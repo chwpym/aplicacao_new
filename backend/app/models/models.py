@@ -42,3 +42,12 @@ class PalavraRemover(Base):
     id = Column(Integer, primary_key=True, index=True)
     palavra = Column(String, index=True)
     campo = Column(String, index=True)  # marca, modelo, motor, etc.
+
+
+class Configuracao(Base):
+    __tablename__ = "configuracoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    chave = Column(String, unique=True, index=True) # Ex: 'colunas_visiveis'
+    valor = Column(Text) # JSON stringified
+

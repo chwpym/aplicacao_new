@@ -17,6 +17,8 @@ const Home = () => {
     setAgrupar,
     visibleFields,
     setVisibleFields,
+    saveCurrentAsDefault,
+    restoreDefault,
     uniqueReferences,
     displayResults,
     paginatedResults,
@@ -54,6 +56,8 @@ const Home = () => {
         getFieldLabel={getFieldLabel}
         copyToClipboard={copyToClipboard}
         clearResults={clearResults}
+        saveCurrentAsDefault={saveCurrentAsDefault}
+        restoreDefault={restoreDefault}
       />
       
       <DataTable

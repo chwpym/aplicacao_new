@@ -42,3 +42,12 @@ FREMAX: BD5297
 Os checkboxes de visualização controlam o estado `visibleFields`. 
 - Ao adicionar novos campos no Backend, eles **devem** ser incluídos neste estado no Frontend (`useCatalog.ts`) para que possam ser ocultados/mostrados seletivamente.
 - A ordem das colunas no `COLUMN_CONFIG` do `DataTable.tsx` é: `marca`, `codigo`, `veiculo`, `modelo`, `versao`, `motor`, `configuracao_motor`, `combustivel`, `ano`, `observacao`, `posicao`, `lado`, `direcao`, `sistema_freio`, `restricao`, `apenas`, `referencias`, `acoes`.
+
+## 5. Persistência de Preferências do Usuário
+As preferências de visualização (quais colunas mostrar por padrão) devem ser persistidas localmente para evitar que o usuário precise reconfigurar a tabela a cada busca.
+
+- **Mecanismo:** Utilizar `localStorage` via hook `useCatalog`.
+- **Chave:** `catalog-visible-fields`.
+- **Fallback:** Caso não exista nada salvo, utilizar a lista de `DEFAULT_VISIBLE_FIELDS` definida no código.
+- **Reset:** O sistema deve oferecer um botão de "Restaurar Padrões" para limpar o `localStorage` e voltar à configuração de fábrica.
+

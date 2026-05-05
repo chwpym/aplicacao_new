@@ -37,26 +37,37 @@ export const useCatalog = () => {
     ficha_tecnica: true,
   };
 
-  const [visibleFields, setVisibleFieldsState] = useState<any>(() => {
-    try {
-      const saved = localStorage.getItem('visibleFieldsDefault');
-      if (saved) return { ...defaultFields, ...JSON.parse(saved) };
-    } catch {}
-    return defaultFields;
-  });
+  const [visibleFields, setVisibleFieldsState] = useState<any>(defaultFields);
 
-  // Wrapper que salva no localStorage toda vez que o usuário altera
+  // Wrapper que altera APENAS o estado local (sem salvar automático)
   const setVisibleFields = (updater: any) => {
     setVisibleFieldsState((prev: any) => {
       const next = typeof updater === 'function' ? updater(prev) : updater;
-      try { localStorage.setItem('visibleFieldsDefault', JSON.stringify(next)); } catch {}
       return next;
     });
   };
 
   useEffect(() => {
     fetchProvedores();
+    loadUserPreferences(); // Carregar preferências do banco ao iniciar
   }, []);
+
+  const loadUserPreferences = async () => {
+    try {
+      const response = await configApi.getPreferencias('colunas_visiveis');
+      if (response.data && response.data.valor) {
+        const saved = JSON.parse(response.data.valor);
+        setVisibleFieldsState({ ...defaultFields, ...saved });
+      } else {
+        // Fallback para localStorage se não houver no banco (transição)
+        const saved = localStorage.getItem('visibleFieldsDefault');
+        if (saved) setVisibleFieldsState({ ...defaultFields, ...JSON.parse(saved) });
+      }
+    } catch (error) {
+      console.error("Erro ao carregar preferências:", error);
+    }
+  };
+
 
   const fetchProvedores = async () => {
     try {
@@ -416,10 +427,24 @@ export const useCatalog = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Erro ao gerar ZIP:", error);
-      alert("Erro ao compactar imagens.");
-    } finally {
+     } finally {
       setLoading(false);
     }
+  };
+
+  const saveCurrentAsDefault = async () => {
+    try {
+      await configApi.savePreferencias('colunas_visiveis', visibleFields);
+      localStorage.setItem('visibleFieldsDefault', JSON.stringify(visibleFields));
+      alert("Padrão de colunas salvo com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar padrão:", error);
+      alert("Erro ao salvar padrão no banco de dados.");
+    }
+  };
+
+  const restoreDefault = async () => {
+    await loadUserPreferences();
   };
 
   return {
@@ -434,6 +459,8 @@ export const useCatalog = () => {
     setAgrupar,
     visibleFields,
     setVisibleFields,
+    saveCurrentAsDefault,
+    restoreDefault,
     uniqueReferences,
     displayResults,
     paginatedResults,

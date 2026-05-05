@@ -38,3 +38,18 @@ As referências são o coração da busca reversa.
 Para sites complexos onde a lista de resultados não traz todos os dados técnicos:
 1. **Passo 1 (Discovery):** Captura o ID interno da peça no site do fabricante.
 2. **Passo 2 (Hydration):** Realiza uma segunda requisição (ou extração em segundo plano) para a página de detalhes para obter referências OEM, fichas técnicas e imagens extras.
+
+## 7. Preservação de Ordem em Termos Técnicos
+Ao normalizar strings de motores ou configurações (ex: `NormalizationService`), a **ordem original dos termos deve ser preservada** se eles forem semanticamente dependentes.
+
+- **Regra de Ouro:** Nunca use ordenação alfabética automática (`sorted()`) em termos técnicos. 
+- **Exemplo Crítico:** 
+    - Correto: `FIRE EVO` (Nomenclatura oficial Fiat).
+    - Errado: `EVO FIRE` (A ordenação alfabética destrói a semântica).
+- **Implementação:** A extração deve seguir a posição original de cada termo encontrado na string bruta (`raw_text.find(keyword)`).
+## 8. Localização do Banco de Dados Oficial
+
+Para garantir a integridade dos dados e evitar duplicidade, o sistema utiliza um banco de dados centralizado.
+
+- **Arquivo:** `backend/catalogo.db`
+- **Importante:** Todos os scripts de manutenção e sementes (seeds) devem utilizar caminhos absolutos para acessar este arquivo, evitando a criação de arquivos `catalogo.db` fantasmas na raiz do projeto.

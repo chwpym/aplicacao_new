@@ -99,3 +99,30 @@ def export_backup():
         return {"status": "success", "message": f"Backup realizado em: {backup_path}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao realizar backup: {str(e)}")
+
+
+# --- Preferências Globais ---
+@router.get("/preferencias/{chave}")
+def get_preferencia(chave: str, db: Session = Depends(get_db)):
+    config = db.query(models.Configuracao).filter(models.Configuracao.chave == chave).first()
+    if not config:
+        return {"chave": chave, "valor": None}
+    return {"chave": chave, "valor": config.valor}
+
+@router.post("/preferencias")
+def save_preferencia(data: dict, db: Session = Depends(get_db)):
+    chave = data.get("chave")
+    valor = data.get("valor")
+    if not chave:
+        raise HTTPException(status_code=400, detail="Chave é obrigatória")
+    
+    config = db.query(models.Configuracao).filter(models.Configuracao.chave == chave).first()
+    if config:
+        config.valor = valor
+    else:
+        config = models.Configuracao(chave=chave, valor=valor)
+        db.add(config)
+    
+    db.commit()
+    return {"status": "success", "message": "Preferência salva"}
+

@@ -79,4 +79,16 @@ def get_provider(config_model):
         from app.providers.nakata_provider import NakataProvider
         return NakataProvider(config)
 
+    elif config["tipo"] == "busca_na_rede":
+        from app.providers.busca_na_rede_provider import BuscaNaRedeProvider
+        return BuscaNaRedeProvider(
+            provedor_id=config["id"],
+            nome=config["nome"],
+            slug=config_model.slug,
+            url_base=config["url"],
+            mapeamento=config["mapeamento"]
+        )
+
+
     return None
+

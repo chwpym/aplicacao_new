@@ -350,18 +350,19 @@ export default function Playground() {
                                        prev.mapeamento.includes('crossReference.valueList');
 
                 const isViemar = newType === 'viemar';
+                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata'].includes(newType);
 
                 return {
                     ...prev,
                     tipo: newType,
-                    // Se estivermos mudando para VIEMAR, forçamos a URL se for a da Fraga ou se estiver vazia
-                    url: (isDefaultUrl || isViemar) ? defaultConfig.url : prev.url,
-                    // Cabeçalhos: Forçamos se for padrão ou se estivermos indo para Viemar (que tem cabeçalhos muito específicos)
-                    headers: (isDefaultHeaders || isViemar) ? defaultConfig.headers : prev.headers,
+                    // Se estivermos mudando para VIEMAR ou marca nativa, forçamos a URL se for a da Fraga ou se estiver vazia
+                    url: (isDefaultUrl || isViemar || isNativeBrand) ? (defaultConfig?.url || prev.url) : prev.url,
+                    // Cabeçalhos: Forçamos se for padrão ou se estivermos indo para Viemar ou marca nativa
+                    headers: (isDefaultHeaders || isViemar || isNativeBrand) ? (defaultConfig?.headers || prev.headers) : prev.headers,
                     // Query: Se for Viemar, forçamos porque o payload POST é obrigatório e único
-                    query: (prev.query === '' || prev.tipo === 'graphql' || isViemar) ? (defaultConfig.query || '') : prev.query,
-                    // Mapeamento: Forçamos se for padrão ou se estivermos indo para Viemar
-                    mapeamento: (isDefaultMapping || isViemar) ? defaultConfig.mapeamento : prev.mapeamento
+                    query: (prev.query === '' || prev.tipo === 'graphql' || isViemar) ? (defaultConfig?.query || '') : prev.query,
+                    // Mapeamento: Forçamos se for padrão ou se estivermos indo para Viemar ou marca nativa
+                    mapeamento: (isDefaultMapping || isViemar || isNativeBrand) ? (defaultConfig?.mapeamento || prev.mapeamento) : prev.mapeamento
                 };
             });
         } else {
@@ -590,6 +591,15 @@ export default function Playground() {
                             <option value="scraper">Scraper</option>
                             <option value="ds">Site DS</option>
                             <option value="viemar">Viemar</option>
+                            <option value="bosch">Bosch</option>
+                            <option value="mte_thomson">MTE Thomson</option>
+                            <option value="tecfil">Tecfil</option>
+                            <option value="ima">IMA</option>
+                            <option value="tsa">TSA</option>
+                            <option value="dayco">Dayco</option>
+                            <option value="hipper_freios">Hipper Freios</option>
+                            <option value="notus">Notus</option>
+                            <option value="nakata">Nakata</option>
                             <option value="autoexperts">AutoExperts</option>
                             <option value="native">Nativo</option>
                         </select>

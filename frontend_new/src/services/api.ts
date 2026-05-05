@@ -12,6 +12,9 @@ export const searchApi = {
     },
     getDetalhesPeca: (codigo: string, provedorId: number) => {
         return api.get(`/search/details/peca`, { params: { codigo, provedor_id: provedorId } });
+    },
+    testarProvedor: (id_peca: string, config: any) => {
+        return api.post('/search/test', { id_peca, config });
     }
 };
 
@@ -31,6 +34,10 @@ export const configApi = {
 
     getHealth: () => api.get('/api/health'),
     exportBackup: () => api.post('/config/backup/export'),
+
+    getPreferencias: (chave: string) => api.get(`/config/preferencias/${chave}`),
+    savePreferencias: (chave: string, valor: any) => api.post('/config/preferencias', { chave, valor: JSON.stringify(valor) }),
 };
+
 
 export default api;

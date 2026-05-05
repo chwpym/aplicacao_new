@@ -64,16 +64,28 @@ class NormalizationService:
                 # Não damos break aqui para capturar casos como "HÍBRIDO GASOLINA"
         
         # 4. Identificar Keywords Técnicas (VHC, MPFI, etc.)
-        # Elas vão para a coluna de configuração/residuo
-        encontradas_kw = []
+        # Elas vão para a coluna de configuração/residuo respeitando a ORDEM ORIGINAL
+        matches = []
         for kw in ENGINE_KEYWORDS:
-             if re.search(r'\b' + re.escape(kw) + r'\b', texto_limpo):
-                encontradas_kw.append(kw)
-                texto_limpo = re.sub(r'\b' + re.escape(kw) + r'\b', '', texto_limpo)
+             for m in re.finditer(r'\b' + re.escape(kw) + r'\b', texto_limpo):
+                matches.append((m.start(), kw))
         
-        # Adiciona as keywords encontradas à configuração
+        # Ordena as palavras encontradas pela posição no texto original (não alfabético)
+        matches.sort()
+        encontradas_kw = [m[1] for m in matches]
+        
+        # Remove as keywords do texto original para limpar o resíduo
+        for _, kw in matches:
+            texto_limpo = re.sub(r'\b' + re.escape(kw) + r'\b', '', texto_limpo)
+        
+        # Adiciona as keywords encontradas à configuração na ordem certa
         if encontradas_kw:
-            config_parts.extend(sorted(encontradas_kw))
+            # Removemos duplicatas mantendo a ordem
+            vistos_kw = set()
+            for kw in encontradas_kw:
+                if kw not in vistos_kw:
+                    config_parts.append(kw)
+                    vistos_kw.add(kw)
 
         # Montar campos padronizados
         motor_parts = []

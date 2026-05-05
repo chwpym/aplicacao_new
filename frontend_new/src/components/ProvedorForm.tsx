@@ -239,8 +239,20 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               null,
               2,
             );
+          } else if (value === "busca_na_rede") {
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://buscanarede.com.br/{slug}";
+            }
+            next.mapeamento = JSON.stringify(
+              {
+                brand_slug: "{slug}",
+              },
+              null,
+              2,
+            );
           }
         }
+
 
         // Original DS specific logic, now integrated into the 'tipo' check
         if (currentNome === "DS" && name === "nome") {
@@ -327,9 +339,20 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 <option value="rest">REST API / ERP (JSON Dinâmico)</option>
                 <option value="ds">Robô Scraper (Site DS / Manual)</option>
                 <option value="scraper">Scraper Genérico (Universal)</option>
-                <option value="viemar">Viemar</option>
-                <option value="cofap">Cofap (Fraga)</option>
-                <option value="native">Provedor de Sistema (Nativo)</option>
+                <option value="viemar">Viemar (Nativo)</option>
+                <option value="cofap">Cofap / Monroe (Fraga)</option>
+                <option value="busca_na_rede">Busca na Rede (Tuba, Sampel, TC)</option>
+                <option value="bosch">Bosch (Nativo)</option>
+                <option value="mte_thomson">MTE Thomson (Nativo)</option>
+                <option value="tecfil">Tecfil (Nativo)</option>
+                <option value="ima">IMA (Nativo)</option>
+                <option value="tsa">TSA (Nativo)</option>
+                <option value="dayco">Dayco (Nativo)</option>
+                <option value="hipper_freios">Hipper Freios (Nativo)</option>
+                <option value="notus">Notus (Nativo)</option>
+                <option value="nakata">Nakata (Nativo)</option>
+                <option value="native">Outro Provedor de Sistema (Nativo)</option>
+
               </select>
             </div>
           </div>
@@ -391,110 +414,120 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
 
           {(formData.tipo === "autoexperts" ||
             formData.tipo === "ate" ||
+            formData.tipo === "viemar" ||
+            formData.tipo === "bosch" ||
+            formData.tipo === "mte_thomson" ||
+            formData.tipo === "tecfil" ||
+            formData.tipo === "ima" ||
+            formData.tipo === "tsa" ||
+            formData.tipo === "dayco" ||
+            formData.tipo === "hipper_freios" ||
+            formData.tipo === "notus" ||
+            formData.tipo === "nakata" ||
             formData.tipo === "native") && (
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-4">
-              <RefreshCcw className="text-primary mt-1 shrink-0" size={20} />
-              <div>
-                <h4 className="text-sm font-bold text-primary mb-1">
-                  PROVEDOR INTEGRADO PELO SISTEMA
-                </h4>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Este provedor utiliza uma lógica nativa personalizada no
-                  backend. Você pode ajustar o <strong>Nome</strong>, a{" "}
-                  <strong>URL Base</strong> e os <strong>Cabeçalhos</strong>,
-                  mas a estrutura de busca e extração de dados é otimizada via
-                  código interno.
-                </p>
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-4">
+                <RefreshCcw className="text-primary mt-1 shrink-0" size={20} />
+                <div>
+                  <h4 className="text-sm font-bold text-primary mb-1">
+                    PROVEDOR INTEGRADO PELO SISTEMA
+                  </h4>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Este provedor utiliza uma lógica nativa personalizada no
+                    backend. Você pode ajustar o <strong>Nome</strong>, a{" "}
+                    <strong>URL Base</strong> e os <strong>Cabeçalhos</strong>,
+                    mas a estrutura de busca e extração de dados é otimizada via
+                    código interno.
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {(formData.tipo === "rest" ||
             formData.tipo === "ds" ||
             formData.tipo === "scraper") && (
-            <div className="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-4">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                  {formData.tipo === "rest"
-                    ? "Mapeamento JSON"
-                    : "Seletores CSS (Scraper)"}
-                </label>
-                <span className="text-[10px] text-slate-400">
-                  Define como extrair os dados
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  "container",
-                  "product_link",
-                  "marca",
-                  "veiculo",
-                  "modelo",
-                  "motor",
-                  "configuracao_motor",
-                  "ano_inicio",
-                  "ano_fim",
-                  "imagem",
-                  "image_pattern",
-                  "referencias",
-                  "ref_marca",
-                  "ref_codigo",
-                  "observacao",
-                ].map((field) => (
-                  <div key={field} className="space-y-1">
-                    <label className="text-[10px] text-slate-400 uppercase font-bold">
-                      {(() => {
-                        const labels: Record<string, string> = {
-                          veiculo: "Nome do Carro",
-                          modelo: "Modelo / Versão",
-                          configuracao_motor: "Combustível / Detalhes",
-                          ano_inicio: "Ano Inicial",
-                          ano_fim: "Ano Final",
-                          image_pattern: "Padrão URL Imagem ({id})",
-                          product_link: "Link da Página",
-                          ref_marca: "Referência: Atributo Marca",
-                          ref_codigo: "Referência: Atributo Código",
-                        };
-                        return (
-                          labels[field] || field.toUpperCase().replace("_", " ")
-                        );
-                      })()}
-                    </label>
-                    <input
-                      placeholder={
-                        formData.tipo === "rest" || formData.tipo === "scraper"
-                          ? `Ex: ${field}`
-                          : `CSS: .${field}`
-                      }
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-primary"
-                      value={(() => {
-                        try {
-                          const m = JSON.parse(formData.mapeamento);
-                          return m[field] || "";
-                        } catch {
-                          return "";
-                        }
-                      })()}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFormData((prev: any) => {
-                          let currentMap = {};
-                          try {
-                            currentMap = JSON.parse(prev.mapeamento);
-                          } catch {}
-                          const nextMap = { ...currentMap, [field]: val };
-                          return {
-                            ...prev,
-                            mapeamento: JSON.stringify(nextMap),
+              <div className="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-4">
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+                    {formData.tipo === "rest"
+                      ? "Mapeamento JSON"
+                      : "Seletores CSS (Scraper)"}
+                  </label>
+                  <span className="text-[10px] text-slate-400">
+                    Define como extrair os dados
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    "container",
+                    "product_link",
+                    "marca",
+                    "veiculo",
+                    "modelo",
+                    "motor",
+                    "configuracao_motor",
+                    "ano_inicio",
+                    "ano_fim",
+                    "imagem",
+                    "image_pattern",
+                    "referencias",
+                    "ref_marca",
+                    "ref_codigo",
+                    "observacao",
+                  ].map((field) => (
+                    <div key={field} className="space-y-1">
+                      <label className="text-[10px] text-slate-400 uppercase font-bold">
+                        {(() => {
+                          const labels: Record<string, string> = {
+                            veiculo: "Nome do Carro",
+                            modelo: "Modelo / Versão",
+                            configuracao_motor: "Combustível / Detalhes",
+                            ano_inicio: "Ano Inicial",
+                            ano_fim: "Ano Final",
+                            image_pattern: "Padrão URL Imagem ({id})",
+                            product_link: "Link da Página",
+                            ref_marca: "Referência: Atributo Marca",
+                            ref_codigo: "Referência: Atributo Código",
                           };
-                        });
-                      }}
-                    />
-                  </div>
-                ))}
+                          return (
+                            labels[field] || field.toUpperCase().replace("_", " ")
+                          );
+                        })()}
+                      </label>
+                      <input
+                        placeholder={
+                          formData.tipo === "rest" || formData.tipo === "scraper"
+                            ? `Ex: ${field}`
+                            : `CSS: .${field}`
+                        }
+                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-primary"
+                        value={(() => {
+                          try {
+                            const m = JSON.parse(formData.mapeamento);
+                            return m[field] || "";
+                          } catch {
+                            return "";
+                          }
+                        })()}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev: any) => {
+                            let currentMap = {};
+                            try {
+                              currentMap = JSON.parse(prev.mapeamento);
+                            } catch { }
+                            const nextMap = { ...currentMap, [field]: val };
+                            return {
+                              ...prev,
+                              mapeamento: JSON.stringify(nextMap),
+                            };
+                          });
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between">
@@ -644,6 +677,16 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 tabela e pegue o texto da primeira coluna".
               </p>
             </section>
+            <section>
+              <h4 className="text-slate-900 dark:text-slate-100 font-bold mb-2 flex items-center gap-2">
+                <Search size={16} className="text-primary" /> Busca na Rede
+              </h4>
+              <p>
+                Para catálogos que usam a plataforma **Busca na Rede** (Tuba, Sampel, TC).
+                Basta preencher o `brand_slug` no mapeamento com o apelido da marca no site.
+              </p>
+            </section>
+
             <section>
               <h4 className="text-slate-900 dark:text-slate-100 font-bold mb-2 flex items-center gap-2">
                 <RefreshCcw size={16} className="text-primary" /> Sugestões

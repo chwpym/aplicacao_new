@@ -210,8 +210,32 @@ class NakataProvider(BaseProvider):
         # ── Aplicações (tabela de veículos) ──
         table = soup.select_one(".vehicles table")
         if table:
+            # 1. Identificar índices das colunas dinamicamente
+            headers = []
+            header_row = table.select_one("thead tr")
+            if header_row:
+                current_idx = 0
+                for th in header_row.select("th"):
+                    text = th.get_text(strip=True).lower()
+                    colspan = int(th.get("colspan", 1))
+                    headers.append({"label": text, "start_idx": current_idx, "colspan": colspan})
+                    current_idx += colspan
+
+            def get_val(row_cells, label_target):
+                for h in headers:
+                    if label_target in h["label"]:
+                        # Se for Veículo (colspan 2), o primeiro é montadora, segundo é modelo
+                        if "veículo" in h["label"] and h["colspan"] == 2:
+                            m = row_cells[h["start_idx"]].get_text(strip=True).upper() if len(row_cells) > h["start_idx"] else ""
+                            v = row_cells[h["start_idx"]+1].get_text(strip=True).upper() if len(row_cells) > h["start_idx"]+1 else ""
+                            return m, v
+                        
+                        # Para colunas simples
+                        val = row_cells[h["start_idx"]].get_text(strip=True) if len(row_cells) > h["start_idx"] else ""
+                        return val
+                return "" if "veículo" not in label_target else ("", "")
+
             rows = table.select("tbody tr")
-            # Filtrar linhas mobile (badge-nakata são headers mobile, não dados)
             data_rows = [r for r in rows if "badge-nakata" not in " ".join(r.get("class", []))]
 
             for row in data_rows:
@@ -219,31 +243,39 @@ class NakataProvider(BaseProvider):
                 if len(cells) < 2:
                     continue
 
-                montadora = cells[0].get_text(strip=True).upper() if len(cells) > 0 else ""
-                modelo = cells[1].get_text(strip=True).upper() if len(cells) > 1 else ""
-                ano_raw = cells[2].get_text(strip=True) if len(cells) > 2 else ""
-                posicao = cells[3].get_text(strip=True) if len(cells) > 3 else ""
-                lado = cells[4].get_text(strip=True) if len(cells) > 4 else ""
-                direcao = cells[5].get_text(strip=True) if len(cells) > 5 else ""
-                observacao = cells[6].get_text(strip=True) if len(cells) > 6 else ""
+                montadora, modelo = get_val(cells, "veículo")
+                versao = get_val(cells, "modelo") # Coluna "Modelo" extra da Nakata vira "Versão"
+                ano_raw = get_val(cells, "ano")
+                posicao = get_val(cells, "posição")
+                lado = get_val(cells, "lado")
+                direcao = get_val(cells, "direção")
+                transmissao = get_val(cells, "transmissão")
+                motor = get_val(cells, "motor")
+                observacao_extra = get_val(cells, "observações")
 
-                # Parse dos anos: "01/00 - 12/16" → ano_inicio=2000, ano_fim=2016
+                # Parse dos anos
                 ano_inicio, ano_fim = self._parse_anos(ano_raw)
+
+                # Montar observação combinada
+                obs_parts = []
+                if transmissao: obs_parts.append(f"Transmissão: {transmissao}")
+                if direcao: obs_parts.append(f"Direção: {direcao}")
+                if observacao_extra: obs_parts.append(observacao_extra)
 
                 app = {
                     "marca": "NAKATA",
                     "codigo": codigo,
                     "montadora": montadora,
                     "modelo": modelo,
-                    "versao": "",
-                    "motor": "",
+                    "versao": versao if versao != "-" else "",
+                    "motor": motor if motor != "-" else "",
                     "configuracao_motor": "",
                     "ano_inicio": ano_inicio,
                     "ano_fim": ano_fim,
                     "posicao": posicao,
                     "lado": lado,
                     "direcao": direcao,
-                    "observacao": observacao,
+                    "observacao": " | ".join(obs_parts),
                     "imagem": imagem,
                     "referencias": refs_str,
                     "ficha_tecnica": ficha if ficha else None,
