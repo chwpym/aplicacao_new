@@ -11,12 +11,14 @@ from app.services.logging_service import logger
 class BuscaNaRedeProvider(BaseProvider):
     """
     Provedor genérico para a plataforma Busca na Rede (buscanarede.com.br).
-    Suporta múltiplas marcas (Sampel, etc.) via brand_slug configurável no mapeamento.
+    Suporta múltiplas marcas (Sampel, Tuba Cabos, TC Chicotes, etc.) via brand_slug configurável.
+    
+    Estratégia: O site carrega dados via JavaScript (SPA), então extraímos as aplicações
+    dos metadados OG (og:description) que contêm todas as informações de forma estática.
     """
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        # Extrai o brand_slug do mapeamento JSON ou usa o nome do provedor como fallback
         mapeamento = config.get("mapeamento") or "{}"
         if isinstance(mapeamento, str):
             mapeamento = json.loads(mapeamento) if mapeamento.strip() else {}
@@ -25,7 +27,7 @@ class BuscaNaRedeProvider(BaseProvider):
 
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
         }
 
@@ -44,11 +46,9 @@ class BuscaNaRedeProvider(BaseProvider):
                     return []
 
                 soup = BeautifulSoup(response.text, "html.parser")
-                results = []
-
-                # Encontrar os cards de produtos
+                
+                # Busca links de produtos (h2 a, h3 a são o padrão do Busca na Rede)
                 product_links = soup.select("h2 a, h3 a, .product-item a")
-
                 processed_urls = set()
                 tasks = []
 
@@ -56,31 +56,32 @@ class BuscaNaRedeProvider(BaseProvider):
                     url = link.get("href")
                     if not url or "/produto/" not in url:
                         continue
-
                     if not url.startswith("http"):
                         url = self.base_domain + url
-
                     if url in processed_urls:
                         continue
 
                     processed_urls.add(url)
-                    tasks.append(self._hydrate_product_details(client, url, termo, marca_peca))
+                    tasks.append(self._hydrate_product(client, url, termo, marca_peca))
 
-                # Hydration em paralelo
-                if tasks:
-                    all_results = await asyncio.gather(*tasks)
-                    for sublist in all_results:
-                        results.extend(sublist)
+                if not tasks:
+                    return []
 
-                return results
+                all_results = await asyncio.gather(*tasks)
+                flattened = []
+                for sublist in all_results:
+                    flattened.extend(sublist)
+
+                return flattened
 
             except Exception as e:
                 logger.error("BUSCA_NA_REDE", f"Erro na busca ({self.brand_slug}): {str(e)}")
                 return []
 
-    async def _hydrate_product_details(self, client: httpx.AsyncClient, url: str, query: str, marca_peca: str) -> List[Dict[str, Any]]:
+    async def _hydrate_product(self, client: httpx.AsyncClient, url: str, query: str, marca_peca: str) -> List[Dict[str, Any]]:
         """
-        Hydration Phase: Extrai as aplicações da página do produto.
+        Hydration Phase: Extrai aplicações dos metadados OG da página do produto.
+        O site carrega tabelas via JS, mas os dados completos estão no og:description.
         """
         try:
             response = await client.get(url, headers=self.headers)
@@ -89,121 +90,169 @@ class BuscaNaRedeProvider(BaseProvider):
 
             soup = BeautifulSoup(response.text, "html.parser")
 
-            # 1. Informações Básicas do Produto
-            product_title = soup.find("h1").get_text(strip=True) if soup.find("h1") else ""
+            # 1. Título do produto (descrição da peça)
+            h1 = soup.find("h1")
+            product_title = h1.get_text(strip=True).upper() if h1 else ""
 
             # 2. Imagem
-            img_tag = soup.select_one(".product-image img, .img-responsive, #product-zoom")
-            image_url = ""
-            if img_tag:
-                image_url = img_tag.get("src") or img_tag.get("data-zoom-image") or ""
-                if image_url and not image_url.startswith("http"):
-                    image_url = self.base_domain + image_url
+            og_img = soup.find("meta", {"property": "og:image"})
+            image_url = og_img.get("content", "").strip() if og_img else ""
 
-            # 3. Referências / Código Original
-            referencias = []
-            ref_section = soup.find(string=re.compile(r"Referência|Código Original|Nº Original", re.I))
-            if ref_section:
-                ref_parent = ref_section.find_parent()
-                if ref_parent:
-                    ref_text = ref_parent.get_text(strip=True)
-                    parts = re.split(r":|-", ref_text, 1)
-                    if len(parts) > 1:
-                        referencias.append(parts[1].strip().upper())
+            # 3. Extrair dados do og:description (contém aplicações + referências)
+            og_desc = soup.find("meta", {"property": "og:description"})
+            desc_text = og_desc.get("content", "") if og_desc else ""
 
-            # 4. Ficha Técnica (do título)
-            ficha_tecnica = {}
-            if product_title:
-                ficha_tecnica["PRODUTO"] = product_title.upper()
+            if not desc_text:
+                meta_desc = soup.find("meta", {"name": "description"})
+                desc_text = meta_desc.get("content", "") if meta_desc else ""
 
-            # 5. Tabela de Aplicações
+            if not desc_text:
+                logger.info("BUSCA_NA_REDE", f"Sem og:description em {url}")
+                return []
+
+            # 4. Parsear os blocos de aplicação
+            # Formato: MONTADORA×3 MODELO×3 VERSÃO×3 ANOS... MOTOR
+            # Separados por múltiplos espaços
+            blocks = re.split(r'\s{2,}', desc_text.strip())
+
             items = []
-            tables = soup.find_all("table")
+            referencias = []
 
-            for table in tables:
-                headers_raw = [th.get_text(strip=True).upper() for th in table.find_all("th")]
-                if not headers_raw:
-                    first_row = table.find("tr")
-                    if first_row:
-                        headers_raw = [td.get_text(strip=True).upper() for td in first_row.find_all("td")]
-
-                if not headers_raw:
+            for block in blocks:
+                block = block.strip()
+                if not block or block == "-" or "Publicado" in block:
                     continue
 
-                # Mapeamento Dinâmico de Colunas
-                col_map = {}
-                for i, h in enumerate(headers_raw):
-                    if any(x in h for x in ["MONTADORA", "FABRICANTE", "MARCA"]):
-                        col_map["montadora"] = i
-                    elif any(x in h for x in ["MODELO", "VEÍCULO", "VEICULO"]):
-                        col_map["modelo"] = i
-                    elif any(x in h for x in ["VERSÃO", "VERSAO"]):
-                        col_map["versao"] = i
-                    elif any(x in h for x in ["MOTOR"]):
-                        col_map["motor"] = i
-                    elif any(x in h for x in ["ANO"]):
-                        col_map["ano"] = i
-                    elif any(x in h for x in ["COMBUSTÍVEL", "COMBUSTIVEL"]):
-                        col_map["combustivel"] = i
-                    elif any(x in h for x in ["OBSERVAÇÃO", "OBSERVACAO", "INFO"]):
-                        col_map["observacao"] = i
-                    elif any(x in h for x in ["POSIÇÃO", "POSICAO"]):
-                        col_map["posicao"] = i
+                # Bloco de referências OEM (formato: "- CODIGO - CODIGO")
+                if block.startswith("-") and not any(c.isalpha() for c in block.replace("-", "").strip()[:5]):
+                    refs = [r.strip() for r in block.split("-") if r.strip()]
+                    referencias.extend(refs)
+                    continue
 
-                rows = table.find_all("tr")[1:]  # Pula o cabeçalho
-                for row in rows:
-                    cells = row.find_all("td")
-                    if len(cells) < max(col_map.values(), default=0) + 1:
-                        continue
-
-                    def get_val(key):
-                        idx = col_map.get(key)
-                        return cells[idx].get_text(strip=True) if idx is not None and idx < len(cells) else ""
-
-                    # Extrair ano
-                    ano_texto = get_val("ano")
-                    ano_ini, ano_fim = self.extrair_anos(ano_texto) if ano_texto else ("", "")
-
+                # Parsear bloco de aplicação
+                parsed = self._parse_application_block(block)
+                if parsed:
                     raw_data = {
                         "marca_peca": marca_peca,
                         "codigo": query.upper(),
-                        "montadora": get_val("montadora"),
-                        "modelo": get_val("modelo"),
-                        "versao": get_val("versao"),
-                        "motor": get_val("motor"),
-                        "combustivel": get_val("combustivel"),
-                        "observacao": get_val("observacao"),
-                        "posicao": get_val("posicao"),
-                        "ano_inicio": ano_ini,
-                        "ano_fim": ano_fim,
+                        "montadora": parsed["montadora"],
+                        "modelo": parsed["modelo"],
+                        "versao": parsed["versao"],
+                        "motor": parsed["motor"],
+                        "ano_inicio": parsed["ano_inicio"],
+                        "ano_fim": parsed["ano_fim"],
                         "imagem": image_url,
-                        "referencias": referencias,
-                        "ficha_tecnica": ficha_tecnica,
+                        "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
                     }
+                    items.append(raw_data)
 
-                    # Pula linhas sem montadora e sem modelo (provavelmente não é tabela de aplicação)
-                    if not raw_data["montadora"] and not raw_data["modelo"]:
-                        continue
+            # Injeta referências em todos os itens
+            if referencias:
+                ref_str = " | ".join(referencias)
+                for item in items:
+                    item["referencias"] = ref_str
 
-                    items.append(self.formatar_resultado(raw_data))
+            # Deduplica aplicações iguais (o site repete blocos)
+            seen = set()
+            unique_items = []
+            for item in items:
+                key = (item["montadora"], item["modelo"], item["versao"], item["motor"], item["ano_inicio"], item["ano_fim"])
+                if key not in seen:
+                    seen.add(key)
+                    unique_items.append(self.formatar_resultado(item))
 
-            # Fallback: Se não houver tabela, tenta extrair de listas
-            if not items:
-                app_items = soup.select(".application-item, .item-aplicacao")
-                for item in app_items:
-                    text = item.get_text(strip=True)
-                    raw_data = {
-                        "marca_peca": marca_peca,
-                        "codigo": query.upper(),
-                        "modelo": text,
-                        "imagem": image_url,
-                        "referencias": referencias,
-                        "ficha_tecnica": ficha_tecnica,
-                    }
-                    items.append(self.formatar_resultado(raw_data))
-
-            return items
+            return unique_items
 
         except Exception as e:
             logger.error("BUSCA_NA_REDE", f"Erro no hydration ({url}): {str(e)}")
             return []
+
+    def _parse_application_block(self, block: str) -> dict | None:
+        """
+        Parseia um bloco de aplicação do og:description.
+        Formato típico: "FIAT FIAT FIAT SIENA SIENA SIENA ATTRACTIVE ATTRACTIVE ATTRACTIVE 1996 ... 2025 1.4, 8V MPI"
+        
+        Cada campo (montadora, modelo, versão) aparece repetido 3 vezes seguidas.
+        """
+        if not block:
+            return None
+
+        words = block.split()
+        if len(words) < 4:
+            return None
+
+        # Separar palavras textuais dos anos e dados técnicos
+        text_words = []
+        years = []
+        motor_parts = []
+        
+        i = 0
+        while i < len(words):
+            word = words[i]
+            # É um ano? (4 dígitos entre 1950-2030)
+            if re.match(r'^\d{4}$', word) and 1950 <= int(word) <= 2030:
+                years.append(word)
+            # É motor? (padrão X.X ou contém vírgula seguida de válvulas)
+            elif re.match(r'^\d[\.,]\d', word) or word in ("MPI", "EFI", "MPFI", "16V", "8V"):
+                motor_parts.append(word)
+            # Vírgula seguida de motor (ex: "1.4,")
+            elif word.endswith(",") and re.match(r'^\d[\.,]\d', word.rstrip(",")):
+                motor_parts.append(word.rstrip(","))
+            elif years or motor_parts:
+                # Já passou para a zona de dados técnicos
+                motor_parts.append(word)
+            else:
+                text_words.append(word)
+            i += 1
+
+        if not text_words:
+            return None
+
+        # Identificar campos repetidos 3 vezes (padrão Busca na Rede)
+        # Estratégia: agrupar palavras consecutivas repetidas
+        groups = self._extract_repeated_groups(text_words)
+        
+        montadora = groups[0] if len(groups) > 0 else ""
+        modelo = groups[1] if len(groups) > 1 else ""
+        versao = groups[2] if len(groups) > 2 else ""
+
+        # Anos
+        ano_inicio = years[0] if years else ""
+        ano_fim = years[-1] if len(years) > 1 else ""
+        # Se todos os anos são iguais, não tem fim
+        if ano_inicio == ano_fim:
+            ano_fim = ""
+
+        # Motor
+        motor = " ".join(motor_parts).strip()
+
+        return {
+            "montadora": montadora,
+            "modelo": modelo,
+            "versao": versao,
+            "motor": motor,
+            "ano_inicio": ano_inicio,
+            "ano_fim": ano_fim,
+        }
+
+    def _extract_repeated_groups(self, words: list) -> list:
+        """
+        Extrai grupos de palavras que se repetem consecutivamente.
+        Ex: ["FIAT", "FIAT", "FIAT", "SIENA", "SIENA", "SIENA"] -> ["FIAT", "SIENA"]
+        """
+        if not words:
+            return []
+
+        groups = []
+        i = 0
+        while i < len(words):
+            word = words[i]
+            # Conta quantas vezes essa palavra se repete consecutivamente
+            count = 1
+            while i + count < len(words) and words[i + count] == word:
+                count += 1
+
+            groups.append(word)
+            i += count  # Pula todas as repetições
+
+        return groups
