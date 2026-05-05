@@ -110,26 +110,62 @@ class BuscaNaRedeProvider(BaseProvider):
                 logger.info("BUSCA_NA_REDE", f"Sem og:description em {url}")
                 return []
 
-            # 4. Parsear os blocos de aplicação
-            # Formato: MONTADORA×3 MODELO×3 VERSÃO×3 ANOS... MOTOR
-            # Separados por múltiplos espaços
-            blocks = re.split(r'\s{2,}', desc_text.strip())
+            # 4. Pré-processar blocos
+            # Formato Tuba: "MONTADORA×3 MODELO×3 VERSÃO×3 ANOS... MOTOR" (tudo junto)
+            # Formato Sampel: "MONTADORA×3 MODELO×3" + "ANOS..." (separados)
+            raw_blocks = re.split(r'\s{2,}', desc_text.strip())
 
             items = []
             referencias = []
-
-            for block in blocks:
-                block = block.strip()
-                if not block or block == "-" or "Publicado" in block:
+            
+            # Pré-processamento: Limpar e classificar cada bloco
+            cleaned = []
+            for b in raw_blocks:
+                b = b.strip()
+                if not b or b == "-" or "Publicado" in b:
                     continue
-
-                # Bloco de referências OEM (formato: "- CODIGO - CODIGO")
-                if block.startswith("-") and not any(c.isalpha() for c in block.replace("-", "").strip()[:5]):
-                    refs = [r.strip() for r in block.split("-") if r.strip()]
+                if b.startswith("-"):
+                    refs = [r.strip().upper() for r in b.split("-") if r.strip()]
                     referencias.extend(refs)
                     continue
+                cleaned.append(b)
 
-                # Parsear bloco de aplicação
+            # Juntar blocos consecutivos: texto (veículo) + anos
+            merged_blocks = []
+            i = 0
+            while i < len(cleaned):
+                block = cleaned[i]
+                has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', block))
+                has_letters = bool(re.search(r'[A-Za-z]', block))
+
+                if has_year and has_letters:
+                    # Bloco completo (formato Tuba): veículo + anos juntos
+                    merged_blocks.append(block)
+                elif has_letters and not has_year:
+                    # Bloco só com texto (formato Sampel): verifica se o próximo é de anos
+                    if i + 1 < len(cleaned):
+                        next_block = cleaned[i + 1]
+                        next_has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', next_block))
+                        if next_has_year:
+                            merged_blocks.append(f"{block} {next_block}")
+                            i += 2
+                            continue
+                    # Sem anos adjacentes -> é referência/metadado
+                    clean_upper = block.strip().upper()
+                    if len(clean_upper) > 2 and clean_upper not in ("INFERIOR", "SUPERIOR", "DIANTEIRO", "TRASEIRO"):
+                        referencias.append(clean_upper)
+                elif has_year and not has_letters:
+                    # Bloco de anos sozinho sem veículo anterior -> ignora
+                    pass
+                else:
+                    # Bloco sem nada útil
+                    clean_upper = block.strip().upper()
+                    if len(clean_upper) > 2:
+                        referencias.append(clean_upper)
+                i += 1
+
+            # Parsear blocos mesclados
+            for block in merged_blocks:
                 parsed = self._parse_application_block(block)
                 if parsed:
                     raw_data = {
