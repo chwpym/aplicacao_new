@@ -1,17 +1,16 @@
 # Catalogo V4 — Roadmap de Ideias e Evoluções
 
 > Documento vivo com todas as ideias discutidas para futuras implementações.
-> Última atualização: 2026-05-05
+> Última atualização: 2026-05-06
 
 ---
 
 ## 🔴 URGENTE (Próxima Sessão)
 
-### 1. Corrigir Provedor "Busca na Rede"
-- **Status:** Quebrado (erro 500)
-- **Causa:** Método abstrato `buscar` não implementado, construtor fora do padrão
-- **Plano detalhado:** Ver `PLANO_BUSCA_NA_REDE.md`
-- **Estimativa:** 30 minutos
+- [x] Estabilização do provedor "Busca na Rede" (Tuba, Sampel, TC Chicotes)
+- [x] Parser resiliente via metadados (eliminando erros 500)
+- [x] Filtro de colunas e limpeza de referências de marketing
+- [x] Integração do provedor Japanparts (API REST nativa, 35 veículos/7 montadoras no FO313S)
 
 ---
 

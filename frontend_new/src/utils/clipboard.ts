@@ -333,5 +333,24 @@ export const copyToClipboard = (
     }
   }
 
+  // Bloco de Ficha Técnica (Específico JAPANPARTS)
+  const japanpartsResults = results.filter(r => 
+    (r.provedor?.toUpperCase() === "JAPANPARTS" || r.marca?.toUpperCase() === "JAPANPARTS") 
+    && r.ficha_tecnica
+  );
+  if (japanpartsResults.length > 0) {
+    const ficha = japanpartsResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (JAPANPARTS):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
   navigator.clipboard.writeText(text.trim());
 };

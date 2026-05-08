@@ -1,0 +1,878 @@
+Request URL
+https://api.japanparts.com.br/api/part_dimensions?filter[where][part_id]=2926
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+104.21.26.10:443
+Referrer Policy
+strict-origin-when-cross-origin
+access-control-allow-credentials
+true
+access-control-allow-origin
+https://japanparts.com.br
+alt-svc
+h3=":443"; ma=86400
+cf-cache-status
+DYNAMIC
+cf-ray
+9f78990db8bc28b5-GRU
+content-encoding
+zstd
+content-type
+application/json; charset=utf-8
+date
+Wed, 06 May 2026 14:15:35 GMT
+etag
+W/"d5-EjA/3HtBTsr1ZBkk67JeZAPKqkY"
+nel
+{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority
+u=1,i
+report-to
+{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=fJ3zirjtV8B4gJxPIOVTNy7pnrbQGkq35d2BDbLhJ3rAt2Kn0ArrpVLdrOtzfg31AFSs2KCvvYffmO5yFIUM7DsN3FFdpgZfa9UlLQ06vV2IX2SqONumti6l5Cb6tfJlIDr6pSPR7Ss%3D"}]}
+server
+cloudflare
+server-timing
+cfExtPri
+vary
+Origin, Accept-Encoding
+x-cloud-trace-context
+66e26a471fb3f577f6c1c48a328e157b
+x-content-type-options
+nosniff
+x-download-options
+noopen
+x-frame-options
+DENY
+x-xss-protection
+1; mode=block
+:authority
+api.japanparts.com.br
+:method
+GET
+:path
+/api/part_dimensions?filter[where][part_id]=2926
+:scheme
+https
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+content-type
+application/json;charset=utf-8
+origin
+https://japanparts.com.br
+priority
+u=1, i
+referer
+https://japanparts.com.br/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-site
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+Start AI assistance chats without prior context
+AI assistance chats can now be started from anywhere in DevTools and AI assistance will find required context based on the initial prompt.
+
+MCP server & CLI
+Optionally expose DevTools and automation capabilities through CLI, enabling coding agents to batch tool calls and improve token efficiency.
+
+Code generation in the Console & Sources panels
+Generate entire code blocks directly in the Console and Sources panels by typing natural language comments.
+
+REPONSE
+
+[
+    {
+        "part_id": 2926,
+        "weight": "0",
+        "length": "0",
+        "width": "0",
+        "height": "78",
+        "internal_diam": "0",
+        "external_diam": "76",
+        "screw_in": "22",
+        "screw_out": "0",
+        "beak_in": "0",
+        "beak_out": "0",
+        "created": null,
+        "modified": null,
+        "id": 2475
+    }
+]
+
+curl 'https://api.japanparts.com.br/api/vehicles/findByPartId?partId=2926' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'content-type: application/json;charset=utf-8' \
+  -H 'origin: https://japanparts.com.br' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://japanparts.com.br/' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+
+
+  Request URL
+https://api.japanparts.com.br/api/vehicles/findByPartId?partId=2926
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+104.21.26.10:443
+Referrer Policy
+strict-origin-when-cross-origin
+access-control-allow-credentials
+true
+access-control-allow-origin
+https://japanparts.com.br
+alt-svc
+h3=":443"; ma=86400
+cf-cache-status
+DYNAMIC
+cf-ray
+9f78990db8be28b5-GRU
+content-encoding
+gzip
+content-type
+application/json; charset=utf-8
+date
+Wed, 06 May 2026 14:15:35 GMT
+etag
+W/"2332-ZZxCbw6UnPyoxfEx4ozgXP1Ej9U"
+nel
+{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority
+u=1,i
+report-to
+{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Dt%2BFki3k2579VpgANgBfJ%2FWRJoVsADBKJ%2Buf3EgPr1wqOE7um1yiz%2BpCdZ%2BNqN8DGqmiWCQjrsS5r8YYNhAFvNR2TzijW3IfKoyGrdE1APraCCDZObV9DSkh3zK0cV9uXrinx0lyFU0%3D"}]}
+server
+cloudflare
+server-timing
+cfExtPri
+vary
+Origin, Accept-Encoding
+x-content-type-options
+nosniff
+x-download-options
+noopen
+x-frame-options
+DENY
+x-xss-protection
+1; mode=block
+:authority
+api.japanparts.com.br
+:method
+GET
+:path
+/api/vehicles/findByPartId?partId=2926
+:scheme
+https
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+content-type
+application/json;charset=utf-8
+origin
+https://japanparts.com.br
+priority
+u=1, i
+referer
+https://japanparts.com.br/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-site
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+
+
+REPONSE
+
+{
+    "data": [
+        {
+            "model": "ONIX ",
+            "engine": "CSS PRIME",
+            "vehicle_line_id": 5,
+            "vehicle_line_detail": "LEVE",
+            "thumb": "/imgsveiculos/811b3a2c-3d6d-4608-bba5-e64e14a3e7d6.png",
+            "img": "/imgsveiculos/811b3a2c-3d6d-4608-bba5-e64e14a3e7d6.png",
+            "vehicle_manufacturer_id": 9,
+            "year_from": "2019-01-01T00:00:00.000Z",
+            "year_to": null,
+            "version": "1.0 12V TURBO FLEX",
+            "status": null,
+            "created": "2020-12-09T19:13:22.000Z",
+            "modified": "2020-12-09T19:13:22.000Z",
+            "addtoindex": 1,
+            "id": 8787,
+            "vehicleParts": [
+                {
+                    "part_id": 2718,
+                    "vehicle_id": 8787,
+                    "details": null,
+                    "created": "2020-12-09T19:13:27.000Z",
+                    "modified": "2020-12-09T19:13:27.000Z",
+                    "id": 29553,
+                    "parts": {
+                        "code": "FABR317S",
+                        "code_formatted": "FABR317S",
+                        "thumb": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "img": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "description": null,
+                        "bar_code": "7908374400811",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 1,
+                        "part_subcategory_name": "Filtro de Ar",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2020-12-09T19:06:51.000Z",
+                        "modified": "2020-12-09T19:06:51.000Z",
+                        "addtoindex": 1,
+                        "id": 2718
+                    }
+                },
+                {
+                    "part_id": 2926,
+                    "vehicle_id": 8787,
+                    "details": null,
+                    "created": "2021-04-29T17:59:38.000Z",
+                    "modified": "2021-04-29T17:59:38.000Z",
+                    "id": 31204,
+                    "parts": {
+                        "code": "FOBR174S",
+                        "code_formatted": "FOBR174S",
+                        "thumb": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "img": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "description": null,
+                        "bar_code": "7908374400460",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 3,
+                        "part_subcategory_name": "Filtro de Óleo",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2021-04-29T17:58:03.000Z",
+                        "modified": "2021-04-29T17:58:03.000Z",
+                        "addtoindex": 1,
+                        "id": 2926
+                    }
+                },
+                {
+                    "part_id": 723,
+                    "vehicle_id": 8787,
+                    "details": null,
+                    "created": "2025-11-19T15:01:02.000Z",
+                    "modified": "2025-11-19T15:01:02.000Z",
+                    "id": 42531,
+                    "parts": {
+                        "code": "FCBR14S",
+                        "code_formatted": "FCBR14S",
+                        "thumb": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "img": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "description": "",
+                        "bar_code": "7898407313143",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 4,
+                        "part_subcategory_name": "Filtro de Combustível",
+                        "feature": 0,
+                        "status": 1,
+                        "created": null,
+                        "modified": "2018-04-26T00:00:00.000Z",
+                        "addtoindex": 0,
+                        "id": 723
+                    }
+                }
+            ],
+            "vehicleManufacturers": {
+                "name": "CHEVROLET",
+                "thumb": null,
+                "img": null,
+                "description": null,
+                "created": "2013-10-01T00:00:00.000Z",
+                "modified": "2018-09-07T12:49:33.000Z",
+                "indexed": "2018-09-07T12:59:53.000Z",
+                "indexUpdate": 1,
+                "id": 9
+            }
+        },
+        {
+            "model": "TRACKER",
+            "engine": "CSS PRIME",
+            "vehicle_line_id": 5,
+            "vehicle_line_detail": "LEVE",
+            "thumb": "/imgsveiculos/070a478f-c758-4458-b856-6dcd06d8dd20.jpg",
+            "img": "/imgsveiculos/070a478f-c758-4458-b856-6dcd06d8dd20.jpg",
+            "vehicle_manufacturer_id": 9,
+            "year_from": "2020-01-01T00:00:00.000Z",
+            "year_to": null,
+            "version": "1.0 12V TURBO FLEX",
+            "status": null,
+            "created": "2020-12-09T19:14:03.000Z",
+            "modified": "2020-12-09T19:14:03.000Z",
+            "addtoindex": 1,
+            "id": 8788,
+            "vehicleParts": [
+                {
+                    "part_id": 2718,
+                    "vehicle_id": 8788,
+                    "details": null,
+                    "created": "2020-12-09T19:14:08.000Z",
+                    "modified": "2020-12-09T19:14:08.000Z",
+                    "id": 29554,
+                    "parts": {
+                        "code": "FABR317S",
+                        "code_formatted": "FABR317S",
+                        "thumb": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "img": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "description": null,
+                        "bar_code": "7908374400811",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 1,
+                        "part_subcategory_name": "Filtro de Ar",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2020-12-09T19:06:51.000Z",
+                        "modified": "2020-12-09T19:06:51.000Z",
+                        "addtoindex": 1,
+                        "id": 2718
+                    }
+                },
+                {
+                    "part_id": 2926,
+                    "vehicle_id": 8788,
+                    "details": null,
+                    "created": "2021-04-29T17:59:53.000Z",
+                    "modified": "2021-04-29T17:59:53.000Z",
+                    "id": 31205,
+                    "parts": {
+                        "code": "FOBR174S",
+                        "code_formatted": "FOBR174S",
+                        "thumb": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "img": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "description": null,
+                        "bar_code": "7908374400460",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 3,
+                        "part_subcategory_name": "Filtro de Óleo",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2021-04-29T17:58:03.000Z",
+                        "modified": "2021-04-29T17:58:03.000Z",
+                        "addtoindex": 1,
+                        "id": 2926
+                    }
+                },
+                {
+                    "part_id": 723,
+                    "vehicle_id": 8788,
+                    "details": null,
+                    "created": "2025-11-19T16:33:33.000Z",
+                    "modified": "2025-11-19T16:33:33.000Z",
+                    "id": 42532,
+                    "parts": {
+                        "code": "FCBR14S",
+                        "code_formatted": "FCBR14S",
+                        "thumb": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "img": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "description": "",
+                        "bar_code": "7898407313143",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 4,
+                        "part_subcategory_name": "Filtro de Combustível",
+                        "feature": 0,
+                        "status": 1,
+                        "created": null,
+                        "modified": "2018-04-26T00:00:00.000Z",
+                        "addtoindex": 0,
+                        "id": 723
+                    }
+                }
+            ],
+            "vehicleManufacturers": {
+                "name": "CHEVROLET",
+                "thumb": null,
+                "img": null,
+                "description": null,
+                "created": "2013-10-01T00:00:00.000Z",
+                "modified": "2018-09-07T12:49:33.000Z",
+                "indexed": "2018-09-07T12:59:53.000Z",
+                "indexUpdate": 1,
+                "id": 9
+            }
+        },
+        {
+            "model": "TRACKER",
+            "engine": "CSS PRIME",
+            "vehicle_line_id": 5,
+            "vehicle_line_detail": "LEVE",
+            "thumb": "/imgsveiculos/9720c419-f47e-4b2c-8e98-f11a5f65e91e.jpg",
+            "img": "/imgsveiculos/9720c419-f47e-4b2c-8e98-f11a5f65e91e.jpg",
+            "vehicle_manufacturer_id": 9,
+            "year_from": "2020-01-01T00:00:00.000Z",
+            "year_to": null,
+            "version": "1.2 12V TURBO FLEX",
+            "status": null,
+            "created": "2020-12-09T19:14:26.000Z",
+            "modified": "2020-12-09T19:14:26.000Z",
+            "addtoindex": 1,
+            "id": 8789,
+            "vehicleParts": [
+                {
+                    "part_id": 2718,
+                    "vehicle_id": 8789,
+                    "details": null,
+                    "created": "2020-12-09T19:14:34.000Z",
+                    "modified": "2020-12-09T19:14:34.000Z",
+                    "id": 29555,
+                    "parts": {
+                        "code": "FABR317S",
+                        "code_formatted": "FABR317S",
+                        "thumb": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "img": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "description": null,
+                        "bar_code": "7908374400811",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 1,
+                        "part_subcategory_name": "Filtro de Ar",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2020-12-09T19:06:51.000Z",
+                        "modified": "2020-12-09T19:06:51.000Z",
+                        "addtoindex": 1,
+                        "id": 2718
+                    }
+                },
+                {
+                    "part_id": 2926,
+                    "vehicle_id": 8789,
+                    "details": null,
+                    "created": "2021-04-29T17:59:54.000Z",
+                    "modified": "2021-04-29T17:59:54.000Z",
+                    "id": 31206,
+                    "parts": {
+                        "code": "FOBR174S",
+                        "code_formatted": "FOBR174S",
+                        "thumb": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "img": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "description": null,
+                        "bar_code": "7908374400460",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 3,
+                        "part_subcategory_name": "Filtro de Óleo",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2021-04-29T17:58:03.000Z",
+                        "modified": "2021-04-29T17:58:03.000Z",
+                        "addtoindex": 1,
+                        "id": 2926
+                    }
+                }
+            ],
+            "vehicleManufacturers": {
+                "name": "CHEVROLET",
+                "thumb": null,
+                "img": null,
+                "description": null,
+                "created": "2013-10-01T00:00:00.000Z",
+                "modified": "2018-09-07T12:49:33.000Z",
+                "indexed": "2018-09-07T12:59:53.000Z",
+                "indexUpdate": 1,
+                "id": 9
+            }
+        },
+        {
+            "model": "MONTANA",
+            "engine": "CSS PRIME",
+            "vehicle_line_id": 5,
+            "vehicle_line_detail": "LEVE",
+            "thumb": "/imgsveiculos/1211b0cf-6a2b-40a5-9f2a-cde230724d2a.jpg",
+            "img": "/imgsveiculos/1211b0cf-6a2b-40a5-9f2a-cde230724d2a.jpg",
+            "vehicle_manufacturer_id": 9,
+            "year_from": "2023-01-01T00:00:00.000Z",
+            "year_to": null,
+            "version": "1.2 12V TURBO FLEX ",
+            "status": null,
+            "created": "2024-05-24T18:57:52.000Z",
+            "modified": "2024-05-24T18:57:52.000Z",
+            "addtoindex": 1,
+            "id": 11358,
+            "vehicleParts": [
+                {
+                    "part_id": 2718,
+                    "vehicle_id": 11358,
+                    "details": null,
+                    "created": "2024-05-24T18:58:24.000Z",
+                    "modified": "2024-05-24T18:58:24.000Z",
+                    "id": 39208,
+                    "parts": {
+                        "code": "FABR317S",
+                        "code_formatted": "FABR317S",
+                        "thumb": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "img": "/imgsprodutos/10090c02-15f4-48d3-9057-b0ce12a832b3.jpg",
+                        "description": null,
+                        "bar_code": "7908374400811",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 1,
+                        "part_subcategory_name": "Filtro de Ar",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2020-12-09T19:06:51.000Z",
+                        "modified": "2020-12-09T19:06:51.000Z",
+                        "addtoindex": 1,
+                        "id": 2718
+                    }
+                },
+                {
+                    "part_id": 2926,
+                    "vehicle_id": 11358,
+                    "details": null,
+                    "created": "2025-11-19T16:39:21.000Z",
+                    "modified": "2025-11-19T16:39:21.000Z",
+                    "id": 42533,
+                    "parts": {
+                        "code": "FOBR174S",
+                        "code_formatted": "FOBR174S",
+                        "thumb": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "img": "/imgsprodutos/7168021d-8794-4fef-9f3b-fb3b14f501bb.jpg",
+                        "description": null,
+                        "bar_code": "7908374400460",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 3,
+                        "part_subcategory_name": "Filtro de Óleo",
+                        "feature": 1,
+                        "status": 1,
+                        "created": "2021-04-29T17:58:03.000Z",
+                        "modified": "2021-04-29T17:58:03.000Z",
+                        "addtoindex": 1,
+                        "id": 2926
+                    }
+                },
+                {
+                    "part_id": 723,
+                    "vehicle_id": 11358,
+                    "details": null,
+                    "created": "2025-11-19T16:39:55.000Z",
+                    "modified": "2025-11-19T16:39:55.000Z",
+                    "id": 42534,
+                    "parts": {
+                        "code": "FCBR14S",
+                        "code_formatted": "FCBR14S",
+                        "thumb": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "img": "/imgsprodutos/38a53699-9897-454d-a0ec-afd624b27405.jpg",
+                        "description": "",
+                        "bar_code": "7898407313143",
+                        "part_category_id": 1,
+                        "part_subcategory_id": 4,
+                        "part_subcategory_name": "Filtro de Combustível",
+                        "feature": 0,
+                        "status": 1,
+                        "created": null,
+                        "modified": "2018-04-26T00:00:00.000Z",
+                        "addtoindex": 0,
+                        "id": 723
+                    }
+                }
+            ],
+            "vehicleManufacturers": {
+                "name": "CHEVROLET",
+                "thumb": null,
+                "img": null,
+                "description": null,
+                "created": "2013-10-01T00:00:00.000Z",
+                "modified": "2018-09-07T12:49:33.000Z",
+                "indexed": "2018-09-07T12:59:53.000Z",
+                "indexUpdate": 1,
+                "id": 9
+            }
+        }
+    ]
+}
+
+
+curl 'https://api.japanparts.com.br/api/part_equivalences/findall?partId=2926' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'content-type: application/json;charset=utf-8' \
+  -H 'origin: https://japanparts.com.br' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://japanparts.com.br/' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+
+
+  Request URL
+https://api.japanparts.com.br/api/part_equivalences/findall?partId=2926
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+104.21.26.10:443
+Referrer Policy
+strict-origin-when-cross-origin
+access-control-allow-credentials
+true
+access-control-allow-origin
+https://japanparts.com.br
+alt-svc
+h3=":443"; ma=86400
+cf-cache-status
+DYNAMIC
+cf-ray
+9f78990db8bd28b5-GRU
+content-encoding
+zstd
+content-type
+application/json; charset=utf-8
+date
+Wed, 06 May 2026 14:15:35 GMT
+etag
+W/"127-l7ndbN7GEciFpLhAWSO/AzM3Ulo"
+nel
+{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority
+u=1,i
+report-to
+{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Cxq6Dhu3PxC%2BnFGx%2BSAVwCwXxMuQ1xt41%2B%2BBpTg6kYpJQtPOE38FNM1un5FBH0KZlhN%2BadEufLwJp%2FxWQMNvqT%2F0mTyga1WoXQS3EWRpaSWCNCmnl%2BcYSQvIeZ7TDOxxVNs36mLMaKU%3D"}]}
+server
+cloudflare
+server-timing
+cfExtPri
+vary
+Origin, Accept-Encoding
+x-cloud-trace-context
+4fca368e18421c9cf6c1c48a328e1882
+x-content-type-options
+nosniff
+x-download-options
+noopen
+x-frame-options
+DENY
+x-xss-protection
+1; mode=block
+:authority
+api.japanparts.com.br
+:method
+GET
+:path
+/api/part_equivalences/findall?partId=2926
+:scheme
+https
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+content-type
+application/json;charset=utf-8
+origin
+https://japanparts.com.br
+priority
+u=1, i
+referer
+https://japanparts.com.br/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-site
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+
+
+REPONSE
+
+{
+    "data": [
+        {
+            "original": 1,
+            "equivalence_code": "55509268",
+            "name": "GM"
+        },
+        {
+            "original": 0,
+            "equivalence_code": "LB612",
+            "name": "VOX"
+        },
+        {
+            "original": 0,
+            "equivalence_code": "PSL612",
+            "name": "TECFIL"
+        },
+        {
+            "original": 0,
+            "equivalence_code": "W7056/1",
+            "name": "MANN"
+        },
+        {
+            "original": 0,
+            "equivalence_code": "WO139",
+            "name": "WEGA"
+        }
+    ]
+}
+
+curl 'https://api.japanparts.com.br/api/part_images?filter\[where\]\[part_id\]=2926' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'content-type: application/json;charset=utf-8' \
+  -H 'origin: https://japanparts.com.br' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://japanparts.com.br/' \
+  -H 'sec-ch-ua: "Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Windows"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36'
+
+  Request URL
+https://api.japanparts.com.br/api/part_images?filter[where][part_id]=2926
+Request Method
+GET
+Status Code
+200 OK
+Remote Address
+104.21.26.10:443
+Referrer Policy
+strict-origin-when-cross-origin
+access-control-allow-credentials
+true
+access-control-allow-origin
+https://japanparts.com.br
+alt-svc
+h3=":443"; ma=86400
+cf-cache-status
+DYNAMIC
+cf-ray
+9f78990db8bf28b5-GRU
+content-encoding
+zstd
+content-type
+application/json; charset=utf-8
+date
+Wed, 06 May 2026 14:15:35 GMT
+etag
+W/"e9-HG06uqozy7ZyWX3EvOgtRuHYR5g"
+nel
+{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+priority
+u=1,i
+report-to
+{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=opyqg%2Fc1sG93LWVxdWy3aDfi0xuNoqmPRH7Mv2rkqnM1wQ%2FNG9k%2Bv6jcH%2FiJntxG6jVkISJre0fe9DSWnvn93G90jh02jvixn2r1NKUaPsYf4RfE1cclt49sTgadHw9BSfOz6mkB7sw%3D"}]}
+server
+cloudflare
+server-timing
+cfExtPri
+vary
+Origin, Accept-Encoding
+x-cloud-trace-context
+39307f2968215e7df6c1c48a328e1e21
+x-content-type-options
+nosniff
+x-download-options
+noopen
+x-frame-options
+DENY
+x-xss-protection
+1; mode=block
+:authority
+api.japanparts.com.br
+:method
+GET
+:path
+/api/part_images?filter[where][part_id]=2926
+:scheme
+https
+accept
+application/json, text/plain, */*
+accept-encoding
+gzip, deflate, br, zstd
+accept-language
+pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7
+content-type
+application/json;charset=utf-8
+origin
+https://japanparts.com.br
+priority
+u=1, i
+referer
+https://japanparts.com.br/
+sec-ch-ua
+"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"
+sec-ch-ua-mobile
+?0
+sec-ch-ua-platform
+"Windows"
+sec-fetch-dest
+empty
+sec-fetch-mode
+cors
+sec-fetch-site
+same-site
+user-agent
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+
+
+REPONSE
+
+[
+    {
+        "part_id": 2926,
+        "thumb": "/imgsprodutos/ce39650c-9872-4313-b8a2-c7873cfb489c.jpg",
+        "order": null,
+        "status": 1,
+        "id": 5992
+    },
+    {
+        "part_id": 2926,
+        "thumb": "/imgsprodutos/8f3d577b-02d0-48b5-9b0e-fff75912559e.jpg",
+        "order": null,
+        "status": 1,
+        "id": 5993
+    }
+]

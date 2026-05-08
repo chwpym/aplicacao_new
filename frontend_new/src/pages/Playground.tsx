@@ -58,6 +58,7 @@ const API_OPTIONS = [
     { id: 'tsa', label: 'TSA' },
     { id: 'dayco', label: 'Dayco' },
     { id: 'hipper_freios', label: 'Hipper Freios' },
+    { id: 'japanparts', label: 'Japanparts' },
     { id: 'notus', label: 'Notus' },
     { id: 'nakata', label: 'Nakata' },
     { id: 'autoexperts', label: 'AutoExperts' },
@@ -394,7 +395,7 @@ export default function Playground() {
                                        prev.mapeamento.includes('crossReference.valueList');
 
                 const isViemar = newType === 'viemar';
-                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata'].includes(newType);
+                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata', 'japanparts'].includes(newType);
 
                 return {
                     ...prev,

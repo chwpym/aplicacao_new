@@ -341,7 +341,9 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 <option value="scraper">Scraper Genérico (Universal)</option>
                 <option value="viemar">Viemar (Nativo)</option>
                 <option value="cofap">Cofap / Monroe (Fraga)</option>
-                <option value="busca_na_rede">Busca na Rede (Tuba, Sampel, TC)</option>
+                <option value="sampel">Sampel (Busca na Rede)</option>
+                <option value="tubacabos">Tuba Cabos (Busca na Rede)</option>
+                <option value="tcchicotes">TC Chicotes (Busca na Rede)</option>
                 <option value="bosch">Bosch (Nativo)</option>
                 <option value="mte_thomson">MTE Thomson (Nativo)</option>
                 <option value="tecfil">Tecfil (Nativo)</option>
@@ -349,8 +351,9 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 <option value="tsa">TSA (Nativo)</option>
                 <option value="dayco">Dayco (Nativo)</option>
                 <option value="hipper_freios">Hipper Freios (Nativo)</option>
-                <option value="notus">Notus (Nativo)</option>
+                <option value="japanparts">Japanparts (Nativo)</option>
                 <option value="nakata">Nakata (Nativo)</option>
+                <option value="notus">Notus (Nativo)</option>
                 <option value="native">Outro Provedor de Sistema (Nativo)</option>
 
               </select>

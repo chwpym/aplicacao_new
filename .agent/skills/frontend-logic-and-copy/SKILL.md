@@ -25,14 +25,19 @@ Existem três modos de cópia, todos integrados na função `copyToClipboard`:
 - **Intermediária**: Copia Marca, Veículo, Motor e Ano (ignora notas técnicas longas).
 - **Agrupada**: Segue a lógica visual do agrupamento por veículo.
 
-**IMPORTANTE (Bloco REFERÊNCIA DE SIMILARES):**
-Ao final de qualquer cópia, o sistema coleta todas as referências do tipo `Marca: Código` e cria um bloco consolidado:
+**IMPORTANTE (Bloco REFERÊNCIA DE SIMILARES e Caixa Acima da Tabela):**
+A lógica do frontend (`generateUniqueReferences` em `clipboard.ts`) que gera a caixa "Cross References" acima da tabela e o bloco no final da cópia **EXIGE** que as referências tenham um prefixo de marca.
+- O formato obrigatório enviado pelo backend é `MARCA: CÓDIGO` ou `MARCA - CÓDIGO` (ex: `FIAT: 147442` ou `ORIGINAL: 545512E00PH`).
+- **Atenção:** Se o provedor backend enviar apenas o número cru (ex: `545512E00PH`), o frontend **VAI IGNORÁ-LO SILENCIOSAMENTE** no agrupamento, e o código não aparecerá na caixa do topo nem na cópia final.
+- Caso o provedor não forneça a marca da referência cruzada, o backend deve forçar um prefixo como `ORIGINAL: ` para garantir que a interface agrupe e exiba a informação.
+
+Ao final de qualquer cópia, o sistema coleta todas as referências válidas e cria um bloco consolidado:
 - Montadoras e `ORIGINAL`/`OEM` ficam no topo (prioridade).
 - Marcas técnicas ficam abaixo em ordem alfabética.
 - Códigos duplicados entre marcas são removidos automaticamente (deduplicação global).
 ```text
 REFERÊNCIA DE SIMILARES :
-ORIGINAL: 5U0615301C
+ORIGINAL: 5U0615301C - 545512E00PH
 VOLKSWAGEN: 5U0601301C - JZZ698302C
 FRAS-LE: FLDI00096
 FREMAX: BD5297

@@ -79,9 +79,17 @@ def get_provider(config_model):
         from app.providers.nakata_provider import NakataProvider
         return NakataProvider(config)
 
-    elif config["tipo"] == "busca_na_rede":
-        from app.providers.busca_na_rede_provider import BuscaNaRedeProvider
-        return BuscaNaRedeProvider(config)
+    elif config["tipo"] == "tubacabos":
+        from app.providers.tubacabos_provider import TubaCabosProvider
+        return TubaCabosProvider(config)
+        
+    elif config["tipo"] == "sampel":
+        from app.providers.sampel_provider import SampelProvider
+        return SampelProvider(config)
+        
+    elif config["tipo"] == "tcchicotes":
+        from app.providers.tcchicotes_provider import TcChicotesProvider
+        return TcChicotesProvider(config)
 
     elif config["tipo"] == "multiqualita":
         from app.providers.multiqualita_provider import MultiqualitaProvider
@@ -90,6 +98,10 @@ def get_provider(config_model):
     elif config["tipo"] == "autafastar":
         from app.providers.autafastar_provider import AutafastarProvider
         return AutafastarProvider(config)
+
+    elif config["tipo"] == "japanparts":
+        from app.providers.japanparts_provider import JapanpartsProvider
+        return JapanpartsProvider(config)
 
 
     return None
