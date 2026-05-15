@@ -103,6 +103,10 @@ def get_provider(config_model):
         from app.providers.japanparts_provider import JapanpartsProvider
         return JapanpartsProvider(config)
 
+    elif config["tipo"] == "schaeffler":
+        from app.providers.schaeffler_provider import SchaefflerProvider
+        return SchaefflerProvider(config)
+
 
     return None
 

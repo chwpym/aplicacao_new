@@ -352,5 +352,25 @@ export const copyToClipboard = (
     }
   }
 
+  // Bloco de Ficha Técnica (Específico SCHAEFFLER — LUK, FAG, INA)
+  const schaefflerBrands = ["LUK", "FAG", "INA"];
+  const schaefflerResults = results.filter(r => 
+    schaefflerBrands.includes(r.provedor?.toUpperCase()) || schaefflerBrands.includes(r.marca?.toUpperCase())
+  );
+  if (schaefflerResults.length > 0) {
+    const withFicha = schaefflerResults.find(r => r.ficha_tecnica && Object.keys(r.ficha_tecnica).length > 0);
+    if (withFicha) {
+      const ficha = withFicha.ficha_tecnica;
+      const brandLabel = withFicha.provedor?.toUpperCase() || withFicha.marca?.toUpperCase() || "SCHAEFFLER";
+      text += `\n\n...\nFICHA TÉCNICA (${brandLabel}):\n`;
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
   navigator.clipboard.writeText(text.trim());
 };
