@@ -10,18 +10,18 @@ export const generateUniqueReferences = (results: any[]) => {
     if (res.referencias) {
       // Quebra por múltiplos separadores: |, ,, ;, e quebra de linha
       const refParts = res.referencias.split(/\s*(?:\||,|;|\n)\s*/);
-      
+
       refParts.forEach((part: string) => {
         if (!part.trim()) return;
 
         // Faz o split seguro. Queremos dividir no `:` ou em ` - ` (com espaços).
         // Não podemos dividir apenas em `-` sem espaços, pois quebra marcas como "FRAS-LE".
         const pair = part.split(/\s*:\s*|\s+-\s+/);
-        
+
         if (pair.length >= 2) {
           const brand = pair[0].trim();
           const code = pair.slice(1).join(":").trim();
-          
+
           if (brand && code) {
             let cleanBrand = brand
               .toUpperCase()
@@ -85,8 +85,8 @@ export const copyToClipboard = (
 
   // Ordem de campos estritamente baseada nas colunas visíveis da tabela principal
   const orderedKeys = [
-    "marca", "codigo", "veiculo", "modelo", "versao", "motor", "configuracao_motor", 
-    "combustivel", "posicao", "lado", "direcao", "sistema_freio", 
+    "marca", "codigo", "veiculo", "modelo", "versao", "motor", "configuracao_motor",
+    "combustivel", "posicao", "lado", "direcao", "sistema_freio",
     "restricao", "apenas"
   ];
 
@@ -97,7 +97,7 @@ export const copyToClipboard = (
         orderedKeys.forEach(key => {
           if (visibleFields[key] && res[key]) parts.push(res[key]);
         });
-        
+
         if (visibleFields.ano) {
           const anoStr =
             res.ano_inicio || res.ano_fim
@@ -107,7 +107,7 @@ export const copyToClipboard = (
         }
         if (visibleFields.referencias && res.referencias) parts.push(res.referencias);
         if (visibleFields.observacao && res.observacao) parts.push(res.observacao);
-        
+
         return parts.join(" ").replace(/\s+/g, " ").trim();
       })
       .filter((line) => line.length > 0);
@@ -119,7 +119,7 @@ export const copyToClipboard = (
 
     sortedResults.forEach((res) => {
       const baseKeyParts: any[] = [];
-      const keysToUse = mode === "intermediaria" 
+      const keysToUse = mode === "intermediaria"
         ? ["marca", "veiculo", "modelo", "versao", "motor", "configuracao_motor"]
         : orderedKeys;
 
@@ -128,7 +128,7 @@ export const copyToClipboard = (
       });
 
       const baseKeyStr = baseKeyParts.join("|") || "default";
-      
+
       const obsText = (mode === "agrupada" && visibleFields.observacao && res.observacao) ? res.observacao : "";
       if (obsText) {
         baseKeysToObs.set(baseKeyStr, true);
@@ -201,10 +201,10 @@ export const copyToClipboard = (
               ? Math.max(...ends.map(Number))
               : ends[ends.length - 1]
             : "";
-            
+
         const yearRange = `${formatYearShort(minStart)}${maxEnd ? "..." + formatYearShort(maxEnd) : "..."}`;
         const rangeText = yearRange === "..." ? "" : yearRange;
-        
+
         // Monta a linha: Base + Ano + Observacao
         const finalLineParts = [...g.parts];
         if (rangeText) finalLineParts.push(rangeText);
@@ -219,7 +219,7 @@ export const copyToClipboard = (
   if (Object.keys(uniqueReferences).length > 0) {
     // Adiciona o separador rígido '...' para o sistema receptor
     text += "\n\n...\nREFERÊNCIA DE SIMILARES :\n";
-    
+
     // Identifica montadoras conhecidas presentes nos resultados
     const visibleManufacturers = new Set(
       results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
@@ -227,8 +227,8 @@ export const copyToClipboard = (
 
     // Lista de fallback de montadoras principais no Brasil para garantir que fiquem no topo
     const knownAutomakers = new Set([
-      "VOLKSWAGEN", "VW", "CHEVROLET", "GM", "FIAT", "FORD", "TOYOTA", 
-      "HONDA", "HYUNDAI", "RENAULT", "NISSAN", "JEEP", "PEUGEOT", 
+      "VOLKSWAGEN", "VW", "CHEVROLET", "GM", "FIAT", "FORD", "TOYOTA",
+      "HONDA", "HYUNDAI", "RENAULT", "NISSAN", "JEEP", "PEUGEOT",
       "CITROEN", "MITSUBISHI", "AUDI", "BMW", "MERCEDES-BENZ", "MERCEDES",
       "KIA", "VOLVO", "PORSCHE", "LAND ROVER", "CHERY", "CAOA CHERY",
       "SUZUKI", "SUBARU", "JAC", "DODGE", "CHRYSLER", "RAM", "ALFA ROMEO"
@@ -238,17 +238,17 @@ export const copyToClipboard = (
     const sortedBrands = Object.entries(uniqueReferences).sort(([brandA], [brandB]) => {
       const isMkrA = automakers.includes(brandA) || visibleManufacturers.has(brandA) || knownAutomakers.has(brandA);
       const isMkrB = automakers.includes(brandB) || visibleManufacturers.has(brandB) || knownAutomakers.has(brandB);
-      
+
       const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || isMkrA;
       const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || isMkrB;
-      
+
       if (isPriorityA && !isPriorityB) return -1;
       if (!isPriorityA && isPriorityB) return 1;
       return brandA.localeCompare(brandB);
     });
 
     const seenCodes = new Set<string>();
-    
+
     // Função interna para normalizar código (remover espaços, pontos e traços para comparação de duplicatas)
     const normalizeCode = (c: string) => c.toUpperCase().replace(/[\s\-\.]/g, "");
 
@@ -261,7 +261,7 @@ export const copyToClipboard = (
           return true;
         })
         .sort();
-      
+
       if (filteredCodes.length > 0) {
         const codesList = filteredCodes.join(" - ");
         // Garante formato vertical: um marca por linha e espaçamento limpo
@@ -296,8 +296,8 @@ export const copyToClipboard = (
   }
 
   // Bloco de Ficha Técnica (Específico MULTIQUALITÀ)
-  const multiResults = results.filter(r => 
-    (r.provedor?.toUpperCase() === "MULTIQUALITA" || r.marca_peca === "MULTIQUALITÀ" || r.marca === "MULTIQUALITÀ") 
+  const multiResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "MULTIQUALITA" || r.marca_peca === "MULTIQUALITÀ" || r.marca === "MULTIQUALITÀ")
     && r.ficha_tecnica
   );
   if (multiResults.length > 0) {
@@ -315,8 +315,8 @@ export const copyToClipboard = (
   }
 
   // Bloco de Ficha Técnica (Específico AUTAFASTAR)
-  const autafastarResults = results.filter(r => 
-    (r.provedor?.toUpperCase() === "AUTAFASTAR" || r.marca?.toUpperCase() === "AUTAFASTAR") 
+  const autafastarResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "AUTAFASTAR" || r.marca?.toUpperCase() === "AUTAFASTAR")
     && r.ficha_tecnica
   );
   if (autafastarResults.length > 0) {
@@ -334,8 +334,8 @@ export const copyToClipboard = (
   }
 
   // Bloco de Ficha Técnica (Específico JAPANPARTS)
-  const japanpartsResults = results.filter(r => 
-    (r.provedor?.toUpperCase() === "JAPANPARTS" || r.marca?.toUpperCase() === "JAPANPARTS") 
+  const japanpartsResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "JAPANPARTS" || r.marca?.toUpperCase() === "JAPANPARTS")
     && r.ficha_tecnica
   );
   if (japanpartsResults.length > 0) {
@@ -354,7 +354,7 @@ export const copyToClipboard = (
 
   // Bloco de Ficha Técnica (Específico SCHAEFFLER — LUK, FAG, INA)
   const schaefflerBrands = ["LUK", "FAG", "INA"];
-  const schaefflerResults = results.filter(r => 
+  const schaefflerResults = results.filter(r =>
     schaefflerBrands.includes(r.provedor?.toUpperCase()) || schaefflerBrands.includes(r.marca?.toUpperCase())
   );
   if (schaefflerResults.length > 0) {
@@ -372,5 +372,138 @@ export const copyToClipboard = (
       });
     }
   }
+
+  // Bloco de Ficha Técnica (Específico BOSCH)
+  const boschResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "BOSCH" || r.marca?.toUpperCase() === "BOSCH")
+    && r.ficha_tecnica
+  );
+  if (boschResults.length > 0) {
+    const ficha = boschResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (BOSCH):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
+  // Bloco de Ficha Técnica (Específico IMA)
+  const imaResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA")
+    && r.ficha_tecnica
+  );
+  if (imaResults.length > 0) {
+    const ficha = imaResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (IMA):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
+
+  // ==========================================
+  // BLOCO DE INDEXAÇÃO PARA BUSCA (IDX)
+  // ==========================================
+  const generateIdxString = (resultsData: any[], referencesData: Record<string, Set<string>>, finalSourceText: string) => {
+    const idxLines: string[] = ["\n\n...\nIDX:"];
+
+    // Conjunto global para guardar todos os anos expandidos
+    const expandedYears = new Set<string>();
+
+    const parseYearTo4Digits = (yStr: string): number => {
+      const y = parseInt(yStr, 10);
+      if (yStr.length === 4) return y;
+      return y <= 50 ? 2000 + y : 1900 + y;
+    };
+
+    // Extrai ranges de anos globais do texto formatado
+    const yearRanges = finalSourceText.match(/\b(\d{2,4})\.\.\.(\d{2,4})\b/g) || [];
+    yearRanges.forEach(range => {
+      const parts = range.split('...');
+      if (parts.length === 2) {
+        const startY = parseYearTo4Digits(parts[0]);
+        const endY = parseYearTo4Digits(parts[1]);
+        if (startY <= endY && endY - startY < 50) {
+          for (let y = startY; y <= endY; y++) {
+            expandedYears.add(y.toString());
+            expandedYears.add(y.toString().substring(2));
+          }
+        }
+      }
+    });
+
+    const getCleanWords = (str: string) => {
+      if (!str) return [];
+      const regex = /[a-zA-Z\u00C0-\u024F\u1E00-\u1EFF0-9]+(?:[\.,-][a-zA-Z\u00C0-\u024F\u1E00-\u1EFF0-9]+)*/g;
+      const m = str.match(regex) || [];
+      const arr: string[] = [];
+      m.forEach(w => {
+        let u = w.toUpperCase();
+        if (u === 'AT' || u === 'OEM' || u === 'ORIGINAL') return;
+        arr.push(u);
+        if (u.includes('-')) arr.push(u.replace(/-/g, ''));
+        if (u === 'S10') arr.push('S-10');
+        if (u === 'F250') arr.push('F-250');
+        if (u === 'F1000') arr.push('F-1000');
+        if (u === 'F100') arr.push('F-100');
+        if (u === 'D10') arr.push('D-10');
+        if (u === 'D20') arr.push('D-20');
+        if (u === 'A10') arr.push('A-10');
+        if (u === 'C10') arr.push('C-10');
+      });
+      return arr;
+    };
+
+    // 1. Linha de Montadoras + Modelos (Carros)
+    const montadorasModelos = new Set<string>();
+    resultsData.forEach(r => {
+      getCleanWords(r.veiculo || r.marca).forEach(w => montadorasModelos.add(w));
+      getCleanWords(r.modelo).forEach(w => montadorasModelos.add(w));
+      getCleanWords(r.versao).forEach(w => montadorasModelos.add(w));
+    });
+    if (montadorasModelos.size > 0) idxLines.push(Array.from(montadorasModelos).join(" "));
+
+    // 2. Linha de Motores + Combustíveis
+    const motoresCombustiveis = new Set<string>();
+    resultsData.forEach(r => {
+      getCleanWords(r.motor).forEach(w => motoresCombustiveis.add(w));
+      getCleanWords(r.configuracao_motor).forEach(w => motoresCombustiveis.add(w));
+      getCleanWords(r.combustivel).forEach(w => motoresCombustiveis.add(w));
+    });
+    if (motoresCombustiveis.size > 0) idxLines.push(Array.from(motoresCombustiveis).join(" "));
+
+    // 3. Referências de Similares (Uma linha por marca)
+    Object.entries(referencesData).forEach(([brand, codesSet]) => {
+      const brandWords = getCleanWords(brand);
+      const codesWords = new Set<string>();
+      codesSet.forEach(code => {
+        getCleanWords(code).forEach(w => codesWords.add(w));
+      });
+      const finalArr = [...brandWords, ...Array.from(codesWords)];
+      if (finalArr.length > 0) idxLines.push(finalArr.join(" "));
+    });
+
+    // 4. Anos Expandidos
+    if (expandedYears.size > 0) {
+      const sortedYears = Array.from(expandedYears).sort();
+      idxLines.push(`ANOS: ${sortedYears.join(" ")}`);
+    }
+
+    return idxLines.join("\n");
+  };
+
+  text += generateIdxString(results, uniqueReferences, text);
+
   navigator.clipboard.writeText(text.trim());
 };

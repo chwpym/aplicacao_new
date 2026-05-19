@@ -85,7 +85,13 @@ class BoschProvider(BaseProvider):
                 # Se não houver aplicações, retorna o produto como genérico
                 return [self._format_product_only(product_details)]
 
-            makers_list = mak_resp.json().get("makers", [])
+            try:
+                makers_data = mak_resp.json()
+            except Exception:
+                print(f"[BOSCH] Resposta de makers não é JSON válido.")
+                return [self._format_product_only(product_details)]
+
+            makers_list = makers_data.get("makers", [])
             if not makers_list:
                 return [self._format_product_only(product_details)]
 
@@ -107,7 +113,9 @@ class BoschProvider(BaseProvider):
 
             # Medidas / Especificações
             complemento = product_details.get("name", "")
-            specs = []
+            
+            # Mapeamento para Ficha Técnica
+            ficha_tecnica = {}
             for s in product_details.get("specificationTabData", []):
                 col = s.get("columnData", [])
                 if len(col) >= 2 and col[0] not in [
@@ -115,11 +123,22 @@ class BoschProvider(BaseProvider):
                     "Designação",
                     "Estado do artigo",
                 ]:
-                    specs.append(f"{col[1]}")
-            designacao = f"{complemento} | {' , '.join(specs)}"
+                    ficha_tecnica[str(col[0]).strip()] = str(col[1]).strip()
+            
+            designacao = complemento
+
+            # Observação (Description + Benefits)
+            obs_parts = []
+            if product_details.get("description"):
+                obs_parts.append(product_details.get("description"))
+            if product_details.get("benefits"):
+                for b in product_details.get("benefits"):
+                    obs_parts.append(f"• {b}")
+            observacao_texto = "\n".join(obs_parts)
 
             # 3. Busca de Veículos por Montadora (Paralelo)
             v_tasks = []
+            maker_ids_order = []
             for m in makers_list:
                 m_id = m.get("id")
                 if m_id:
@@ -127,19 +146,32 @@ class BoschProvider(BaseProvider):
                         f"{self.api_base}/usage-in-vehicles/{prod_num}/vehicles/{m_id}"
                     )
                     v_tasks.append(client.get(v_url, headers=self.headers))
+                    maker_ids_order.append(m_id)
 
-            v_resps = await asyncio.gather(*v_tasks)
+            v_resps = await asyncio.gather(*v_tasks, return_exceptions=True)
 
             final_results = []
-            for vr in v_resps:
+            for idx, vr in enumerate(v_resps):
+                # Pula exceções de rede (timeout, etc.)
+                if isinstance(vr, Exception):
+                    print(f"[BOSCH] Erro de rede para maker {maker_ids_order[idx]}: {vr}")
+                    continue
+
                 if vr.status_code != 200:
                     continue
-                v_json = vr.json()
+
+                # Tratamento granular: cada resposta de veículo tem seu próprio try/catch
+                try:
+                    v_json = vr.json()
+                except Exception:
+                    print(f"[BOSCH] Resposta de veículos para maker {maker_ids_order[idx]} não é JSON (provavelmente HTML de erro). Ignorando.")
+                    continue
+
                 # Tenta encontrar o displayName para esta montadora
                 maker_id = (
                     v_json.get("vehicles", [{}])[0].get("keyMakerId")
                     if v_json.get("vehicles")
-                    else None
+                    else maker_ids_order[idx]
                 )
                 display_name = next(
                     (
@@ -160,6 +192,8 @@ class BoschProvider(BaseProvider):
                         "configuracao_motor": designacao,
                         "referencias": ref_str,
                         "imagens": imgs,
+                        "ficha_tecnica": ficha_tecnica,
+                        "observacao": observacao_texto,
                         "ano_inicio": self._fmt_date(
                             v.get("productionPeriod", {}).get("from")
                         ),
@@ -180,6 +214,9 @@ class BoschProvider(BaseProvider):
 
                     final_results.append(res)
 
+            if final_results:
+                print(f"[BOSCH] Total de aplicações encontradas: {len(final_results)}")
+            
             return (
                 final_results
                 if final_results
@@ -188,6 +225,8 @@ class BoschProvider(BaseProvider):
 
         except Exception as e:
             print(f"[BOSCH] Erro nas aplicações: {e}")
+            import traceback
+            traceback.print_exc()
             return [self._format_product_only(product_details)]
 
     def _format_product_only(self, details):

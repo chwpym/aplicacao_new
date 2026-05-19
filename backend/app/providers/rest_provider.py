@@ -201,9 +201,9 @@ class RESTProvider(BaseProvider):
         codigos_tentar = [codigo_peca.strip().upper()]
         # Se não tem hífen e parece um código Wega (ex: AKX1967), tenta injetar o hífen (AKX-1967)
         if "-" not in codigo_peca and len(codigo_peca) > 4:
-            # Padrão comum: 3 letras + números
+            # Padrão comum: 2 a 4 letras + números
             import re
-            match = re.match(r"^([A-Z]{2,3})(\d+)$", codigo_peca.strip().upper())
+            match = re.match(r"^([A-Z]{2,4})(\d+)$", codigo_peca.strip().upper())
             if match:
                 codigos_tentar.append(f"{match.group(1)}-{match.group(2)}")
 

@@ -79,20 +79,78 @@ class TecfilProvider(BaseProvider):
                 res_conv = await self.client.get(f"{self.base_url}/{conv_cat['endpoint']}?search-term={codigo_buscado}")
                 if res_conv.status_code == 200:
                     soup_conv = BeautifulSoup(res_conv.text, "html.parser")
-                    # Tabela de conversão geralmente tem: Marca | Código
-                    trows_conv = soup_conv.find_all("tr", class_=lambda c: c and "ui-widget-content" in c)
-                    for r in trows_conv:
-                        cells = r.find_all("td")
-                        if len(cells) >= 3:
-                            marca_ref = cells[0].text.strip().upper()
-                            codigo_similar = cells[2].text.strip().upper()
-                            
-                            # Se o similar for igual ao buscado, ignoramos (evita TECFIL: ACP903)
-                            if codigo_similar == codigo_buscado.upper():
-                                continue
+                    
+                    def extract_conversoes(soup_frag):
+                        trows_conv = soup_frag.find_all("tr", class_=lambda c: c and "ui-widget-content" in c and "ui-datatable-empty-message" not in c)
+                        for r in trows_conv:
+                            cells = r.find_all("td")
+                            if len(cells) >= 3:
+                                marca_ref = cells[0].text.strip().upper()
+                                codigo_similar = cells[2].text.strip().upper()
+                                
+                                # Se o similar for igual ao buscado, ignoramos
+                                if codigo_similar == codigo_buscado.upper():
+                                    continue
+                                if marca_ref and codigo_similar:
+                                    referencias_encontradas.append(f"{marca_ref}: {codigo_similar}")
 
-                            if marca_ref and codigo_similar:
-                                referencias_encontradas.append(f"{marca_ref}: {codigo_similar}")
+                    extract_conversoes(soup_conv)
+
+                    # Verificar paginador para Conversões
+                    paginator_current = soup_conv.find("span", class_="ui-paginator-current")
+                    total_pages = 1
+                    if paginator_current:
+                        match = re.search(r"\(1 of (\d+)\)", paginator_current.text)
+                        if match:
+                            total_pages = int(match.group(1))
+
+                    if total_pages > 1:
+                        print(f"    -> Paginador detectado: {total_pages} páginas em Conversões.")
+                        current_vs = soup_conv.find("input", {"name": "javax.faces.ViewState"})
+                        current_vs = current_vs["value"] if current_vs else view_state_index
+                        form = soup_conv.find("form")
+                        
+                        for page_num in range(1, total_pages):
+                            first_index = page_num * 20
+                            page_payload = {}
+                            if form:
+                                for inp in form.find_all(["input", "select"]):
+                                    name = inp.get("name")
+                                    if name:
+                                        value = inp.get("value", "")
+                                        if inp.name == "select":
+                                            selected = inp.find("option", selected=True)
+                                            if selected: value = selected.get("value", "")
+                                        page_payload[name] = value
+
+                            page_payload.update({
+                                "javax.faces.ViewState": current_vs,
+                                "javax.faces.partial.ajax": "true",
+                                "javax.faces.source": "form:conversoes",
+                                "javax.faces.partial.execute": "form:conversoes",
+                                "javax.faces.partial.render": "form:conversoes",
+                                "form:conversoes": "form:conversoes",
+                                "form:conversoes_pagination": "true",
+                                "form:conversoes_first": str(first_index),
+                                "form:conversoes_rows": "20",
+                                "form:conversoes_skipChildren": "true",
+                                "form:conversoes_encodeFeature": "true",
+                                "javax.faces.behavior.event": "page",
+                            })
+
+                            res_ajax = await self.client.post(
+                                f"{self.base_url}/{conv_cat['endpoint']}",
+                                data=page_payload,
+                                headers={"Faces-Request": "partial/ajax", "X-Requested-With": "XMLHttpRequest"}
+                            )
+                            
+                            if res_ajax.status_code == 200:
+                                vs_match = re.search(r'<update id="[^"]*javax\.faces\.ViewState[^"]*"><!\[CDATA\[(.*?)\]\]></update>', res_ajax.text)
+                                if vs_match: current_vs = vs_match.group(1)
+                                
+                                update_match = re.search(r'<update id="form:conversoes"><!\[CDATA\[(.*?)\]\]></update>', res_ajax.text, re.DOTALL)
+                                if update_match:
+                                    extract_conversoes(BeautifulSoup(update_match.group(1), "html.parser"))
                 
                 # Remove conversões da lista de categorias de veículos para não tentar processar como carro
                 categories_to_fetch = [c for c in categories_to_fetch if c["label"] != "Conversões"]

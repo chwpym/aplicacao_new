@@ -137,12 +137,18 @@ class NakataProvider(BaseProvider):
                     codigo = text.split(" - ", 1)[1].strip()
 
         # ── Imagem do produto ──
-        imagem = ""
-        img_detail = soup.select_one(".slider-detail img")
-        if img_detail:
-            imagem = img_detail.get("src", "")
-            if imagem and not imagem.startswith("http"):
-                imagem = f"{self.BASE_URL}{imagem}"
+        imagens = []
+        for img in soup.find_all("img"):
+            src = img.get("src", "")
+            if "/uploads/images/code/" in src:
+                if "/detail_thumb/" in src:
+                    src = src.replace("/detail_thumb/", "/watermark/")
+                if not src.startswith("http"):
+                    src = f"{self.BASE_URL}{src}"
+                if src not in imagens:
+                    imagens.append(src)
+                    
+        imagem = imagens[0] if imagens else ""
 
         # ── Segmento / Grupo / Produto ──
         segmento = ""
@@ -277,6 +283,7 @@ class NakataProvider(BaseProvider):
                     "direcao": direcao,
                     "observacao": " | ".join(obs_parts),
                     "imagem": imagem,
+                    "imagens": imagens,
                     "referencias": refs_str,
                     "ficha_tecnica": ficha if ficha else None,
                 }
@@ -295,6 +302,7 @@ class NakataProvider(BaseProvider):
                 "ano_inicio": "",
                 "ano_fim": "",
                 "imagem": imagem,
+                "imagens": imagens,
                 "referencias": refs_str,
                 "observacao": linha,
                 "ficha_tecnica": ficha if ficha else None,

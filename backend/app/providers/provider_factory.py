@@ -107,6 +107,10 @@ def get_provider(config_model):
         from app.providers.schaeffler_provider import SchaefflerProvider
         return SchaefflerProvider(config)
 
+    elif config["tipo"] == "indisa_web":
+        from app.providers.indisa_web_provider import IndisaWebProvider
+        return IndisaWebProvider(config)
+
 
     return None
 

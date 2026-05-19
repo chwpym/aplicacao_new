@@ -54,16 +54,41 @@ class IMAProvider(BaseProvider):
                             refs.append(f"{brand}: {p_code}")
                     referencias = " | ".join(refs)
 
-                    # Ficha Técnica
+                    # Ficha Técnica e Atributos Principais
                     ficha = {
-                        "Descrição": product.get("description", ""),
-                        "Grupo": product.get("groupDescription", "")
+                        "DESCRIÇÃO": product.get("description", "").upper(),
+                        "GRUPO": product.get("groupDescription", "").upper()
                     }
+                    
+                    posicao_extraida = ""
+                    lado_extraido = ""
+
                     for attr in product.get("attributes", []):
-                        label = attr.get("label")
-                        val = attr.get("value")
-                        if label and val:
-                            ficha[label] = val
+                        label = attr.get("label", "")
+                        val = attr.get("value", "")
+                        if not label or not str(val).strip():
+                            continue
+                            
+                        # Filtrar chaves de controle interno/lixo
+                        if "NOME DO ARQUIVO" in label.upper() or "OCULTAR PRODUTO" in label.upper():
+                            continue
+                            
+                        label_upper = label.upper().strip()
+                        val_upper = str(val).upper().strip()
+                        
+                        if "POSIÇÃO" in label_upper or "POSI" in label_upper:
+                            posicao_extraida = val_upper
+                        elif "LADO" in label_upper:
+                            lado_extraido = val_upper
+                            
+                        ficha[label_upper] = val_upper
+
+                    # Capturar todas as imagens disponíveis
+                    imagens = []
+                    for key in ["pic01", "pic02", "pic03", "pic04"]:
+                        url_img = product.get(key)
+                        if url_img and isinstance(url_img, str) and url_img.strip():
+                            imagens.append(url_img.strip())
 
                     # Processar Aplicações
                     for app in applications:
@@ -78,8 +103,8 @@ class IMAProvider(BaseProvider):
                         else:
                             ano_ini = ano_str
 
-                        # Usamos o formatador base para garantir integridade e normalização
-                        resultados.append(self.formatar_resultado({
+                        # Usamos o formatador base para garantir integridade da montadora e veículo
+                        res_formatado = self.formatar_resultado({
                             "marca": "IMA",
                             "provedor": "IMA",
                             "codigo": codigo,
@@ -88,15 +113,28 @@ class IMAProvider(BaseProvider):
                             "versao": app.get("vehicleDescription", ""),
                             "ano_inicio": ano_ini,
                             "ano_fim": ano_fim,
-                            "motor": "", # API não traz motor separado na aplicação
-                            "configuracao_motor": "",
+                            "motor": "", # Deixamos em branco para a base não misturar
+                            "configuracao_motor": "", # Deixamos em branco para a base não misturar
                             "combustivel": "", # API não traz combustível separado
+                            "posicao": posicao_extraida,
+                            "lado": lado_extraido,
                             "observacao": app.get("vehicleType", ""),
                             "referencias": referencias,
-                            "imagem": imagem,
-                            "imagens": [imagem] if imagem else [],
+                            "imagem": imagens[0] if imagens else imagem,
+                            "imagens": imagens,
                             "ficha_tecnica": ficha
-                        }))
+                        })
+
+                        # --- OVERRIDE ESPECÍFICO IMA ---
+                        # O usuário solicitou que siglas como TSI, MSI, TURBO fiquem inteiras na coluna Motor
+                        # em vez de serem extraídas para Configuração.
+                        motor_completo = str(app.get("vehicleDescription", "")).upper()
+                        config_completa = str(product.get("description", "")).upper()
+                        
+                        res_formatado["motor"] = motor_completo
+                        res_formatado["configuracao_motor"] = config_completa
+                        
+                        resultados.append(res_formatado)
 
                 return resultados
             except Exception as e:

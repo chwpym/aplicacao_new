@@ -220,13 +220,21 @@ class GraphQLProvider(BaseProvider):
         brand_obj = vehicle.get("brand")
         brand_name = safe_label(brand_obj)
         
+        engine_name = safe_label(vehicle.get("engineName"))
+        engine_code = safe_label(vehicle.get("engineTechnicalCode"))
+        
+        # O Cód. Técnico do Motor (ex: C20NE) ajuda na precisão, vamos adicioná-lo ao Motor ou Configuração
+        motor_completo = engine_name
+        if engine_code and engine_code not in engine_name:
+            motor_completo = f"{engine_name} [{engine_code}]" if engine_name else engine_code
+
         raw_data = {
             "montadora": brand_name,
             "modelo": safe_label(vehicle.get("name")),
             "versao": safe_label(vehicle.get("model")),
-            "motor": safe_label(vehicle.get("engineName")),
+            "motor": motor_completo,
             "configuracao_motor": safe_label(vehicle.get("engineConfiguration")),
-            "fuel": safe_label(vehicle.get("fuelType")),
+            "combustivel": safe_label(vehicle.get("fuel")),
             **vehicle
         }
         raw_data["provedor"] = self.config.get("nome", "PROVEDOR").upper()

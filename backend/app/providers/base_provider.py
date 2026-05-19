@@ -37,7 +37,7 @@ class BaseProvider(ABC):
         # Tenta injetar hífen se for padrão comum (ex: WO545 -> WO-545)
         import re
 
-        match = re.match(r"^([A-Z]{2,3})(\d+)$", clean)
+        match = re.match(r"^([A-Z]{2,4})(\d+)$", clean)
         if match:
             with_hyphen = f"{match.group(1)}-{match.group(2)}"
             if with_hyphen not in variacoes:
@@ -58,7 +58,7 @@ class BaseProvider(ABC):
         main_part = sub_parts[0]
 
         if "-" not in main_part:
-            match = re.match(r"^([A-Z]{2,3})(\d+)$", main_part)
+            match = re.match(r"^([A-Z]{2,4})(\d+)$", main_part)
             if match:
                 main_part = f"{match.group(1)}-{match.group(2)}"
 

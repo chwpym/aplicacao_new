@@ -107,6 +107,20 @@ class AutafastarProvider(BaseProvider):
 
             soup = BeautifulSoup(response.text, "html.parser")
             
+            # 0. Imagens da Galeria
+            imagens = []
+            img_elements = soup.select(".produto-imagem img, .galeria img, [data-fancybox] img, #galeria img, .slick-slide img, .thumbs img")
+            for img in img_elements:
+                src = img.get("src", "")
+                if src:
+                    if not src.startswith("http"):
+                        src = f"{self.base_url}{src}"
+                    if "produto" in src.lower() and "logo" not in src.lower() and src not in imagens:
+                        imagens.append(src)
+                        
+            if not imagens and img_url:
+                imagens = [img_url]
+            
             # 1. Referências Cruzadas (Similares)
             referencias = []
             similares_container = soup.select_one("#similares")
@@ -114,6 +128,8 @@ class AutafastarProvider(BaseProvider):
                 ref_items = similares_container.select("p")
                 for item in ref_items:
                     text = item.get_text(strip=True).strip()
+                    if text.startswith("-"):
+                        text = text[1:].strip()
                     if text:
                         # O texto já costuma vir como "MARCA: CODIGO" no HTML do Autafastar
                         # Se não tiver ':', mantemos o texto como está.
@@ -170,7 +186,8 @@ class AutafastarProvider(BaseProvider):
                     "montadora": modelo_limpo, # Passamos o modelo aqui para o AutomakerService deduzir a marca (Ex: 2008 -> PEUGEOT)
                     "modelo": modelo_limpo,
                     "motor": motor,
-                    "imagem": img_url,
+                    "imagem": imagens[0] if imagens else img_url,
+                    "imagens": imagens,
                     "referencias": referencias,
                     "ficha_tecnica": ficha_tecnica,
                     "observacao": aplicacao_base

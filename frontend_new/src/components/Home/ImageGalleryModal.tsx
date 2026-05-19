@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download, FileDown, Loader2 } from 'lucide-react';
 import JSZip from 'jszip';
@@ -19,9 +19,16 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [downloading, setDownloading] = useState(false);
 
+  // CORREÇÃO: Reseta o índice sempre que as imagens mudam (evita carrossel "preso")
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [images]);
+
   if (!isOpen || !images || images.length === 0) return null;
 
-  const currentImage = images[currentIndex];
+  // Safety clamp: garante que o índice nunca ultrapasse o array
+  const safeIndex = Math.min(currentIndex, images.length - 1);
+  const currentImage = images[safeIndex];
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
