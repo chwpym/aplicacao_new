@@ -115,5 +115,9 @@ def get_provider(config_model):
         from app.providers.schadek_provider import SchadekProvider
         return SchadekProvider(config)
 
+    elif config["tipo"] == "jahu":
+        from app.providers.jahu_provider import JahuProvider
+        return JahuProvider(config)
+
     return None
 
