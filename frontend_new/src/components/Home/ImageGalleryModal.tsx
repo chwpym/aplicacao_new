@@ -10,6 +10,12 @@ interface ImageGalleryModalProps {
   title: string;
 }
 
+// Helper: converte URL de imagem para URL do proxy local (evita CORS/hotlinking)
+const proxyImageUrl = (url: string): string => {
+  if (!url || !url.startsWith('http')) return url;
+  return `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
+};
+
 export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
   isOpen,
   onClose,
@@ -152,7 +158,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
         {/* Main Image View */}
         <div className="relative group w-full bg-white rounded-2xl overflow-hidden shadow-2xl min-h-[300px] flex items-center justify-center">
           <img 
-            src={currentImage} 
+            src={proxyImageUrl(currentImage)} 
             alt={`${title} - ${currentIndex + 1}`}
             className="max-h-[65vh] w-auto object-contain transition-transform duration-300"
           />
@@ -193,7 +199,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
                   ${currentIndex === idx ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-60 hover:opacity-100'}
                 `}
               >
-                <img src={img} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                <img src={proxyImageUrl(img)} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
               </button>
             ))}
           </div>

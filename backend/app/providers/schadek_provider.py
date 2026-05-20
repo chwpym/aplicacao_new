@@ -34,13 +34,38 @@ class SchadekProvider(BaseProvider):
                     return []
 
                 for prod in data:
+                    internal_code = prod.get("code")
+                    if not internal_code:
+                        continue
+
                     # Código Schadek: preferencialmente oldCode (ex: 20.089) ou code (ex: 90000520)
-                    part_no = prod.get("oldCode") or str(prod.get("code", ""))
+                    part_no = prod.get("oldCode") or str(internal_code)
                     if not part_no:
                         part_no = clean_id
                         
                     name = prod.get("name", "BOMBA").upper()
                     observation = prod.get("observation", "")
+
+                    # 1. Obter Imagem de Alta Resolução usando o internal_code de 8 dígitos
+                    imagem_url = f"https://schadek.com.br/api/static/products-images/{internal_code}"
+                    
+                    # 2. Consultar as referências originais (OEM) concorrentemente via API
+                    referencias_originais = ""
+                    ref_url = f"https://schadek.com.br/api/domain/product/{internal_code}/automakers-references"
+                    try:
+                        ref_resp = await client.get(ref_url, headers=self.headers)
+                        if ref_resp.status_code == 200:
+                            ref_data = ref_resp.json()
+                            if ref_data and isinstance(ref_data, list):
+                                ref_parts = []
+                                for ref_item in ref_data:
+                                    aut_name = ref_item.get("automaker", "").strip()
+                                    ref_code = ref_item.get("referenceCode", "").strip().replace("/", "").replace(" ", "")
+                                    if aut_name and ref_code:
+                                        ref_parts.append(f"{aut_name}: {ref_code}")
+                                referencias_originais = " | ".join(ref_parts)
+                    except Exception as e:
+                        logger.warning(f"Schadek: Erro ao buscar referências para produto {internal_code}: {e}")
                     
                     apps_dict = prod.get("applications") or {}
                     apps_list = apps_dict.get("$values") or []
@@ -70,8 +95,8 @@ class SchadekProvider(BaseProvider):
                             "ano_inicio": app.get("initialDate", "").strip(),
                             "ano_fim": app.get("endDate", "").strip(),
                             "observacao": f"{name} | {observation}".strip(" |"),
-                            "imagem": "",
-                            "referencias": "",
+                            "imagem": imagem_url,
+                            "referencias": referencias_originais,
                         }
 
                         # Normalização inteligente baseada no Master Catalog
