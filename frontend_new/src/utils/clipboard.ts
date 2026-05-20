@@ -411,6 +411,25 @@ export const copyToClipboard = (
     }
   }
 
+  // Bloco de Ficha Técnica (Específico INTERMEC)
+  const intermecResults = results.filter(r =>
+    (r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC")
+    && r.ficha_tecnica
+  );
+  if (intermecResults.length > 0) {
+    const ficha = intermecResults[0].ficha_tecnica;
+    if (Object.keys(ficha).length > 0) {
+      text += "\n\n...\nFICHA TÉCNICA (INTERMEC):\n";
+      Object.entries(ficha).forEach(([nome, valor]) => {
+        if (valor === "-") {
+          text += `${nome}\n`;
+        } else {
+          text += `${nome}: ${valor}\n`;
+        }
+      });
+    }
+  }
+
 
   // ==========================================
   // BLOCO DE INDEXAÇÃO PARA BUSCA (IDX)

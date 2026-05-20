@@ -119,5 +119,9 @@ def get_provider(config_model):
         from app.providers.jahu_provider import JahuProvider
         return JahuProvider(config)
 
+    elif config["tipo"] == "intermec":
+        from app.providers.intermec_provider import IntermecProvider
+        return IntermecProvider(config)
+
     return None
 
