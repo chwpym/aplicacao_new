@@ -57,10 +57,17 @@ Como a interface do agente opera em segundo plano sem uma IDE integrada na tela 
 
 ## 5. Padrão de Versionamento e Entregas (Git)
 
-Para manter o histórico do repositório limpo, legível e profissional:
-1. **Adicionar Apenas Arquivos de Produção:** Evitar fazer `git add .` para não subir arquivos de teste temporários localizados no diretório `scratch/`. Adicione individualmente os arquivos modificados.
-2. **Conventional Commits:** Escrever as mensagens de commit em português seguindo as regras de commits semânticos (Conventional Commits):
-   * `feat(jahu): implementacao completa do provedor jahu` (funcionalidade nova)
-   * `fix(imagens): correcao de captura de fotos concorrentes` (correção de bugs)
-   * `docs(skills): adicao de skill didatica de integracao` (alterações na documentação)
-3. **Push Seguro:** Após o commit, realizar o `git push` para o branch ativo (ex: `develop`) garantindo a sincronia com a equipe.
+Para manter o histórico do repositório limpo, estável e profissional:
+
+> [!IMPORTANT]
+> **REGRA DE OURO MÁXIMA DE VERSIONAMENTO:**
+> O agente **NUNCA** deve realizar `git commit` ou `git push` automaticamente em sua resposta regular. 
+> Commits e pushes **só podem ser propostos e executados após a autorização explícita do usuário**. Isso evita a criação de versões instáveis com bugs ou um histórico de commits poluído.
+
+1. **Validação Local Primeiro:** As alterações devem ser feitas e exaustivamente testadas localmente. Apenas após a confirmação visual e de teste do usuário é que o fluxo do Git é proposto.
+2. **Adicionar Apenas Arquivos de Produção:** Evitar fazer `git add .` para não subir arquivos de teste temporários localizados no diretório `scratch/`. Adicione individualmente os arquivos de código estáveis.
+3. **Conventional Commits:** Escrever as mensagens de commit em português seguindo as regras de commits semânticos (Conventional Commits):
+   * `feat(provedor): ...` (funcionalidade nova estável)
+   * `fix(imagens): ...` (correção de bugs estável)
+   * `docs(skills): ...` (alterações na documentação)
+4. **Push Seguro sob Demanda:** Apenas realizar o `git push` para o branch ativo (ex: `develop`) após a autorização direta do commit estável pelo usuário.
