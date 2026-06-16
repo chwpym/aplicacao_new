@@ -1,6 +1,6 @@
 type ToastType = 'success' | 'error';
 
-interface ToastEventDetail {
+export interface ToastEventDetail {
     message: string;
     type: ToastType;
 }

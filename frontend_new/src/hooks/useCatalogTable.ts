@@ -4,7 +4,8 @@ import { useAutomakerCache } from "./useAutomakerCache";
 import { generateUniqueReferences, copyToClipboard as performCopy } from "../utils/clipboard";
 import { copyToClipboardTable } from "../utils/clipboardTable";
 import JSZip from "jszip";
-export const useCatalog = () => {
+
+export const useCatalogTable = () => {
   const { automakers } = useAutomakerCache();
   const [partId, setPartId] = useState("");
   const [filterText, setFilterText] = useState("");
@@ -83,8 +84,6 @@ export const useCatalog = () => {
     }
   };
 
-  // Removida a sobreposição automática de visibilidade para manter os filtros globais sob controle do usuário
-
   const getFieldLabel = (field: string) => {
     if (selectedProvedor) {
       const prov = provedores.find(
@@ -100,8 +99,6 @@ export const useCatalog = () => {
             }
           } catch {}
         }
-
-
       }
     }
 
@@ -145,13 +142,11 @@ export const useCatalog = () => {
     ];
 
     for (const field of priority) {
-      // Se o campo for 'ano_inicio', verificamos se 'ano' está visível
       const visibilityKey = field === "ano_inicio" ? "ano" : field;
       if (visibleFields[visibilityKey]) {
         const valA = String(a[field] || "").trim();
         const valB = String(b[field] || "").trim();
         if (valA !== valB) {
-          // Ordenação numérica para ano, alfabética para o resto
           if (field === "ano_inicio") {
             return (Number(a[field]) || 0) - (Number(b[field]) || 0);
           }
@@ -166,7 +161,6 @@ export const useCatalog = () => {
     if (e) e.preventDefault();
     if (!partId) return;
 
-    // Se já houver uma busca em andamento, cancelamos ela antes de começar a nova
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -230,7 +224,6 @@ export const useCatalog = () => {
         alert("Erro ao realizar busca. Verifique se o backend está rodando.");
       }
     } finally {
-      // Só desativa o loading se for o controller atual (para não bugar com cancelamentos rápidos)
       if (abortControllerRef.current === controller) {
         setLoading(false);
         abortControllerRef.current = null;
@@ -254,43 +247,37 @@ export const useCatalog = () => {
   const copyToClipboard = (
     mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
     erpFont: string = "monospace",
-    erpFontSize: number = 9,
-    hideDashesRow: boolean = false
+    erpFontSize: number = 9
   ) => {
     if (mode === "tabela") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize);
     } else if (mode === "tabela_limpa") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize);
     } else if (mode === "tabela_tabulada") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize);
     } else {
       performCopy(mode, results, visibleFields, automakers, uniqueReferences);
     }
   };
 
-  // Lógica para processar os resultados que serão EXIBIDOS na tela
   const displayResults = useMemo(() => {
     if (results.length === 0) return [];
 
-    // 1. FILTRAGEM DINÂMICA LOCAL (Varre colunas VISÍVEIS)
     let filtered = results;
     if (filterText) {
       const lowerFilter = filterText.toLowerCase();
       filtered = results.filter((res) => {
         return Object.entries(res).some(([key, val]) => {
-          // Ignora campos de controle ou ocultos para evitar falsos positivos
           if (visibleFields[key] === false) return false;
           return String(val).toLowerCase().includes(lowerFilter);
         });
       });
     }
 
-    // Se "Agrupar Resultados" estiver desligado no topo, mostramos tudo individual
     if (!agrupar) return filtered.sort(compareResults);
 
     const groups: any = {};
     filtered.forEach((res) => {
-      // Chave baseada apenas no que está visível
       const keyParts = [];
       if (visibleFields.marca) keyParts.push(res.marca);
       if (visibleFields.veiculo) keyParts.push(res.veiculo);
@@ -307,7 +294,6 @@ export const useCatalog = () => {
       if (visibleFields.apenas) keyParts.push(res.apenas);
       if (visibleFields.observacao) keyParts.push(res.observacao);
       if (visibleFields.ficha_tecnica && res.ficha_tecnica) {
-        // Serializa a ficha técnica para a chave
         keyParts.push(JSON.stringify(res.ficha_tecnica));
       }
 
@@ -315,7 +301,7 @@ export const useCatalog = () => {
 
       if (!groups[key]) {
         groups[key] = {
-          ...res, // Pega os dados base do primeiro item
+          ...res,
           anos: [],
         };
       }
@@ -324,10 +310,8 @@ export const useCatalog = () => {
       }
     });
 
-    // Transforma os grupos em linhas de exibição
     const processed: any[] = [];
     Object.values(groups).forEach((g: any) => {
-      // No modo de exibição, vamos manter os ranges de anos organizados (similar ao INTERM)
       const uniqueRanges = new Set<string>();
       g.anos.forEach((a: any) => {
         uniqueRanges.add(`${a.start}...${a.end}`);
@@ -339,7 +323,6 @@ export const useCatalog = () => {
           const [start, end] = range.split("...");
           processed.push({
             ...g,
-            // Garante que start/end sejam tratados corretamente para ordenação posterior
             ano_inicio:
               start !== "undefined" && start !== "null" && start !== ""
                 ? isNaN(Number(start))
@@ -355,19 +338,16 @@ export const useCatalog = () => {
           });
         });
 
-      // Se não tiver anos, adiciona a linha base
       if (g.anos.length === 0) {
         processed.push(g);
       }
     });
 
-    // Ordenação dinâmica final baseada no que está visível
     return processed.sort(compareResults);
   }, [results, visibleFields, agrupar, filterText]);
 
   const totalPages = Math.max(1, Math.ceil(displayResults.length / itemsPerPage));
 
-  // 2. Fatiamento para Paginação
   const paginatedResults = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return displayResults.slice(start, start + itemsPerPage);
@@ -394,8 +374,6 @@ export const useCatalog = () => {
       allImgs.forEach((url: string, imgIdx: number) => {
         if (url && url.startsWith("http") && !seenUrls.has(url)) {
           seenUrls.add(url);
-          // Como as fotos são da PEÇA, usamos o código ou marca para o nome
-          // Extraímos o nome do arquivo da URL original para manter extensões e sufixos (ex: WO-545B.jpg)
           const urlPath =
             url.split("/").pop()?.split("?")[0] || `imagem_${imgIdx}.jpg`;
           const fileName = `${res.marca || "PECA"}_${urlPath}`.replace(
@@ -418,7 +396,6 @@ export const useCatalog = () => {
     try {
       const downloadPromises = imagesToDownload.map(async (img) => {
         try {
-          // Usa o proxy do backend para evitar CORS
           const proxyUrl = `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(img.url)}`;
           const response = await fetch(proxyUrl);
           if (!response.ok)
@@ -441,7 +418,7 @@ export const useCatalog = () => {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Erro ao gerar ZIP:", error);
-     } finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -490,5 +467,4 @@ export const useCatalog = () => {
     downloadAllImages,
     cancelSearch,
   };
-
 };

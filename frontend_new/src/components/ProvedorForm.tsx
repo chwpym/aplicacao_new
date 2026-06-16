@@ -62,6 +62,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
   });
 
   const [showHelp, setShowHelp] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleTestPlayground = () => {
@@ -91,6 +92,8 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
     const val =
       type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
 
+    setError(null); // Limpa o erro ao digitar
+
     setFormData((prev: any) => {
       const next = { ...prev, [name]: val };
 
@@ -112,16 +115,6 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
 
           if (value === "graphql") {
             next.query = GRAPHQL_TEMPLATE;
-            if (!next.headers || next.headers === "{}") {
-              next.headers = JSON.stringify(
-                {
-                  Origin: "https://[BRAND].catalogofraga.com.br",
-                  Referer: "https://[BRAND].catalogofraga.com.br/",
-                },
-                null,
-                2,
-              );
-            }
             if (isUrlDefaultOrEmpty) {
               next.url = "https://bff.catalogofraga.com.br/gateway/graphql";
             }
@@ -163,14 +156,6 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
             if (isUrlDefaultOrEmpty) {
               next.url = "https://bff.catalogofraga.com.br/gateway/graphql";
             }
-            next.headers = JSON.stringify(
-              {
-                Origin: "https://cofap.catalogofraga.com.br",
-                Referer: "https://cofap.catalogofraga.com.br/",
-              },
-              null,
-              2,
-            );
             next.query = GRAPHQL_TEMPLATE;
             next.mapeamento = JSON.stringify(
               {
@@ -253,6 +238,25 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
           }
         }
 
+        // Auto-preenchimento e atualização em tempo real de headers Fraga (Origin e Referer) a partir do nome digitado
+        if (currentTipo === "graphql" || currentTipo === "cofap") {
+          const brandSlug = currentNome.toLowerCase().trim().replace(/\s+/g, "");
+          const cleanHeaders = (next.headers || "").trim();
+          if (
+            !cleanHeaders ||
+            cleanHeaders === "{}" ||
+            cleanHeaders.includes("catalogofraga.com.br")
+          ) {
+            next.headers = JSON.stringify(
+              {
+                Origin: `https://${brandSlug || "[BRAND]"}.catalogofraga.com.br`,
+                Referer: `https://${brandSlug || "[BRAND]"}.catalogofraga.com.br/`,
+              },
+              null,
+              2,
+            );
+          }
+        }
 
         // Original DS specific logic, now integrated into the 'tipo' check
         if (currentNome === "DS" && name === "nome") {
@@ -285,6 +289,58 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
     }
   };
 
+  const handleSave = () => {
+    const trimmedNome = formData.nome.trim();
+    const trimmedUrl = formData.url.trim();
+    const trimmedHeaders = formData.headers.trim();
+    const trimmedQuery = formData.query.trim();
+
+    if (!trimmedNome) {
+      setError("O nome do provedor é obrigatório.");
+      return;
+    }
+
+    if (!trimmedUrl) {
+      setError("A URL do endpoint é obrigatória.");
+      return;
+    }
+
+    // Validações rigorosas de espaços
+    if (formData.nome !== trimmedNome) {
+      setError("O nome do provedor possui espaços extras em branco no início ou no fim. Remova-os.");
+      return;
+    }
+
+    if (formData.url !== trimmedUrl) {
+      setError("A URL do endpoint possui espaços extras em branco no início ou no fim. Remova-os.");
+      return;
+    }
+
+    if (formData.tipo === "graphql" || formData.tipo === "cofap") {
+      try {
+        const parsed = JSON.parse(trimmedHeaders);
+        const keys = Object.keys(parsed).map(k => k.toLowerCase());
+        if (!keys.includes("origin") || !keys.includes("referer")) {
+          setError("Para provedores GraphQL Fraga, os cabeçalhos (headers) devem conter 'Origin' e 'Referer'.");
+          return;
+        }
+      } catch (err) {
+        setError("Os cabeçalhos (headers) não são um JSON válido. Verifique aspas, chaves e vírgulas.");
+        return;
+      }
+    }
+
+    setError(null);
+    onSave({
+      ...formData,
+      nome: trimmedNome,
+      url: trimmedUrl,
+      headers: trimmedHeaders,
+      query: trimmedQuery,
+    });
+  };
+
+
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div className="bg-surface-light dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
@@ -308,6 +364,12 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {error && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-xs flex items-center gap-2 font-semibold animate-in fade-in duration-200">
+              <Shield size={16} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
@@ -629,7 +691,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               Testar no Playground
             </button>
             <button
-              onClick={() => onSave(formData)}
+              onClick={handleSave}
               className="bg-primary hover:bg-primary-hover text-white px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/25 text-sm"
             >
               <Save size={18} /> Salvar Alterações

@@ -114,3 +114,57 @@ if (nomeResults.length > 0) {
 4. ✅ Usar o template acima como base
 5. ✅ Testar a cópia para garantir que o bloco aparece após os similares
 
+---
+
+## 7. Lógica Avançada de Cópia Alinhada (`clipboardTable.ts`)
+
+Para atender às necessidades de colagem milimétrica em memos de sistemas ERP e Whatsapp com fontes proporcionais (onde um espaço `" "` ou hífen `"-"` tem tamanho físico diferente de uma letra `"M"` ou `"W"`), implementamos a engenharia proporcional de medição física no utilitário [clipboardTable.ts](file:///d:/Dev/aplicacao_new/frontend_new/src/utils/clipboardTable.ts).
+
+### A. O Motor de Medição por HTML Canvas (2D Context)
+Em vez de contar caracteres simples (que entorta fontes como *Segoe UI*, *Calibri*, *Tahoma* ou *Microsoft Sans Serif*), o sistema cria um elemento Canvas em memória e mede o tamanho em pixels dos blocos:
+```typescript
+const getProportionalWidth = (text: string, fontName: string, fontSize: number): number => {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return text.length * 8; // Fallback monoespaçado
+  ctx.font = `${fontSize}pt "${fontName}"`;
+  return ctx.measureText(text).width;
+};
+```
+
+### B. Preenchimento de Espaços Físicos (`padProportional`)
+Calcula dinamicamente a largura física que falta para atingir a coluna desejada e a preenche com o número exato de espaços proporcionalmente necessários para aquela fonte e tamanho:
+```typescript
+const padProportional = (
+  text: string,
+  targetPhysicalWidth: number,
+  fontName: string,
+  fontSize: number
+): string => {
+  // 1. Limpa o valor original
+  // 2. Mede a largura em pixels do texto
+  // 3. Se for maior que o limite da coluna, corta caractere por caractere
+  // 4. Mede a largura física do caractere de espaço (" ") na mesma fonte/tamanho
+  // 5. Divide a largura restante pela largura física do espaço
+  // 6. Preenche com a quantidade calculada de caracteres de espaço
+};
+```
+
+### C. Suporte a Múltiplos Formatos Simultâneos (Rich Clipboard)
+O utilitário não copia apenas texto cru. Ele gera simultaneamente dois formatos e os insere na área de transferência através da API moderna `ClipboardItem`:
+* **`text/plain`**: O texto estruturado com barras verticais `|`, medido pelo Canvas proporcional ou no padrão monoespaçado (conforme a configuração da fonte do ERP do usuário).
+* **`text/html`**: Uma tabela HTML5 completa com estilos CSS inline (calibri, bordas suaves `#cbd5e1`, listras alternadas nas linhas com `#f8fafc`, cabeçalho destacado e espaçamentos internos). Ao ser colado em editores como Excel, Google Sheets, Outlook ou Word, o resultado vira uma tabela reativa com células nativas perfeitas.
+
+### D. Regras Especiais da Tabela
+1. **Deduplicação e Consolidação de Anos no Agrupamento**:
+   Quando a opção "Agrupar" está ativada, a tabela condensa múltiplos anos de aplicação de um mesmo veículo e motor. Ela busca automaticamente o ano inicial mínimo (`Math.min(...starts)`) e o final máximo (`Math.max(...ends)`) e formata como `ano_inicio...ano_fim`, garantindo que não existam linhas duplicadas.
+2. **Oclusão de Hifens (`hideDashesRow`)**:
+   Devido ao fato de o caractere de hífen `-` ser extremamente fino em fontes do sistema Windows (como Segoe UI), a linha divisória horizontal `|---|---|` costuma quebrar e desalinhá-la visualmente. Quando `hideDashesRow` está ativa (`true` por padrão na produção), a linha de divisórias horizontais é omitida da saída em texto, mantendo apenas o cabeçalho e os dados perfeitamente retos.
+3. **Consolidação Inteligente de Similares**:
+   * Prioriza marcas montadoras conhecidas (ex: `VOLKSWAGEN`, `FORD`, `FIAT`) e chaves `ORIGINAL` / `OEM` no topo do bloco de referências.
+   * Ordena marcas secundárias em ordem alfabética abaixo.
+   * Remove códigos redundantes aplicando normalização de caracteres (excluindo pontos, traços e espaços).
+4. **Indexação Integrada (IDX)**:
+   * Gera um bloco `IDX:` no final do texto para mecanismos de indexação e buscas rápidas, incluindo marcas, motores, referências de montadoras e marcas técnicas de reposição de forma organizada.
+
+

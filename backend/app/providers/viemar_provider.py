@@ -63,6 +63,7 @@ class ViemarProvider(BaseProvider):
                         model = get_val(catalog, "model")
                         year_global = get_val(catalog, "year")
                         product_line = get_val(catalog, "productLine")
+                        reference_code = get_val(catalog, "reference")
 
                         # Posição global do catálogo (lista consolidada, ex: "Direita | Esquerda")
                         positions_list = []
@@ -90,6 +91,14 @@ class ViemarProvider(BaseProvider):
                         manuf_country = get_val(catalog, "manufacturerCountry")
                         if manuf_country:
                             ficha_tecnica["País de Fabricação"] = manuf_country
+
+                        # Manual / Alertas Técnicos da Viemar
+                        attachment_obj = catalog.get("attachment", {})
+                        if isinstance(attachment_obj, dict):
+                            for att in attachment_obj.get("subValue", []):
+                                if isinstance(att, dict) and att.get("value"):
+                                    att_title = att.get("title") or "Alerta Técnico"
+                                    ficha_tecnica[att_title] = att.get("value")
 
                         # Referências cruzadas
                         cross_ref_obj = catalog.get("crossReference")
@@ -147,6 +156,7 @@ class ViemarProvider(BaseProvider):
                                 "imagens": all_images,
                                 "referencias": cross_ref_str,
                                 "ficha_tecnica": ficha_tecnica,
+                                "codigo": reference_code,
                             }
                             resultados.append(self.formatar_resultado(res))
                         else:
@@ -162,9 +172,10 @@ class ViemarProvider(BaseProvider):
                                 year_groups[(s, e)].append(app)
 
                             for (start_year, end_year), apps_group in year_groups.items():
-                                # Coleta posições e direções únicas do grupo
+                                # Coleta posições, direções e qualificadores técnicos únicos do grupo
                                 positions = []
                                 direcao_values = []
+                                qualificadores_app = []
 
                                 for app in apps_group:
                                     # Posição (default_value em pt)
@@ -179,13 +190,20 @@ class ViemarProvider(BaseProvider):
                                     if pos and pos not in positions:
                                         positions.append(pos)
 
-                                    # Direção: dos qualificadores (label="Direção" em pt)
+                                    # Direção e outros qualificadores (label em pt)
                                     for q in (app.get("qualificador") or []):
                                         for i18n in q.get("i18nValues", []):
-                                            if i18n.get("cod_i18n") == "pt" and i18n.get("label") == "Direção":
+                                            if i18n.get("cod_i18n") == "pt":
+                                                label = i18n.get("label", "").strip()
                                                 val = i18n.get("value", "").strip()
-                                                if val and val not in direcao_values:
-                                                    direcao_values.append(val)
+                                                if label and val:
+                                                    if label == "Direção":
+                                                        if val not in direcao_values:
+                                                            direcao_values.append(val)
+                                                    else:
+                                                        text_q = f"{label}: {val}"
+                                                        if text_q not in qualificadores_app:
+                                                            qualificadores_app.append(text_q)
 
                                 # Pega o motor do primeiro app do grupo (Viemar costuma ter motor no nível de app)
                                 app_first = apps_group[0]
@@ -193,6 +211,15 @@ class ViemarProvider(BaseProvider):
 
                                 posicao_str = " | ".join(positions) or catalog_positions
                                 direcao = " / ".join(direcao_values)
+
+                                # Combina observações globais com qualificadores de aplicação
+                                obs_list = []
+                                if more_info_str:
+                                    obs_list.append(more_info_str)
+                                for q_text in qualificadores_app:
+                                    if q_text not in obs_list:
+                                        obs_list.append(q_text)
+                                observacao_final = " | ".join(obs_list)
 
                                 res = {
                                     "marca": self.config.get("nome", "VIEMAR"),
@@ -208,11 +235,12 @@ class ViemarProvider(BaseProvider):
                                     ),
                                     "posicao": posicao_str,
                                     "direcao": direcao,
-                                    "observacao": more_info_str,
+                                    "observacao": observacao_final,
                                     "imagem": primary_image,
                                     "imagens": all_images,
                                     "referencias": cross_ref_str,
                                     "ficha_tecnica": ficha_tecnica,
+                                    "codigo": reference_code,
                                 }
                                 resultados.append(self.formatar_resultado(res))
 

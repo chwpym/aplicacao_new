@@ -226,8 +226,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 h-screen sticky top-0 shrink-0">
-        <div className="p-6">
+      <aside className="hidden md:flex flex-col w-64 bg-surface-light dark:bg-surface-dark border-r border-slate-200 dark:border-slate-800 h-screen sticky top-0 shrink-0 overflow-hidden">
+        {/* Header Fixo */}
+        <div className="p-6 pb-4 shrink-0">
           <div className="flex items-center gap-3 mb-8">
             <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/30">
               <Settings className="text-white" size={24} />
@@ -243,8 +244,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Gerenciador de Peças</span>
             </div>
           </div>
+        </div>
 
-          <nav className="flex flex-col gap-1.5 uppercase tracking-wider text-[11px] font-bold">
+        {/* Menu de Navegação Scrollável */}
+        <div className="flex-1 overflow-y-auto px-6 custom-scrollbar">
+          <nav className="flex flex-col gap-1.5 uppercase tracking-wider text-[11px] font-bold pb-4">
             <span className="text-slate-400 px-4 py-2 mb-1">Navegação</span>
             {navItems.map((item) => (
               item.action === 'backup' ? (
@@ -274,7 +278,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
         </div>
 
-        <div className="mt-auto p-6 space-y-4">
+        {/* Rodapé Fixo (Perfil e Tema) */}
+        <div className="p-6 pt-4 space-y-4 shrink-0 border-t border-slate-100 dark:border-slate-800/50 bg-surface-light dark:bg-surface-dark z-10">
           <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-3 mb-1">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs shrink-0">
