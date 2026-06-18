@@ -3,6 +3,7 @@ import { Save, RotateCcw, Eye, EyeOff, Database, RefreshCw } from 'lucide-react'
 import { configApi } from '../services/api';
 import { toast } from '../utils/toast';
 import ConfirmModal from '../components/ConfirmModal';
+import { ConfiguracoesImagens } from '../components/ConfiguracoesImagens';
 
 const PREF_KEY = 'colunas_visiveis';
 
@@ -43,6 +44,7 @@ const Configuracoes = () => {
     const [syncing, setSyncing] = useState(false);
     const [automakerInfo, setAutomakerInfo] = useState<any>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'grade' | 'imagens' | 'manutencao'>('grade');
 
     useEffect(() => {
         loadPreferences();
@@ -158,113 +160,148 @@ const Configuracoes = () => {
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold">Configurações</h1>
-                    <p className="text-slate-500 text-sm">Defina o seu <span className="text-primary font-bold">Padrão de Fábrica</span>. Essas colunas estarão sempre prontas para você.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleReset}
-                        className="px-4 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                        <RotateCcw size={16} /> Restaurar
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        className={`px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg ${saved
-                            ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-                            : 'bg-primary hover:bg-primary-hover text-white shadow-primary/20'
-                            }`}
-                    >
-                        <Save size={16} /> {saved ? 'Padrão Salvo!' : 'Salvar Padrão'}
-                    </button>
+                    <p className="text-slate-500 text-sm">Defina o seu <span className="text-primary font-bold">Padrão de Fábrica</span> e preferências do sistema.</p>
                 </div>
             </div>
 
-            {/* Info bar */}
-            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 rounded-xl px-5 py-3 border border-slate-200 dark:border-slate-800">
-                <span className="text-sm font-semibold text-slate-500">
-                    <span className="text-primary font-black">{activeCount}</span> de {allFields.length} colunas ativas no seu padrão
-                </span>
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleSelectAll}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all"
-                    >
-                        <Eye size={14} /> Marcar Tudo
-                    </button>
-                    <button
-                        onClick={handleDeselectAll}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all"
-                    >
-                        <EyeOff size={14} /> Desmarcar Tudo
-                    </button>
-                </div>
+            {/* Custom Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-px">
+                <button
+                    onClick={() => setActiveTab('grade')}
+                    className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === 'grade' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Grade e Colunas
+                </button>
+                <button
+                    onClick={() => setActiveTab('imagens')}
+                    className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === 'imagens' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Processamento de Imagens
+                </button>
+                <button
+                    onClick={() => setActiveTab('manutencao')}
+                    className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === 'manutencao' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Manutenção (FIPE)
+                </button>
             </div>
 
-            {/* Grid de toggles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {allFields.map(f => {
-                    const isActive = !!fields[f.id];
-                    return (
+            {/* Tab Content */}
+            {activeTab === 'grade' && (
+                <div className="space-y-6 animate-in fade-in duration-300">
+                    <div className="flex items-center justify-end gap-3 mb-4">
                         <button
-                            key={f.id}
-                            onClick={() => toggle(f.id)}
-                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 group cursor-pointer ${isActive
-                                ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md shadow-primary/10'
-                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                            onClick={handleReset}
+                            className="px-4 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm"
+                        >
+                            <RotateCcw size={16} /> Restaurar Padrão
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className={`px-6 py-2 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg text-sm ${saved
+                                ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                                : 'bg-primary hover:bg-primary-hover text-white shadow-primary/20'
                                 }`}
                         >
-                            <span className={`font-bold text-sm ${isActive ? 'text-primary' : 'text-slate-400'}`}>
-                                {f.label}
-                            </span>
-                            <div className={`w-10 h-5 rounded-full p-0.5 transition-colors ${isActive ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
-                                <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isActive ? 'translate-x-5' : ''}`} />
-                            </div>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Manutenção do Sistema */}
-            <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Database size={20} className="text-primary" /> Manutenção do Sistema
-                </h2>
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-1">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100">Catálogo Mestre (FIPE)</h3>
-                            <p className="text-sm text-slate-500">
-                                Sincronize marcas e modelos para garantir o reconhecimento automático de montadoras.
-                            </p>
-                            <div className="flex gap-4 pt-2">
-                                <div className="text-xs">
-                                    <span className="text-slate-400">Modelos:</span> <span className="font-bold text-primary">{automakerInfo?.count || 0}</span>
-                                </div>
-                                <div className="text-xs">
-                                    <span className="text-slate-400">Atualização:</span> <span className="font-bold text-slate-500">{automakerInfo?.last_update ? new Date(automakerInfo.last_update).toLocaleDateString() : 'Nunca'}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setIsConfirmOpen(true)}
-                            disabled={syncing}
-                            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap shadow-lg ${
-                                syncing 
-                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
-                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
-                            }`}
-                        >
-                            <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
-                            {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                            <Save size={16} /> {saved ? 'Padrão Salvo!' : 'Salvar Padrão'}
                         </button>
                     </div>
-                </div>
-            </div>
 
-            {/* Nota */}
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 text-xs font-medium leading-relaxed">
-                <span className="font-bold">Dica:</span> Ao salvar aqui, você define o seu padrão fixo. Na tela de busca, você pode desmarcar colunas para uma pesquisa específica sem medo, pois ao recarregar a página, o sistema voltará para este padrão salvo no banco de dados.
-            </div>
+                    {/* Info bar */}
+                    <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 rounded-xl px-5 py-3 border border-slate-200 dark:border-slate-800">
+                        <span className="text-sm font-semibold text-slate-500">
+                            <span className="text-primary font-black">{activeCount}</span> de {allFields.length} colunas ativas no seu padrão
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleSelectAll}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                            >
+                                <Eye size={14} /> Marcar Tudo
+                            </button>
+                            <button
+                                onClick={handleDeselectAll}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all"
+                            >
+                                <EyeOff size={14} /> Desmarcar Tudo
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Grid de toggles */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {allFields.map(f => {
+                            const isActive = !!fields[f.id];
+                            return (
+                                <button
+                                    key={f.id}
+                                    onClick={() => toggle(f.id)}
+                                    className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 group cursor-pointer ${isActive
+                                        ? 'border-primary bg-primary/5 dark:bg-primary/10 shadow-md shadow-primary/10'
+                                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                                        }`}
+                                >
+                                    <span className={`font-bold text-sm ${isActive ? 'text-primary' : 'text-slate-400'}`}>
+                                        {f.label}
+                                    </span>
+                                    <div className={`w-10 h-5 rounded-full p-0.5 transition-colors ${isActive ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
+                                        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${isActive ? 'translate-x-5' : ''}`} />
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Nota */}
+                    <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 text-xs font-medium leading-relaxed">
+                        <span className="font-bold">Dica:</span> Ao salvar aqui, você define o seu padrão fixo. Na tela de busca, você pode desmarcar colunas para uma pesquisa específica sem medo, pois ao recarregar a página, o sistema voltará para este padrão salvo no banco de dados.
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'imagens' && (
+                <div className="space-y-6 animate-in fade-in duration-300 pt-2">
+                    <ConfiguracoesImagens />
+                </div>
+            )}
+
+            {activeTab === 'manutencao' && (
+                <div className="space-y-6 animate-in fade-in duration-300 pt-2">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                        <Database size={20} className="text-primary" /> Manutenção do Sistema
+                    </h2>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="space-y-1">
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Catálogo Mestre (FIPE)</h3>
+                                <p className="text-sm text-slate-500">
+                                    Sincronize marcas e modelos para garantir o reconhecimento automático de montadoras.
+                                </p>
+                                <div className="flex gap-4 pt-2">
+                                    <div className="text-xs">
+                                        <span className="text-slate-400">Modelos:</span> <span className="font-bold text-primary">{automakerInfo?.count || 0}</span>
+                                    </div>
+                                    <div className="text-xs">
+                                        <span className="text-slate-400">Atualização:</span> <span className="font-bold text-slate-500">{automakerInfo?.last_update ? new Date(automakerInfo.last_update).toLocaleDateString() : 'Nunca'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsConfirmOpen(true)}
+                                disabled={syncing}
+                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all whitespace-nowrap shadow-lg ${
+                                    syncing 
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
+                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20'
+                                }`}
+                            >
+                                <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+                                {syncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

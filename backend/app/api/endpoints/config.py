@@ -97,17 +97,21 @@ def get_automakers():
     }
 
 @router.post("/fipe/sync")
-async def sync_fipe(background_tasks: BackgroundTasks):
+async def sync_fipe():
     try:
         from scripts.sync_fipe_catalog import sync_catalog
         from app.services.automaker_service import automaker_service
+        from app.services.status_service import status_service
         
-        async def run_sync_and_reload():
-            await sync_catalog()
-            automaker_service.reload()
+        # Roda de forma síncrona/aguardada
+        await sync_catalog()
+        automaker_service.reload()
+        
+        # Limpa o cache de status para forçar um novo check que ficará verde
+        status_service._cache = {}
+        status_service._cache_time = 0
             
-        background_tasks.add_task(run_sync_and_reload)
-        return {"status": "success", "message": "Sincronização FIPE iniciada em segundo plano."}
+        return {"status": "success", "message": "Catálogo da Fipe sincronizado com sucesso!"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao iniciar sincronização: {str(e)}")
 
@@ -165,4 +169,29 @@ def save_preferencia(data: dict, db: Session = Depends(get_db)):
     
     db.commit()
     return {"status": "success", "message": "Preferência salva"}
+
+# --- Configuração de Imagens ---
+@router.get("/imagens", response_model=schemas.ConfiguracaoImagem)
+def get_config_imagens(db: Session = Depends(get_db)):
+    config = db.query(models.ConfiguracaoImagem).first()
+    if not config:
+        config = models.ConfiguracaoImagem()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+    return config
+
+@router.put("/imagens", response_model=schemas.ConfiguracaoImagem)
+def update_config_imagens(config_data: schemas.ConfiguracaoImagemBase, db: Session = Depends(get_db)):
+    config = db.query(models.ConfiguracaoImagem).first()
+    if not config:
+        config = models.ConfiguracaoImagem()
+        db.add(config)
+    
+    for key, value in config_data.dict().items():
+        setattr(config, key, value)
+    
+    db.commit()
+    db.refresh(config)
+    return config
 

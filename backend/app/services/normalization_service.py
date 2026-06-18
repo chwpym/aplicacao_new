@@ -11,8 +11,9 @@ class NormalizationService:
         # Combustíveis comuns no Brasil e Mercosul (nomes completos)
         self.combustiveis = ["FLEX", "GASOLINA", "DIESEL", "ALCOOL", "ÁLCOOL", "TETRAFUEL", "GNV", "HÍBRIDO", "HIBRIDO", "ELETRICO", "ELÉTRICO", "LPG", "BI-FUEL", "BIFUEL"]
         
-        # Cache de regras de limpeza customizadas (id_campo -> lista de palavras)
+        # Cache de regras de limpeza e siglas pré-processamento
         self.regras_limpeza = {}
+        self.siglas_pre_processamento = {}
         self.ultima_atualizacao_regras = 0
         
     def extrair_motorizacao(self, texto: str) -> Tuple[str, str, str]:
@@ -26,6 +27,15 @@ class NormalizationService:
             return "", "", ""
             
         texto_limpo = str(texto).upper().replace("  ", " ").strip()
+        
+        # Pré-processamento dinâmico (Carregado do Dicionário de Siglas 'Todos os Campos')
+        for termo, substituto in self.siglas_pre_processamento.items():
+            pattern = r'\b' + re.escape(termo) + r'\b'
+            texto_limpo = re.sub(pattern, substituto, texto_limpo)
+
+        # Pré-processamento de siglas compostas que quebram a extração (Fallback)
+        texto_limpo = re.sub(r'\bVHC\s+E\b', 'VHC-E', texto_limpo)
+        texto_limpo = re.sub(r'\bE\s*[-]?\s*TORQ\b', 'E-TORQ', texto_limpo)
         
         # 1. Extrair Cilindrada (ex: 1.0, 1.4, 2.0, 1.0L, 1,4 ou múltiplos 1.0/1.3)
         cilindrada = ""
@@ -70,16 +80,20 @@ class NormalizationService:
         # 4. Identificar Keywords Técnicas (VHC, MPFI, etc.)
         # Elas vão para a coluna de configuração/residuo respeitando a ORDEM ORIGINAL
         matches = []
-        for kw in ENGINE_KEYWORDS:
-             for m in re.finditer(r'\b' + re.escape(kw) + r'\b', texto_limpo):
+        texto_temp = texto_limpo
+        # Ordena keywords da maior para a menor para evitar que VHC capture dentro de VHC-E
+        for kw in sorted(ENGINE_KEYWORDS, key=len, reverse=True):
+             for m in re.finditer(r'\b' + re.escape(kw) + r'\b', texto_temp):
                 matches.append((m.start(), kw))
+             # Consome a keyword do texto_temp para não dar match duplo
+             texto_temp = re.sub(r'\b' + re.escape(kw) + r'\b', ' ' * len(kw), texto_temp)
         
         # Ordena as palavras encontradas pela posição no texto original (não alfabético)
         matches.sort()
         encontradas_kw = [m[1] for m in matches]
         
-        # Remove as keywords do texto original para limpar o resíduo
-        for _, kw in matches:
+        # Remove as keywords do texto original verdadeiro para limpar o resíduo
+        for kw in encontradas_kw:
             texto_limpo = re.sub(r'\b' + re.escape(kw) + r'\b', '', texto_limpo)
         
         # Adiciona as keywords encontradas à configuração na ordem certa
@@ -176,9 +190,9 @@ class NormalizationService:
             
         return " | ".join(resultado_final)
 
-    def carregar_regras_limpeza(self, db):
-        """Carrega as regras de limpeza da tabela palavras_remover para o cache."""
-        from app.models.models import PalavraRemover
+    def carregar_regras_db(self, db):
+        """Carrega regras e siglas (Todos os Campos) do DB para o cache de pré-processamento."""
+        from app.models.models import PalavraRemover, Sigla
         import time
         
         # Evita recarregar se foi atualizado nos últimos 60 segundos
@@ -186,6 +200,7 @@ class NormalizationService:
             return
 
         try:
+            # 1. Regras de Limpeza
             termos = db.query(PalavraRemover).all()
             regras = {}
             for t in termos:
@@ -194,9 +209,15 @@ class NormalizationService:
                     regras[campo] = []
                 regras[campo].append(t.palavra.upper())
             
+            # 2. Siglas de Pré-processamento ("Todos os Campos" e "Config. Motor")
+            siglas_db = db.query(Sigla).filter(Sigla.campo.in_(["Todos os Campos", "Config. Motor"])).all()
+            siglas_pre = {}
+            for s in siglas_db:
+                siglas_pre[s.nome_completo.upper().strip()] = s.abreviacao.upper().strip()
+
             self.regras_limpeza = regras
+            self.siglas_pre_processamento = siglas_pre
             self.ultima_atualizacao_regras = time.time()
-            # logger.info("NORMALIZATION", f"Regras de limpeza carregadas: {len(termos)} termos.")
         except Exception as e:
             print(f"Erro ao carregar regras de limpeza: {e}")
 

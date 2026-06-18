@@ -295,6 +295,7 @@ export const useCatalog = () => {
       if (visibleFields.marca) keyParts.push(res.marca);
       if (visibleFields.veiculo) keyParts.push(res.veiculo);
       if (visibleFields.modelo) keyParts.push(res.modelo);
+      if (visibleFields.versao) keyParts.push(res.versao);
       if (visibleFields.motor) keyParts.push(res.motor);
       if (visibleFields.configuracao_motor)
         keyParts.push(res.configuracao_motor);

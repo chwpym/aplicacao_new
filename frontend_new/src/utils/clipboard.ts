@@ -56,6 +56,23 @@ export const copyToClipboard = (
 ) => {
   if (results.length === 0) return;
 
+  // Função interna para remover palavras duplicadas na mesma linha (ex: "FLEX FLEX" -> "FLEX")
+  const sanitizeLine = (text: string) => {
+    const words = text.replace(/\s+/g, " ").trim().split(" ");
+    const result: string[] = [];
+    const seen = new Set<string>();
+    
+    words.forEach(w => {
+      const upper = w.toUpperCase();
+      if (!seen.has(upper)) {
+        seen.add(upper);
+        result.push(w);
+      }
+    });
+    
+    return result.join(" ");
+  };
+
   let text = "";
 
   const compareResults = (a: any, b: any) => {
@@ -108,7 +125,7 @@ export const copyToClipboard = (
         if (visibleFields.referencias && res.referencias) parts.push(res.referencias);
         if (visibleFields.observacao && res.observacao) parts.push(res.observacao);
 
-        return parts.join(" ").replace(/\s+/g, " ").trim();
+        return sanitizeLine(parts.join(" "));
       })
       .filter((line) => line.length > 0);
 
@@ -175,7 +192,7 @@ export const copyToClipboard = (
         sortedRanges.forEach((range) => {
           const rangeText = range === "..." ? "" : range;
           lines.push(
-            `${g.parts.join(" ")} ${rangeText}`.replace(/\s+/g, " ").trim(),
+            sanitizeLine(`${g.parts.join(" ")} ${rangeText}`),
           );
         });
       });
@@ -210,7 +227,7 @@ export const copyToClipboard = (
         if (rangeText) finalLineParts.push(rangeText);
         if (g.obsText) finalLineParts.push(g.obsText);
 
-        return finalLineParts.join(" ").replace(/\s+/g, " ").trim();
+        return sanitizeLine(finalLineParts.join(" "));
       });
       text = lines.join("\n");
     }

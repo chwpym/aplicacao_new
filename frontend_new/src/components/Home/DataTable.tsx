@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX, Image, Zap, ExternalLink, ShoppingBag } from "lucide-react";
+import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX, ShoppingBag, ChevronDown, Settings } from "lucide-react";
 import { FichaTecnicaModal } from "./FichaTecnicaModal";
 import { ImageGalleryModal } from "./ImageGalleryModal";
 import { MercadoLivreModal } from "./MercadoLivreModal";
 import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
 import { exportToCerttus } from "../../utils/certtusExport";
+import { Image, Zap, ExternalLink } from "lucide-react";
 
 interface DataTableProps {
   results: any[];
@@ -22,8 +23,7 @@ interface DataTableProps {
   copyToClipboard: (
     mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
     erpFont?: string,
-    erpFontSize?: number,
-    hideDashesRow?: boolean
+    erpFontSize?: number
   ) => void;
   downloadAllImages: () => void;
   partId: string;
@@ -53,12 +53,19 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [galleryTitle, setGalleryTitle] = useState("");
 
-  const [mlModalOpen, setMlModalOpen] = useState(false);
-
   const [fontOption, setFontOption] = useState<string>("monospace");
   const [customFont, setCustomFont] = useState<string>("");
   const [erpFontSize, setErpFontSize] = useState<number>(9);
-  const [hideDashesRow, setHideDashesRow] = useState<boolean>(true); // Ocultar divisórias por padrão ajuda imensamente no ERP
+  const [hideDashesRow, setHideDashesRow] = useState<boolean>(true);
+  const [mlModalOpen, setMlModalOpen] = useState(false);
+
+  // States para o novo layout Detox
+  const [exportOpen, setExportOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const exportRef = React.useRef<HTMLDivElement>(null);
+  const copyRef = React.useRef<HTMLDivElement>(null);
 
   const actualErpFont = fontOption === "custom" ? customFont : fontOption;
 
@@ -68,8 +75,19 @@ export const DataTable: React.FC<DataTableProps> = ({
       setFichaModalOpen(false);
       setGalleryOpen(false);
       setMlModalOpen(false);
+      setSettingsOpen(false);
     }
   }, [results.length]);
+
+  // Click outside para fechar os dropdowns
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(event.target as Node)) setExportOpen(false);
+      if (copyRef.current && !copyRef.current.contains(event.target as Node)) setCopyOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleOpenFicha = (res: any) => {
     setSelectedFicha(res);
@@ -366,21 +384,15 @@ export const DataTable: React.FC<DataTableProps> = ({
         {/* Linha 1: Título + Filtro + Botões */}
         <div className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Resultados para:
-              </span>
-              <h2 className="font-bold text-xl text-primary flex items-baseline gap-2">
-                {partId || "Todas as Peças"} 
-                <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
-                  {displayResults.length}
-                </span>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-lg whitespace-nowrap">
+                Resultados {partId ? `para ${partId}` : ""} ({displayResults.length})
               </h2>
             </div>
 
             {/* 🔍 FILTRO RÁPIDO */}
             {results.length > 0 && (
-              <div className="flex-1 relative w-full sm:max-w-md ml-0 sm:ml-4">
+              <div className="flex-1 relative max-w-xs">
                 <input
                   type="text"
                   placeholder="Filtrar nesta página..."
@@ -389,108 +401,107 @@ export const DataTable: React.FC<DataTableProps> = ({
                     setFilterText(e.target.value);
                     setCurrentPage(1); // Reseta para pág 1 ao filtrar
                   }}
-                  className="w-full pl-3 pr-10 py-2 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm bg-slate-50/50 dark:bg-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
+                  className="w-full pl-3 pr-10 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs bg-slate-50/50 dark:bg-slate-900 focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-2 w-full xl:w-auto">
-            {/* Ações e Exportações Unificadas em uma única Grid para alinhamento perfeito */}
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
-              {results.length > 0 && (
-                <button
-                  onClick={downloadAllImages}
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 transition-all border border-orange-500/20 disabled:opacity-50 w-full"
-                  title="Baixa todas as imagens no formato .zip"
-                >
-                  {loading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <FileDown size={14} />
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full lg:w-auto mt-4 lg:mt-0">
+            {results.length > 0 && (
+              <div className="flex w-full sm:w-auto items-center gap-2">
+                
+                {/* 📥 EXPORTAR DROPDOWN */}
+                <div className="relative w-full sm:w-auto" ref={exportRef}>
+                  <button 
+                    onClick={() => { setExportOpen(!exportOpen); setCopyOpen(false); }}
+                    className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileDown size={14} /> Exportar / Salvar
+                    </div>
+                    <ChevronDown size={14} className={`transition-transform ${exportOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {exportOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-full sm:w-48 bg-white dark:bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/50 p-1.5 z-50 flex flex-col gap-1">
+                      <button onClick={() => { handleExportExcel(); setExportOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <FileSpreadsheet size={14} className="text-green-600" /> Excel
+                      </button>
+                      <button onClick={() => { handleExportPdf(); setExportOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <FileText size={14} className="text-red-600" /> PDF
+                      </button>
+                      <button onClick={() => { handleExportCerttus(); setExportOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <FileSpreadsheet size={14} className="text-cyan-600" /> Layout Certtus
+                      </button>
+                      <button onClick={() => { downloadAllImages(); setExportOpen(false); }} disabled={loading} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 disabled:opacity-50 transition-colors">
+                        {loading ? <Loader2 size={14} className="animate-spin text-orange-600" /> : <Image size={14} className="text-orange-600" />} Imagens ZIP
+                      </button>
+                    </div>
                   )}
-                  Salvar Todas
-                </button>
-              )}
-              
-              <button
-                onClick={() => copyToClipboard("completa")}
-                className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20 w-full"
-              >
-                <Copy size={14} /> Copiar Tudo
-              </button>
+                </div>
 
-              {displayResults.length > 0 && (
+                {/* 📋 COPIAR DROPDOWN */}
+                <div className="relative w-full sm:w-auto" ref={copyRef}>
+                  <button 
+                    onClick={() => { setCopyOpen(!copyOpen); setExportOpen(false); }}
+                    className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Copy size={14} /> Copiar Grades
+                    </div>
+                    <ChevronDown size={14} className={`transition-transform ${copyOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {copyOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-full sm:w-56 bg-white dark:bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/50 p-1.5 z-50 flex flex-col gap-1">
+                      <button onClick={() => { copyToClipboard("tabela", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Copy size={14} className="text-slate-500" /> Grade WhatsApp
+                      </button>
+                      <button onClick={() => { copyToClipboard("tabela_limpa", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Copy size={14} className="text-emerald-600" /> Tabela ERP (Limpa)
+                      </button>
+                      <button onClick={() => { copyToClipboard("tabela_tabulada", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Copy size={14} className="text-amber-600" /> Tabulado ERP
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* ⚙️ CONFIGURAÇÕES DE FONTE */}
                 <button
-                  onClick={handleExportExcel}
-                  className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-all border border-green-500/10 w-full"
-                  title="Exportar para Excel"
+                  onClick={() => setSettingsOpen(!settingsOpen)}
+                  className={`flex items-center justify-center p-2.5 rounded-xl transition-all border ${settingsOpen ? 'bg-slate-800/80 text-white border-slate-800/50' : 'bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 border-slate-500/20 dark:text-slate-400'}`}
+                  title="Ajustes avançados de Fonte ERP"
                 >
-                  <FileSpreadsheet size={14} /> Excel
+                  <Settings size={16} className={`transition-transform duration-500 ${settingsOpen ? 'rotate-90' : ''}`} />
                 </button>
-              )}
-
-              {displayResults.length > 0 && (
+              </div>
+            )}
+            
+            {/* 🛒 AÇÕES PRINCIPAIS (Destaque) */}
+            {displayResults.length > 0 && (
+              <div className="flex w-full sm:w-auto items-center gap-2 pl-0 lg:pl-2 lg:border-l lg:border-slate-200/50 dark:lg:border-slate-700/50">
                 <button
-                  onClick={handleExportPdf}
-                  className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-all border border-red-500/10 w-full"
-                  title="Exportar para PDF"
+                  onClick={() => copyToClipboard("completa")}
+                  className="flex flex-1 items-center justify-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all border border-primary/20 whitespace-nowrap"
                 >
-                  <FileText size={14} /> PDF
+                  <Copy size={14} /> Copiar Tudo
                 </button>
-              )}
-
-              {displayResults.length > 0 && (
-                <button
-                  onClick={handleExportCerttus}
-                  className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/20 transition-all border border-cyan-500/20 w-full"
-                  title="Exportar Excel no layout de importação do Certtus (colunas A-S)"
-                >
-                  <FileSpreadsheet size={14} /> Certtus
-                </button>
-              )}
-
-              <button
-                onClick={() => copyToClipboard("tabela", actualErpFont, erpFontSize, hideDashesRow)}
-                className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 dark:hover:bg-slate-800 w-full"
-                title="Copiar Grade: Formato com bordas (para WhatsApp)"
-              >
-                <Copy size={14} /> Copiar Grade (WPP)
-              </button>
-              
-              <button
-                onClick={() => copyToClipboard("tabela_limpa", actualErpFont, erpFontSize, hideDashesRow)}
-                className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-all border border-emerald-500/20 w-full"
-                title="Copiar Tabela ERP: Formato tabulado sem bordas (para o seu Sistema/ERP)"
-              >
-                <Copy size={14} /> Copiar Tabela (ERP)
-              </button>
-              
-              <button
-                onClick={() => copyToClipboard("tabela_tabulada", actualErpFont, erpFontSize, hideDashesRow)}
-                className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all border border-amber-500/20 dark:text-amber-400 w-full"
-                title="Copiar Tabulado: Separa as colunas usando caractere Tab (ideal para campos de ERP que aceitam tabulação)"
-              >
-                <Copy size={14} /> Copiar Tabulado
-              </button>
-              
-              {displayResults.length > 0 && (
                 <button
                   onClick={() => setMlModalOpen(true)}
-                  className="flex items-center justify-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 w-full"
-                  title="Gerar conteúdo otimizado para anúncio no Mercado Livre"
+                  className="flex flex-1 items-center justify-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 whitespace-nowrap"
                 >
                   <ShoppingBag size={14} /> Anúncio ML
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* ⚙️ PAINEL DE AJUSTE DE FONTE PARA ERP (CANVAS PROPORCIONAL) */}
-        {results.length > 0 && (
-          <div className="mx-4 mb-4 p-3 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 transition-all">
+        {settingsOpen && results.length > 0 && (
+          <div className="mx-4 mb-4 p-3 bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all">
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-black text-slate-700 dark:text-slate-200 flex items-center gap-1.5 uppercase">
                 ⚙️ Ajuste de Alinhamento para a Fonte do ERP
@@ -500,7 +511,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               </span>
             </div>
             
-            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               {/* Seletor de Fonte */}
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Fonte:</span>
@@ -545,19 +556,6 @@ export const DataTable: React.FC<DataTableProps> = ({
                   className="text-xs border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 focus:ring-1 focus:ring-primary outline-none w-14 text-center font-semibold"
                 />
               </div>
-
-              {/* Ocultar Linha de Divisórias Checkbox */}
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={hideDashesRow}
-                  onChange={(e) => setHideDashesRow(e.target.checked)}
-                  className="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary h-3.5 w-3.5"
-                />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Ocultar Divisórias (---)
-                </span>
-              </label>
             </div>
           </div>
         )}
@@ -590,8 +588,8 @@ export const DataTable: React.FC<DataTableProps> = ({
 
       {/* Desktop Table View */}
       <div className="md:block hidden overflow-x-auto custom-scrollbar">
-        <table className="w-full text-left border-collapse table-auto">
-          <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+        <table className="w-full text-left border-collapse table-auto relative">
+          <thead className="bg-slate-50/95 dark:bg-slate-800/95 text-slate-500 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
             <tr>
               {COLUMN_CONFIG.filter(
                 (col) => col.id === "acoes" || visibleFields[col.id as keyof typeof visibleFields]
@@ -630,6 +628,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                         </p>
                         <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
                           A busca foi realizada com sucesso no servidor, mas o provedor não retornou resultados.
+                          Verifique se o <strong>código está correto</strong> ou tente outro provedor.
                           Verifique se o <strong>código está correto</strong> ou tente outro provedor.
                         </p>
                       </div>
@@ -711,7 +710,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                     </span>
                   </div>
                   <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                    {res.modelo} • {res.motor}
+                     {res.modelo} • {res.motor}
                   </div>
                 </div>
                 <div className="text-right">

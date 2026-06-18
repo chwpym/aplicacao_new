@@ -112,14 +112,13 @@ class GraphQLProvider(BaseProvider):
 
             # Etapa 2: Retrieval (com tentativa multi-mercado)
             market_values = ["BRA", "BRAZIL", "BR", "Brasil"]
-            ultima_excecao = None
-
-            for market in market_values:
+            
+            import asyncio
+            async def fetch_market(market):
                 payload = {
                     "query": self.query,
                     "variables": {"id": uuid_alvo, "market": market},
                 }
-
                 try:
                     response = await client.post(
                         self.url, json=payload, headers=request_headers
@@ -128,21 +127,12 @@ class GraphQLProvider(BaseProvider):
 
                     if "errors" in data:
                         error_str = str(data["errors"])
-                        # Se o erro for explicitamente de mercado, tentamos o próximo
                         if (
                             "EnumValueNode" in error_str
                             or "MarketType" in error_str
                             or "market" in error_str.lower()
                         ):
-                            print(
-                                f"[{self.config['nome']}] Market '{market}' não aceito pelo servidor (Erro de Tipo/Enum). Tentando próximo..."
-                            )
-                            continue
-
-                        # Se for erro de autorização ou outro, logamos e tentamos extrair o que for possível (partial data)
-                        print(
-                            f"[{self.config['nome']}] Alerta: Servidor retornou erros parciais para o mercado '{market}': {data.get('errors')[:100]}..."
-                        )
+                            return None
 
                     if (
                         not data
@@ -150,58 +140,59 @@ class GraphQLProvider(BaseProvider):
                         or not data["data"]
                         or not data["data"].get("product")
                     ):
-                        print(
-                            f"[{self.config['nome']}] Produto '{uuid_alvo}' não encontrado ou sem acesso no mercado '{market}'."
-                        )
-                        continue
+                        return None
 
-                    product_data = data["data"].get("product")
-                    if not product_data:
-                        # Se não autorizou o produto neste mercado, tentamos o próximo
-                        print(
-                            f"[{self.config['nome']}] Produto '{uuid_alvo}' não acessível no mercado '{market}'."
-                        )
-                        continue
-
-                    # Garantir que vehicles seja uma lista (pode ser None em caso de erro parcial GraphQL)
-                    vehicles = product_data.get("vehicles") or []
-
-                    # Extrair referências originais e similares
-                    referencias_formatadas = ""
-                    if product_data.get("crossReferences"):
-                        refs = []
-                        for cr in product_data["crossReferences"]:
-                            brand_name = cr.get("brand", {}).get("name", "").upper()
-                            refs.append(f"{brand_name}: {cr.get('partNumber')}")
-                        referencias_formatadas = " | ".join(refs)
-
-                    # Formatar resultados (filtrando possíveis itens nulos na lista causados por erros GraphQL)
-                    resultados = [
-                        self.formatar_resultado(v, product_data) for v in vehicles if v is not None
-                    ]
-
-                    # Extrair lista de imagens
-                    imagens = []
-                    if product_data.get("images"):
-                        imagens = [
-                            img.get("imageUrl")
-                            for img in product_data["images"]
-                            if img.get("imageUrl")
-                        ]
-
-                    for res in resultados:
-                        res["imagens"] = imagens
-                        res["imagem"] = imagens[0] if imagens else None
-                        res["codigo"] = product_data.get("partNumber", id_peca)
-                        res["referencias"] = referencias_formatadas
-
-                    return resultados
+                    return data["data"].get("product")
                 except Exception as e:
-                    ultima_excecao = e
-                    continue
+                    return None
 
-            if ultima_excecao:
-                print(f"Erro ao buscar no provedor {self.config['nome']} após tentar todos os mercados: {ultima_excecao}")
+            # Dispara requisições para todos os mercados possíveis ao mesmo tempo
+            tasks = [fetch_market(m) for m in market_values]
+            resultados_mercados = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            product_data = None
+            for res in resultados_mercados:
+                if isinstance(res, dict) and res:
+                    product_data = res
+                    break
+
+            if not product_data:
+                print(f"[{self.config['nome']}] Produto '{uuid_alvo}' não acessível em nenhum dos mercados testados.")
+                return []
+
+            # Garantir que vehicles seja uma lista
+            vehicles = product_data.get("vehicles") or []
+
+            # Extrair referências originais e similares
+            referencias_formatadas = ""
+            if product_data.get("crossReferences"):
+                refs = []
+                for cr in product_data["crossReferences"]:
+                    brand_name = cr.get("brand", {}).get("name", "").upper()
+                    refs.append(f"{brand_name}: {cr.get('partNumber')}")
+                referencias_formatadas = " | ".join(refs)
+
+            # Formatar resultados
+            resultados = [
+                self.formatar_resultado(v, product_data) for v in vehicles if v is not None
+            ]
+
+            # Extrair lista de imagens
+            imagens = []
+            if product_data.get("images"):
+                imagens = [
+                    img.get("imageUrl")
+                    for img in product_data["images"]
+                    if img.get("imageUrl")
+                ]
+
+            for res in resultados:
+                res["imagens"] = imagens
+                res["imagem"] = imagens[0] if imagens else None
+                res["codigo"] = product_data.get("partNumber", id_peca)
+                res["referencias"] = referencias_formatadas
+
+            return resultados
     def formatar_resultado(self, vehicle: dict, product_data: dict = None) -> dict:
         """
         Prepara os dados do GraphQL/Fraga para o BaseProvider.

@@ -322,6 +322,10 @@ class SchaefflerProvider(BaseProvider):
         ano_ini = self._parse_schaeffler_year(target.get("constructionYearFrom", ""))
         ano_fim = self._parse_schaeffler_year(target.get("constructionYearTo", ""))
         
+        # Limpeza do nome da série (Remove códigos internos entre parênteses)
+        # Ex: "FOX HATCH (5Z1, 5Z3)" -> "FOX HATCH"
+        series_clean = re.sub(r'\s*\([^)]*\)', '', series_name).strip()
+        
         # Ficha Técnica Premium — Motor do veículo
         ficha = {
             "CILINDRADA (CCM)": target.get("displacementCCM"),
@@ -344,14 +348,17 @@ class SchaefflerProvider(BaseProvider):
         if composicao:
             ficha["CONTÉM"] = " + ".join(composicao)
 
+        config_motor_raw = f"{target.get('engineType', '')} {target.get('fuelType', '')}".strip().upper()
+        config_motor_clean = re.sub(r'\s*\([^)]*\)', '', config_motor_raw).strip()
+
         raw = {
             "marca_peca": brand_name,
             "codigo": article_code,
             "montadora": mfr_name.upper(),
-            "modelo": series_name.upper(),
+            "modelo": series_clean.upper(),
             "versao": target.get("bodyType", "").upper(),
             "motor": target.get("name", "").upper(),
-            "configuracao_motor": f"{target.get('engineType', '')} {target.get('fuelType', '')}".strip().upper(),
+            "configuracao_motor": config_motor_clean,
             "combustivel": target.get("fuelType", "").upper(),
             "ano_inicio": ano_ini,
             "ano_fim": ano_fim,

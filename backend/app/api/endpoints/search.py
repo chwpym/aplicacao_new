@@ -43,6 +43,108 @@ async def proxy_image(url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/download/image")
+async def download_image(url: str, db: Session = Depends(get_db)):
+    """
+    Download processado de imagem (Aplicação do Pillow sob demanda).
+    """
+    try:
+        from app.services.image_service import image_service
+        # Baixa original
+        content = await image_service.download_image(url)
+        if not content:
+            raise HTTPException(status_code=404, detail="Falha ao baixar imagem do fornecedor")
+        
+        # Pega config
+        from app.models import models
+        config = db.query(models.ConfiguracaoImagem).first()
+        if not config:
+            config = models.ConfiguracaoImagem() # fallbacks
+            
+        # Processa
+        processed_bytes, media_type = image_service.process_image(
+            image_bytes=content,
+            formato_saida=config.formato_saida,
+            qualidade=config.qualidade,
+            max_width=config.max_width,
+            max_height=config.max_height,
+            min_width=config.min_width,
+            min_height=config.min_height,
+            manter_proporcao=config.manter_proporcao,
+            cor_fundo_jpg=config.cor_fundo_jpg
+        )
+        
+        from fastapi.responses import Response
+        # Retorna os bytes com nome sugerido no header
+        headers = {
+            "Content-Disposition": f"attachment; filename=imagem.{config.formato_saida.lower() if config.formato_saida != 'ORIGINAL' else 'jpg'}"
+        }
+        return Response(content=processed_bytes, media_type=media_type, headers=headers)
+    except Exception as e:
+        print(f"Erro no download processado: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/download/zip")
+async def download_images_zip(
+    urls: List[str],
+    db: Session = Depends(get_db)
+):
+    """
+    Download processado de múltiplas imagens em formato ZIP com limite de lote.
+    """
+    if len(urls) > 50:
+        raise HTTPException(status_code=400, detail="Limite de lote excedido: Selecione no máximo 50 imagens por vez.")
+        
+    try:
+        import io
+        import zipfile
+        from app.services.image_service import image_service
+        from app.models import models
+        from fastapi.responses import StreamingResponse
+        
+        config = db.query(models.ConfiguracaoImagem).first()
+        if not config:
+            config = models.ConfiguracaoImagem()
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED, False) as zip_file:
+            for idx, url in enumerate(urls):
+                content = await image_service.download_image(url)
+                if content:
+                    processed_bytes, media_type = image_service.process_image(
+                        image_bytes=content,
+                        formato_saida=config.formato_saida,
+                        qualidade=config.qualidade,
+                        max_width=config.max_width,
+                        max_height=config.max_height,
+                        min_width=config.min_width,
+                        min_height=config.min_height,
+                        manter_proporcao=config.manter_proporcao,
+                        cor_fundo_jpg=config.cor_fundo_jpg
+                    )
+                    ext = "jpg"
+                    if config.formato_saida != "ORIGINAL":
+                        ext = config.formato_saida.lower()
+                    else:
+                        if "png" in media_type: ext = "png"
+                        elif "webp" in media_type: ext = "webp"
+                        
+                    filename = f"imagem_{idx+1}.{ext}"
+                    zip_file.writestr(filename, processed_bytes)
+        
+        zip_buffer.seek(0)
+        
+        headers = {
+            "Content-Disposition": "attachment; filename=imagens.zip"
+        }
+        return StreamingResponse(zip_buffer, media_type="application/zip", headers=headers)
+    except Exception as e:
+        print(f"Erro no download zip: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 @router.get("/{id_peca:path}", response_model=List[schemas.SearchResult])
 async def buscar_peca(
     id_peca: str,

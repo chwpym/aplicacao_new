@@ -51,3 +51,18 @@ class Configuracao(Base):
     chave = Column(String, unique=True, index=True) # Ex: 'colunas_visiveis'
     valor = Column(Text) # JSON stringified
 
+
+class ConfiguracaoImagem(Base):
+    __tablename__ = "config_imagens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    preset_ativo = Column(String, default="ORIGINAL")
+    formato_saida = Column(String, default="ORIGINAL")
+    qualidade = Column(Integer, default=85)
+    max_width = Column(Integer, nullable=True)
+    max_height = Column(Integer, nullable=True)
+    min_width = Column(Integer, nullable=True, default=500)
+    min_height = Column(Integer, nullable=True, default=500)
+    manter_proporcao = Column(Boolean, default=True)
+    cor_fundo_jpg = Column(String, default="#FFFFFF")
+

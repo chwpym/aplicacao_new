@@ -48,55 +48,68 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
 
   const downloadFile = async (url: string, filename: string) => {
     try {
-      // Usa o proxy local para contornar CORS e forçar o navegador a tratar como download
-      const proxyUrl = `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error("Erro ao baixar");
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      const downloadUrl = `http://localhost:8000/search/download/image?url=${encodeURIComponent(url)}`;
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error("Erro ao baixar a imagem processada");
       
+      const blob = await response.blob();
+      const contentDisposition = response.headers.get("Content-Disposition");
+      let finalFilename = filename;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) {
+          const ext = match[1].split('.').pop();
+          finalFilename = filename.replace(/\.[^.]+$/, '') + '.' + ext;
+        }
+      }
+      
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = filename;
+      link.download = finalFilename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      console.error("Falha no download via proxy, tentando direto:", err);
+      console.error("Falha no download via backend processado, tentando direto:", err);
       window.open(url, '_blank');
     }
   };
 
   const handleDownloadAll = async () => {
     if (downloading) return;
+    if (images.length > 50) {
+      alert("⚠️ Limite de Segurança excedido: É permitido baixar no máximo 50 imagens por lote.");
+      return;
+    }
+    
     setDownloading(true);
-    const zip = new JSZip();
 
     try {
-      const promises = images.map(async (url, idx) => {
-        try {
-          const proxyUrl = `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
-          const response = await fetch(proxyUrl);
-          const blob = await response.blob();
-          const ext = url.split('.').pop()?.split('?')[0] || 'jpg';
-          zip.file(`${title}_${idx + 1}.${ext}`, blob);
-        } catch (e) {
-          console.error(`Erro ao incluir foto ${idx} no ZIP:`, e);
-        }
+      const response = await fetch("http://localhost:8000/search/download/zip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(images),
       });
 
-      await Promise.all(promises);
-      const content = await zip.generateAsync({ type: 'blob' });
-      const blobUrl = URL.createObjectURL(content);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Erro na API de conversão (Status: ${response.status})`);
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = `${title.replace(/\s+/g, '_')}_fotos.zip`;
       link.click();
       URL.revokeObjectURL(blobUrl);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao gerar ZIP na galeria:", err);
-      alert("Erro ao compactar as imagens.");
+      alert(err.message || "Erro ao gerar o arquivo ZIP com as imagens.");
     } finally {
       setDownloading(false);
     }
@@ -137,7 +150,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
             title="Baixar imagem atual"
           >
             <Download size={18} />
-            <span className="hidden sm:inline">Baixar</span>
+            <span className="hidden sm:inline">Baixar Processada</span>
           </button>
 
           {/* Botão Fechar */}
@@ -181,9 +194,14 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
             </>
           )}
 
-          {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-black/40 backdrop-blur-md text-white text-sm rounded-full font-medium">
-            {currentIndex + 1} / {images.length}
+          {/* Counter and info */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+            <div className="px-4 py-1.5 bg-black/40 backdrop-blur-md text-white text-sm rounded-full font-medium">
+              {currentIndex + 1} / {images.length}
+            </div>
+            <div className="px-3 py-1 bg-black/60 backdrop-blur-md text-white/80 text-[10px] rounded-full uppercase tracking-wider font-bold">
+              Download aplica configurações
+            </div>
           </div>
         </div>
 

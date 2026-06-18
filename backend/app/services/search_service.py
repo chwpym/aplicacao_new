@@ -20,6 +20,9 @@ async def buscar_em_todos(
     # LogEvent(user_id=None, action="search", query=id_peca, providers=provedor_ids)
     print(f"[AUDIT] Iniciando busca global por: {id_peca}")
 
+    from app.services.normalization_service import normalization_service
+    normalization_service.carregar_regras_db(db)
+
     id_peca = id_peca.upper().strip()
 
     # 1. Verificar Cache (Dados Brutos)

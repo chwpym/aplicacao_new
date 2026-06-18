@@ -42,6 +42,9 @@ export const configApi = {
     syncFipe: () => api.post('/config/fipe/sync'),
     addModel: (brand: string, model: string) => api.post('/config/automakers/model', { brand, model }),
     deleteModel: (brand: string, model: string) => api.delete('/config/automakers/model', { params: { brand, model } }),
+
+    getConfiguracoesImagens: () => api.get('/config/imagens'),
+    updateConfiguracoesImagens: (data: any) => api.put('/config/imagens', data),
 };
 
 

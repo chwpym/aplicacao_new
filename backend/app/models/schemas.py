@@ -96,3 +96,26 @@ class SearchResult(BaseModel):
 class TestSearchRequest(BaseModel):
     id_peca: str
     config: ProvedorBase
+
+
+class ConfiguracaoImagemBase(BaseModel):
+    preset_ativo: str = "ORIGINAL"
+    formato_saida: str = "ORIGINAL"
+    qualidade: int = 85
+    max_width: Optional[int] = None
+    max_height: Optional[int] = None
+    min_width: Optional[int] = 500
+    min_height: Optional[int] = 500
+    manter_proporcao: bool = True
+    cor_fundo_jpg: str = "#FFFFFF"
+
+
+class ConfiguracaoImagemCreate(ConfiguracaoImagemBase):
+    pass
+
+
+class ConfiguracaoImagem(ConfiguracaoImagemBase):
+    id: int
+
+    class Config:
+        from_attributes = True

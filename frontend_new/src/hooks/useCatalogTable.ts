@@ -282,6 +282,7 @@ export const useCatalogTable = () => {
       if (visibleFields.marca) keyParts.push(res.marca);
       if (visibleFields.veiculo) keyParts.push(res.veiculo);
       if (visibleFields.modelo) keyParts.push(res.modelo);
+      if (visibleFields.versao) keyParts.push(res.versao);
       if (visibleFields.motor) keyParts.push(res.motor);
       if (visibleFields.configuracao_motor)
         keyParts.push(res.configuracao_motor);
@@ -390,34 +391,38 @@ export const useCatalogTable = () => {
       return;
     }
 
+    if (imagesToDownload.length > 50) {
+      alert("⚠️ Limite de Segurança excedido: É permitido baixar no máximo 50 imagens por lote para não sobrecarregar a memória. Por favor, utilize filtros para reduzir a quantidade.");
+      return;
+    }
+
     setLoading(true);
-    const zip = new JSZip();
 
     try {
-      const downloadPromises = imagesToDownload.map(async (img) => {
-        try {
-          const proxyUrl = `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(img.url)}`;
-          const response = await fetch(proxyUrl);
-          if (!response.ok)
-            throw new Error(`HTTP error! status: ${response.status}`);
-          const blob = await response.blob();
-          zip.file(img.name, blob);
-        } catch (err) {
-          console.error(`Falha ao baixar imagem via proxy: ${img.url}`, err);
-        }
+      const urlsToDownload = imagesToDownload.map(img => img.url);
+      const response = await fetch("http://localhost:8000/search/download/zip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(urlsToDownload),
       });
 
-      await Promise.all(downloadPromises);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Erro na API de conversão (Status: ${response.status})`);
+      }
 
-      const content = await zip.generateAsync({ type: "blob" });
+      const blob = await response.blob();
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(content);
-      link.download = `imagens_${partId || "busca"}.zip`;
+      link.href = URL.createObjectURL(blob);
+      link.download = `imagens_convertidas_${partId || "busca"}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error("Erro ao gerar ZIP:", error);
+    } catch (error: any) {
+      console.error("Erro ao gerar ZIP no servidor:", error);
+      alert(error.message || "Erro ao gerar o arquivo ZIP com as imagens.");
     } finally {
       setLoading(false);
     }

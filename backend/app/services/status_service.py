@@ -27,10 +27,10 @@ class StatusService:
         }
 
         async with httpx.AsyncClient(timeout=5.0) as client:
-            # Check FIPE (BrasilAPI)
+            # Check FIPE (Parallelum)
             try:
                 # Usamos um endpoint simples de marcas para teste
-                resp = await client.get("https://brasilapi.com.br/api/fipe/marcas/v1/carros")
+                resp = await client.get("https://fipe.parallelum.com.br/api/v2/cars/brands")
                 if resp.status_code == 200:
                     status["fipe"] = "online"
                 else:
