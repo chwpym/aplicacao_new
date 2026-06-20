@@ -1,7 +1,11 @@
 from abc import ABC, abstractmethod
 import logging
+import re
+import traceback
 from ..schemas.peca import PecaSchema
 from app.services.logging_service import logger
+from app.services.automaker_service import automaker_service
+from app.services.normalization_service import normalization_service
 
 class BaseProvider(ABC):
     @abstractmethod
@@ -35,8 +39,6 @@ class BaseProvider(ABC):
             variacoes.append(clean)
 
         # Tenta injetar hífen se for padrão comum (ex: WO545 -> WO-545)
-        import re
-
         match = re.match(r"^([A-Z]{2,4})(\d+)$", clean)
         if match:
             with_hyphen = f"{match.group(1)}-{match.group(2)}"
@@ -52,7 +54,6 @@ class BaseProvider(ABC):
         if not id_peca:
             return ""
 
-        import re
         clean = id_peca.upper().replace(" ", "").strip()
         sub_parts = clean.split("/")
         main_part = sub_parts[0]
@@ -68,7 +69,6 @@ class BaseProvider(ABC):
     def extrair_anos(self, ano_str):
         if not ano_str:
             return "", ""
-        import re
         
         text_upper = str(ano_str).upper()
         is_onwards = any(x in text_upper for x in ["-->", "...", "DIANTE", "ONWARDS", " ON", "..", ">"])
@@ -134,7 +134,6 @@ class BaseProvider(ABC):
     def limpar_texto_wega(self, texto: str) -> str:
         """Remove caracteres de controle ou codificação quebrada."""
         if not texto: return ""
-        import re
         t = str(texto).replace("\ufffd", "À")
         t = re.sub(r'\s+', ' ', t).strip()
         return t
@@ -158,8 +157,7 @@ class BaseProvider(ABC):
 
     def formatar_resultado(self, raw_data, skip_automaker=False):
         """Padroniza os campos seguindo a SKILL: veiculo=Montadora, modelo=Carro, versao=Modelo."""
-        from app.services.automaker_service import automaker_service
-        from app.services.normalization_service import normalization_service
+        # Nota: automaker_service e normalization_service importados no topo do arquivo
         
         # 1. Identidade (Master Catalog / FIPE Validation)
         montadora_bruta = str(raw_data.get("montadora", raw_data.get("veiculo", raw_data.get("brand", "")))).upper()
@@ -241,8 +239,11 @@ class BaseProvider(ABC):
 
             modelo_padrao = modelo_limpo
             versao_padrao = versao_limpa
-        except:
-            pass
+        except Exception as e:
+            logger.warning(
+                "NORMALIZATION",
+                f"Erro na normalização [{self.config.get('nome', 'DESCONHECIDO')}]: {e}\n{traceback.format_exc()}"
+            )
 
         res_dict = {
             "marca": str(raw_data.get("marca_peca", raw_data.get("marca", raw_data.get("provedor", "")))).upper(),

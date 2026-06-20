@@ -4,7 +4,7 @@ import duckdb
 from typing import Dict, List, Tuple
 from thefuzz import process
 from app.services.logging_service import logger
-from app.utils.synonyms import AUTOMAKER_SYNONYMS
+from app.utils.synonyms import AUTOMAKER_SYNONYMS, KNOWN_MODELS_FALLBACK
 
 CATALOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "automakers_catalog.json")
 DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", ".automakers.duckdb")
@@ -193,14 +193,7 @@ class AutomakerService:
             if mod_clean.startswith(f"{brand} "):
                 return self.padronizar(brand), mod_clean.replace(f"{brand} ", "").strip()
 
-        # Fallback de emergência (Hardcoded para modelos ultra-comuns se tudo falhar)
-        KNOWN_MODELS_FALLBACK = {
-            "FOX": "VW", "GOL": "VW", "SAVEIRO": "VW", "VOYAGE": "VW",
-            "CORSA": "GM", "CELTA": "GM", "ONIX": "GM",
-            "PALIO": "FIAT", "UNO": "FIAT", "STRADA": "FIAT",
-            "FIESTA": "FORD", "KA": "FORD", "COURIER": "FORD",
-            "208": "PEUGEOT", "C3": "CITROEN"
-        }
+        # Fallback de emergência (Importado de synonyms.py - editável sem deploy)
         if mod_clean in KNOWN_MODELS_FALLBACK:
             return KNOWN_MODELS_FALLBACK[mod_clean], mod_clean
 

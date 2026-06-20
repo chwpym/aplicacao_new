@@ -83,3 +83,25 @@ FUEL_SYNONYMS = {
     "ECONOFLEX": "FLEX",
     "BIFUEL": "FLEX"
 }
+
+# Fallback de modelos ultra-comuns para deduzir montadora quando tudo mais falha.
+# Editavel aqui sem precisar de deploy do AutomakerService.
+KNOWN_MODELS_FALLBACK = {
+    "FOX": "VW", "GOL": "VW", "SAVEIRO": "VW", "VOYAGE": "VW",
+    "POLO": "VW", "PASSAT": "VW", "AMAROK": "VW",
+    "CORSA": "GM", "CELTA": "GM", "ONIX": "GM", "CRUZE": "GM",
+    "S10": "GM", "MONTANA": "GM", "TRACKER": "GM",
+    "PALIO": "FIAT", "UNO": "FIAT", "STRADA": "FIAT",
+    "SIENA": "FIAT", "BRAVO": "FIAT", "PUNTO": "FIAT",
+    "TORO": "FIAT", "DOBLO": "FIAT", "MOBI": "FIAT",
+    "FIESTA": "FORD", "KA": "FORD", "COURIER": "FORD",
+    "ECOSPORT": "FORD", "RANGER": "FORD", "FOCUS": "FORD",
+    "208": "PEUGEOT", "307": "PEUGEOT", "408": "PEUGEOT",
+    "C3": "CITROEN", "C4": "CITROEN", "XSARA": "CITROEN",
+    "CLIO": "RENAULT", "SANDERO": "RENAULT", "DUSTER": "RENAULT",
+    "LOGAN": "RENAULT", "KWID": "RENAULT",
+    "HB20": "HYUNDAI", "I30": "HYUNDAI", "TUCSON": "HYUNDAI",
+    "CIVIC": "HONDA", "FIT": "HONDA", "CITY": "HONDA", "HR-V": "HONDA",
+    "COROLLA": "TOYOTA", "HILUX": "TOYOTA", "RAV4": "TOYOTA",
+    "ASX": "MITSUBISHI", "PAJERO": "MITSUBISHI", "L200": "MITSUBISHI",
+}
