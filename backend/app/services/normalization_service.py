@@ -1,4 +1,6 @@
 import re
+import threading
+import time
 from typing import Tuple
 from app.utils.synonyms import TECHNICAL_BRANDS, AUTOMAKER_SYNONYMS, ENGINE_KEYWORDS, FUEL_SYNONYMS
 
@@ -15,7 +17,10 @@ class NormalizationService:
         self.regras_limpeza = {}
         self.siglas_pre_processamento = {}
         self.ultima_atualizacao_regras = 0
-        
+
+        # Lock para garantir Thread-Safety na recarga do cache
+        # Protege contra RuntimeError em ambientes com múltiplos workers (Uvicorn --workers N)
+        self._cache_lock = threading.Lock()
     def extrair_motorizacao(self, texto: str) -> Tuple[str, str, str]:
         """
         Extrai cilindrada, válvulas e combustível do texto e limpa o texto original.
@@ -191,35 +196,43 @@ class NormalizationService:
         return " | ".join(resultado_final)
 
     def carregar_regras_db(self, db):
-        """Carrega regras e siglas (Todos os Campos) do DB para o cache de pré-processamento."""
+        """Carrega regras e siglas (Todos os Campos) do DB para o cache de pré-processamento.
+        Thread-safe: usa Lock para evitar RuntimeError sob carga paralela com múltiplos workers.
+        """
         from app.models.models import PalavraRemover, Sigla
-        import time
         
-        # Evita recarregar se foi atualizado nos últimos 60 segundos
+        # Evita recarregar se foi atualizado nos últimos 60 segundos (verifica sem lock para performance)
         if time.time() - self.ultima_atualizacao_regras < 60:
             return
 
-        try:
-            # 1. Regras de Limpeza
-            termos = db.query(PalavraRemover).all()
-            regras = {}
-            for t in termos:
-                campo = t.campo.lower()
-                if campo not in regras:
-                    regras[campo] = []
-                regras[campo].append(t.palavra.upper())
-            
-            # 2. Siglas de Pré-processamento ("Todos os Campos" e "Config. Motor")
-            siglas_db = db.query(Sigla).filter(Sigla.campo.in_(["Todos os Campos", "Config. Motor"])).all()
-            siglas_pre = {}
-            for s in siglas_db:
-                siglas_pre[s.nome_completo.upper().strip()] = s.abreviacao.upper().strip()
+        # Adquire o lock antes de qualquer mutação do estado compartilhado
+        with self._cache_lock:
+            # Dupla verificação: outro worker pode ter recarregado enquanto esperava o lock
+            if time.time() - self.ultima_atualizacao_regras < 60:
+                return
 
-            self.regras_limpeza = regras
-            self.siglas_pre_processamento = siglas_pre
-            self.ultima_atualizacao_regras = time.time()
-        except Exception as e:
-            print(f"Erro ao carregar regras de limpeza: {e}")
+            try:
+                # 1. Regras de Limpeza
+                termos = db.query(PalavraRemover).all()
+                regras = {}
+                for t in termos:
+                    campo = t.campo.lower()
+                    if campo not in regras:
+                        regras[campo] = []
+                    regras[campo].append(t.palavra.upper())
+                
+                # 2. Siglas de Pré-processamento ("Todos os Campos" e "Config. Motor")
+                siglas_db = db.query(Sigla).filter(Sigla.campo.in_(["Todos os Campos", "Config. Motor"])).all()
+                siglas_pre = {}
+                for s in siglas_db:
+                    siglas_pre[s.nome_completo.upper().strip()] = s.abreviacao.upper().strip()
+
+                # Substituição atômica: atribui os novos dicionários de uma vez
+                self.regras_limpeza = regras
+                self.siglas_pre_processamento = siglas_pre
+                self.ultima_atualizacao_regras = time.time()
+            except Exception as e:
+                print(f"Erro ao carregar regras de limpeza: {e}")
 
     def aplicar_limpeza_customizada(self, campo: str, texto: str) -> str:
         """Remove termos customizados cadastrados pelo usuário para um campo específico."""

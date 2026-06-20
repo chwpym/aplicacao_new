@@ -110,7 +110,11 @@ class BaseProvider(ABC):
         return ano_ini, ano_fim
 
     def extrair_combustivel(self, texto: str) -> str:
-        """Extrai o tipo de combustível de uma string sem alterar o texto original."""
+        """
+        [DEPRECATED] Use normalization_service internamente via formatar_resultado.
+        Mantido apenas para compatibilidade. Usa busca por substring (menos precisa).
+        Para uso interno do pipeline, o NormalizationService usa regex com \\b (word boundary).
+        """
         if not texto: return ""
         t = str(texto).upper()
         
@@ -263,9 +267,16 @@ class BaseProvider(ABC):
         res_dict["ano_inicio"] = y_ini
         res_dict["ano_fim"] = y_fim
 
-        # 5. Combustível (Fallback via NormalizationService)
-        # Tenta extrair de qualquer campo disponível
-        fuel_val = self.extrair_combustivel(f"{versao_bruta} {modelo_bruto} {config_padrao} {raw_data.get('fuel', '')}")
+        # 5. Combustível via NormalizationService (usa regex com \b - correto e consistente)
+        # Constrói um texto agregado de todos os campos que podem conter o combustível
+        texto_combustivel = f"{versao_bruta} {modelo_bruto} {config_padrao} {raw_data.get('fuel', '')} {raw_data.get('combustivel', '')}".strip()
+        _, config_com_fuel, _ = normalization_service.extrair_motorizacao(texto_combustivel)
+        # O NormalizationService coloca o combustivel dentro da config. Extraimos ele.
+        fuel_val = ""
+        for comb in normalization_service.combustiveis:
+            if comb in config_com_fuel.upper():
+                fuel_val = comb
+                break
         res_dict["combustivel"] = fuel_val or ""
 
         # 6. Limpeza e Campos Extras
