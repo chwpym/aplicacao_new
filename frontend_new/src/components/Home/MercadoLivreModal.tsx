@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Copy, Check, ShoppingBag, FileText, Car, Wrench, SearchX } from "lucide-react";
 import { generateMercadoLivreContent, type MercadoLivreContent } from "../../utils/mercadoLivreGenerator";
 
@@ -8,6 +9,7 @@ interface MercadoLivreModalProps {
   displayResults: any[];
   partId: string;
   uniqueReferences?: any;
+  cleanMode?: boolean;
 }
 
 export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
@@ -16,6 +18,7 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
   displayResults,
   partId,
   uniqueReferences,
+  cleanMode = false,
 }) => {
   const emptyState: MercadoLivreContent = {
     titulo: "",
@@ -31,14 +34,14 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
 
   useEffect(() => {
     if (isOpen && displayResults.length > 0) {
-      const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences);
+      const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences, cleanMode);
       setContent(generated);
       setEditableContent(generated);
     } else if (displayResults.length === 0) {
       setContent(emptyState);
       setEditableContent(emptyState);
     }
-  }, [isOpen, displayResults, partId, uniqueReferences]);
+  }, [isOpen, displayResults, partId, uniqueReferences, cleanMode]);
 
   if (!isOpen) return null;
 
@@ -58,7 +61,6 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
       "",
       editableContent.descricaoResumida,
       "",
-      "APLICAÇÕES DETALHADAS",
       editableContent.aplicacoes,
       "",
       editableContent.referencias,
@@ -74,7 +76,7 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
   };
 
   const handleRegenerate = () => {
-    const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences);
+    const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences, cleanMode);
     setContent(generated);
     setEditableContent(generated);
   };
@@ -160,11 +162,11 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
     },
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -178,7 +180,7 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
             </div>
             <div>
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">
-                Gerador de Anúncio — Mercado Livre
+                {cleanMode ? "Gerador de Anúncio — ERP Limpo" : "Gerador de Anúncio — Mercado Livre"}
               </h2>
               <p className="text-xs text-slate-400">
                 Código: <span className="font-mono font-bold text-slate-600 dark:text-slate-300">{partId}</span>
@@ -290,6 +292,7 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

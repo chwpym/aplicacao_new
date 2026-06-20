@@ -58,6 +58,8 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
   const [erpFontSize, setErpFontSize] = useState<number>(9);
   const [hideDashesRow, setHideDashesRow] = useState<boolean>(true);
   const [mlModalOpen, setMlModalOpen] = useState(false);
+  const [mlCleanMode, setMlCleanMode] = useState(false);
+  const [mlMenuOpen, setMlMenuOpen] = useState(false);
 
   // States para o novo layout Detox
   const [exportOpen, setExportOpen] = useState(false);
@@ -66,6 +68,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
 
   const exportRef = React.useRef<HTMLDivElement>(null);
   const copyRef = React.useRef<HTMLDivElement>(null);
+  const mlMenuRef = React.useRef<HTMLDivElement>(null);
 
   const actualErpFont = fontOption === "custom" ? customFont : fontOption;
 
@@ -84,6 +87,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (exportRef.current && !exportRef.current.contains(event.target as Node)) setExportOpen(false);
       if (copyRef.current && !copyRef.current.contains(event.target as Node)) setCopyOpen(false);
+      if (mlMenuRef.current && !mlMenuRef.current.contains(event.target as Node)) setMlMenuOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -414,7 +418,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 {/* 📥 EXPORTAR DROPDOWN */}
                 <div className="relative w-full sm:w-auto" ref={exportRef}>
                   <button 
-                    onClick={() => { setExportOpen(!exportOpen); setCopyOpen(false); }}
+                    onClick={() => { setExportOpen(!exportOpen); setCopyOpen(false); setMlMenuOpen(false); }}
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -444,7 +448,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 {/* 📋 COPIAR DROPDOWN */}
                 <div className="relative w-full sm:w-auto" ref={copyRef}>
                   <button 
-                    onClick={() => { setCopyOpen(!copyOpen); setExportOpen(false); }}
+                    onClick={() => { setCopyOpen(!copyOpen); setExportOpen(false); setMlMenuOpen(false); }}
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -488,12 +492,34 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 >
                   <Copy size={14} /> Copiar Tudo
                 </button>
-                <button
-                  onClick={() => setMlModalOpen(true)}
-                  className="flex flex-1 items-center justify-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 whitespace-nowrap"
-                >
-                  <ShoppingBag size={14} /> Anúncio ML
-                </button>
+                <div className="relative flex-1" ref={mlMenuRef}>
+                  <button
+                    onClick={() => { setMlMenuOpen(!mlMenuOpen); setExportOpen(false); setCopyOpen(false); }}
+                    className="flex w-full items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 whitespace-nowrap"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ShoppingBag size={14} /> Anúncio ML
+                    </div>
+                    <ChevronDown size={14} className={`transition-transform ${mlMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {mlMenuOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-full sm:w-56 bg-white dark:bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/50 p-1.5 z-50 flex flex-col gap-1">
+                      <button 
+                        onClick={() => { setMlCleanMode(false); setMlModalOpen(true); setMlMenuOpen(false); }} 
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors"
+                      >
+                        <ShoppingBag size={14} className="text-yellow-600" /> ML (Com Ícones)
+                      </button>
+                      <button 
+                        onClick={() => { setMlCleanMode(true); setMlModalOpen(true); setMlMenuOpen(false); }} 
+                        className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors"
+                      >
+                        <FileText size={14} className="text-emerald-600" /> ERP (Texto Limpo)
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -912,9 +938,10 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
       <MercadoLivreModal
         isOpen={mlModalOpen}
         onClose={() => setMlModalOpen(false)}
-        displayResults={results}
+        displayResults={displayResults}
         partId={partId}
         uniqueReferences={uniqueReferences}
+        cleanMode={mlCleanMode}
       />
     </div>
   );

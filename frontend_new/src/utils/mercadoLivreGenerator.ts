@@ -64,19 +64,19 @@ function generateTitulo(results: any[], partId: string): string {
 /**
  * Gera a descrição resumida com visual premium.
  */
-function generateDescricaoResumida(results: any[], partId: string): string {
+function generateDescricaoResumida(results: any[], partId: string, cleanMode: boolean = false): string {
   const marcaPeca = (results[0]?.marca || "").toUpperCase().trim();
   const byModel = groupForApplications(results);
 
   const lines: string[] = [];
-  lines.push(`📦 [NOME DA PEÇA] ${marcaPeca} ${partId}`);
-  lines.push(`─────────────────────────────────`);
-  lines.push("✅ Produto novo e original.");
+  lines.push(`${cleanMode ? "" : "📦 "}[NOME DA PEÇA] ${marcaPeca} ${partId}`);
+  lines.push(`${cleanMode ? "-" : "─────────────────────────────────"}`);
+  lines.push(`${cleanMode ? "->" : "✅"} Produto novo e original.`);
   lines.push("");
   lines.push(`  • Código: ${partId}`);
   lines.push(`  • Marca: ${marcaPeca}`);
   lines.push("");
-  lines.push("🚗 Aplicação Resumida:");
+  lines.push(`${cleanMode ? "" : "🚗 "}Aplicação Resumida:`);
 
   Object.entries(byModel).sort(([a], [b]) => a.localeCompare(b)).forEach(([modelo, items]) => {
     const montadora = (items[0]?.veiculo || "").toUpperCase().trim();
@@ -86,14 +86,14 @@ function generateDescricaoResumida(results: any[], partId: string): string {
     const anosFim = items.map(r => Number(r.ano_fim)).filter(y => !isNaN(y) && y > 1900);
     const anoStr = formatMinMaxYear(anos, anosFim);
 
-    let line = `  ▸ ${montadora} ${modelo}`;
+    let line = `  ${cleanMode ? "-" : "▸"} ${montadora} ${modelo}`;
     if (motores) line += ` ${motores}`;
     if (anoStr) line += ` - ${anoStr}`;
     lines.push(line);
   });
 
   lines.push("");
-  lines.push("⚠️ Antes da compra confirme a aplicação pelo modelo, ano e motorização do veículo.");
+  lines.push(`${cleanMode ? "ATENCAO:" : "⚠️"} Antes da compra confirme a aplicação pelo modelo, ano e motorização do veículo.`);
 
   return lines.join("\n");
 }
@@ -177,12 +177,12 @@ function formatMinMaxYear(anosIni: number[], anosFim: number[]): string {
  * Gera as aplicações detalhadas com visual estruturado,
  * removendo duplicidades e unindo anos para especificações idênticas.
  */
-function generateAplicacoesDetalhes(results: any[]): string {
+function generateAplicacoesDetalhes(results: any[], cleanMode: boolean = false): string {
   const byModel = groupForApplications(results);
   const lines: string[] = [];
 
-  lines.push("⚙️ APLICAÇÕES DETALHADAS:");
-  lines.push(`─────────────────────────────────`);
+  lines.push(`${cleanMode ? "" : "⚙️ "}APLICAÇÕES DETALHADAS:`);
+  lines.push(`${cleanMode ? "-" : "─────────────────────────────────"}`);
 
   Object.entries(byModel).sort(([a], [b]) => a.localeCompare(b)).forEach(([modelo, items]) => {
     // Agrupa por especificação exata para não repetir linhas idênticas
@@ -222,7 +222,7 @@ function generateAplicacoesDetalhes(results: any[]): string {
     // Se o modelo ficar vazio após os filtros, não imprime
     if (Object.keys(specsMap).length === 0) return;
 
-    lines.push(`▸ ${modelo}`);
+    lines.push(`${cleanMode ? "-" : "▸"} ${modelo}`);
 
     // Monta as linhas brutas com seus anos formatados
     const modelLines = Object.entries(specsMap)
@@ -266,14 +266,14 @@ function generateAplicacoesDetalhes(results: any[]): string {
 /**
  * Gera referências equivalentes no formato compacto da V1.
  */
-function generateReferencias(uniqueReferences: any): string {
+function generateReferencias(uniqueReferences: any, cleanMode: boolean = false): string {
   if (!uniqueReferences || Object.keys(uniqueReferences).length === 0) {
     return "Nenhuma referência equivalente informada.";
   }
 
   const lines: string[] = [];
-  lines.push("🔗 REFERÊNCIAS / CÓDIGOS ORIGINAIS:");
-  lines.push(`─────────────────────────────────`);
+  lines.push(`${cleanMode ? "" : "🔗 "}REFERÊNCIAS / CÓDIGOS ORIGINAIS:`);
+  lines.push(`${cleanMode ? "-" : "─────────────────────────────────"}`);
 
   Object.entries(uniqueReferences).sort(([a], [b]) => a.localeCompare(b)).forEach(([brand, codes]) => {
     const brandName = brand.toUpperCase();
@@ -331,7 +331,8 @@ function generatePalavrasChave(results: any[], partId: string, uniqueReferences:
 export const generateMercadoLivreContent = (
   displayResults: any[],
   partId: string,
-  uniqueReferences?: any
+  uniqueReferences?: any,
+  cleanMode: boolean = false
 ): MercadoLivreContent => {
   if (displayResults.length === 0) {
     return {
@@ -345,9 +346,9 @@ export const generateMercadoLivreContent = (
 
   return {
     titulo: cleanString(generateTitulo(displayResults, partId)),
-    descricaoResumida: generateDescricaoResumida(displayResults, partId),
-    aplicacoes: generateAplicacoesDetalhes(displayResults),
-    referencias: generateReferencias(uniqueReferences),
+    descricaoResumida: generateDescricaoResumida(displayResults, partId, cleanMode),
+    aplicacoes: generateAplicacoesDetalhes(displayResults, cleanMode),
+    referencias: generateReferencias(uniqueReferences, cleanMode),
     palavrasChave: generatePalavrasChave(displayResults, partId, uniqueReferences),
   };
 };
