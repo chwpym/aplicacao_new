@@ -111,6 +111,10 @@ def get_provider(config_model):
         from app.providers.indisa_web_provider import IndisaWebProvider
         return IndisaWebProvider(config)
 
+    elif config["tipo"] == "iguacu":
+        from app.providers.iguacu_provider import IguacuProvider
+        return IguacuProvider(config)
+
     elif config["tipo"] == "schadek":
         from app.providers.schadek_provider import SchadekProvider
         return SchadekProvider(config)

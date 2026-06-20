@@ -127,7 +127,24 @@ export const copyToClipboardTable = (
   };
 
   // Sempre ordena antes de copiar, seguindo a lógica da tela
-  const sortedResults = [...results].sort(compareResults);
+  let sortedResults = [...results].sort(compareResults);
+
+  // Limpeza de parênteses para INA, FAG, LUK (Schaeffler) apenas no Clipboard
+  const schaefflerProviders = ["INA", "FAG", "LUK"];
+  sortedResults = sortedResults.map(res => {
+    const isSchaeffler = schaefflerProviders.includes(String(res.provedor || "").toUpperCase()) || 
+                         schaefflerProviders.includes(String(res.marca || "").toUpperCase());
+    if (!isSchaeffler) return res;
+
+    const newRes = { ...res };
+    const stringKeys = ["marca", "codigo", "veiculo", "modelo", "versao", "motor", "configuracao_motor", "combustivel", "posicao", "lado", "direcao", "sistema_freio", "restricao", "apenas"];
+    stringKeys.forEach(k => {
+      if (typeof newRes[k] === "string") {
+        newRes[k] = newRes[k].replace(/\s*\([^)]*(?:\)|$)/g, "").trim();
+      }
+    });
+    return newRes;
+  });
 
   // Ordem de campos baseada nas colunas
   const orderedKeys = [

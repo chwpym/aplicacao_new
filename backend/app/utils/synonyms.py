@@ -75,10 +75,6 @@ ENGINE_KEYWORDS = {
 
 # Sinônimos de combustível para padronização
 FUEL_SYNONYMS = {
-    "G": "GASOLINA",
-    "D": "DIESEL",
-    "A": "ÁLCOOL",
-    "F": "FLEX",
     "GSL": "GASOLINA",
     "ALC": "ÁLCOOL",
     "GAS": "GASOLINA",

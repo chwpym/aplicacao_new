@@ -324,7 +324,7 @@ class SchaefflerProvider(BaseProvider):
         
         # Limpeza do nome da série (Remove códigos internos entre parênteses)
         # Ex: "FOX HATCH (5Z1, 5Z3)" -> "FOX HATCH"
-        series_clean = re.sub(r'\s*\([^)]*\)', '', series_name).strip()
+        series_clean = re.sub(r'\s*\([^)]*(?:\)|$)', '', series_name).strip()
         
         # Ficha Técnica Premium — Motor do veículo
         ficha = {
@@ -349,15 +349,18 @@ class SchaefflerProvider(BaseProvider):
             ficha["CONTÉM"] = " + ".join(composicao)
 
         config_motor_raw = f"{target.get('engineType', '')} {target.get('fuelType', '')}".strip().upper()
-        config_motor_clean = re.sub(r'\s*\([^)]*\)', '', config_motor_raw).strip()
+        config_motor_clean = re.sub(r'\s*\([^)]*(?:\)|$)', '', config_motor_raw).strip()
+
+        versao_clean = re.sub(r'\s*\([^)]*(?:\)|$)', '', target.get("bodyType", "")).strip().upper()
+        motor_clean = re.sub(r'\s*\([^)]*(?:\)|$)', '', target.get("name", "")).strip().upper()
 
         raw = {
             "marca_peca": brand_name,
             "codigo": article_code,
             "montadora": mfr_name.upper(),
             "modelo": series_clean.upper(),
-            "versao": target.get("bodyType", "").upper(),
-            "motor": target.get("name", "").upper(),
+            "versao": versao_clean,
+            "motor": motor_clean,
             "configuracao_motor": config_motor_clean,
             "combustivel": target.get("fuelType", "").upper(),
             "ano_inicio": ano_ini,

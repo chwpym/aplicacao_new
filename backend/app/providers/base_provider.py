@@ -224,9 +224,21 @@ class BaseProvider(ABC):
                         motor_padrao = motor_bruto
 
             # Limpamos o nome do carro e a versão de resíduos de motor (ex: CELTA 1.0 -> CELTA)
-            _, _, modelo_limpo = normalization_service.extrair_motorizacao(modelo_final)
-            _, _, versao_limpa = normalization_service.extrair_motorizacao(versao_bruta)
+            # Salvamos o que foi extraído caso o motor original estivesse incompleto
+            m_p_mod, c_p_mod, modelo_limpo = normalization_service.extrair_motorizacao(modelo_final)
+            m_p_ver, c_p_ver, versao_limpa = normalization_service.extrair_motorizacao(versao_bruta)
             
+            # Se o modelo ou versão tinham cilindrada/válvulas que o motor não tem, nós mesclamos
+            if m_p_mod and m_p_mod not in motor_padrao:
+                motor_padrao = f"{m_p_mod} {motor_padrao}".strip()
+            if m_p_ver and m_p_ver not in motor_padrao:
+                motor_padrao = f"{m_p_ver} {motor_padrao}".strip()
+                
+            if c_p_mod and c_p_mod not in config_padrao:
+                config_padrao = f"{c_p_mod} {config_padrao}".strip()
+            if c_p_ver and c_p_ver not in config_padrao:
+                config_padrao = f"{c_p_ver} {config_padrao}".strip()
+
             modelo_padrao = modelo_limpo
             versao_padrao = versao_limpa
         except:
