@@ -109,6 +109,8 @@ class AutoExpertsProvider(BaseProvider):
                             "configuracao_motor": v.get("engineConfiguration", "").upper(),
                             "ano_inicio": str(v.get("startYear", "")),
                             "ano_fim": str(v.get("endYear", "")),
+                            "apenas": v.get("only", ""),
+                            "restricao": v.get("restriction", ""),
                         })
 
                         # Se já normalizamos essa combinação neste loop, usamos o cache
