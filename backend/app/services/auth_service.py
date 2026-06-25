@@ -77,6 +77,8 @@ class AuthService:
         realm = f"cat_{brand}"
         if brand == "wahler":
             realm = "cat_whaler"
+        elif brand == "bastosjuntas" or "bastos" in brand:
+            realm = "cat_bastos"
 
         base_catalog_url = (
             origin_url.rstrip("/")
