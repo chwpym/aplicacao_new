@@ -188,8 +188,9 @@ class BaseProvider(ABC):
         """
         if not config:
             return config
-        # Remove siglas de arquitetura de motor em inglês
-        config = re.sub(r'\b(SOHC|DOHC|OHC|OHV|L4|L3|L6|V4|V6|V8|V12)\b', '', config)
+        # Remove siglas de arquitetura de motor em inglês irrelevantes para o mercado BR
+        # MANTIDOS: V4, V6, V8, V12 — indicam configuração de cilindros, amplamente usados no BR
+        config = re.sub(r'\b(SOHC|DOHC|OHC|OHV|L3|L4|L6)\b', '', config)
         # Remove o 'L' solto que sobra do formato '2.0 L' dos catálogos americanos
         config = re.sub(r'(?<![A-Z])\bL\b(?![A-Z0-9])', '', config)
         # Limpa espaços extras resultantes
