@@ -54,9 +54,15 @@ class GraphQLProvider(BaseProvider):
             response = await client.post(self.url, json=payload, headers=headers)
             if response.status_code == 200:
                 data = response.json()
+                if "errors" in data and str(data["errors"]).find("UAN-402") != -1:
+                    print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) no discovery! Verifique se o provedor exige credenciais ou se o token expirou.")
+                
                 nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
                 if nodes:
                     return nodes[0]["product"]["id"]
+            elif response.status_code in [401, 403]:
+                print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou HTTP {response.status_code} no discovery! Verifique as credenciais.")
+                
             return None
         except Exception as e:
             print(f"Erro na descoberta de UUID ({self.config['nome']}): {e}")
@@ -127,6 +133,9 @@ class GraphQLProvider(BaseProvider):
 
                     if "errors" in data:
                         error_str = str(data["errors"])
+                        if "UAN-402" in error_str or "Unauthorized" in error_str:
+                            print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) na busca! O provedor pode ter alterado para acesso restrito.")
+                        
                         if (
                             "EnumValueNode" in error_str
                             or "MarketType" in error_str

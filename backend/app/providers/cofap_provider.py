@@ -64,6 +64,10 @@ class CofapProvider(GraphQLProvider):
                         self.url, json=payload, headers=request_headers
                     )
                     data = response.json()
+                    
+                    if "errors" in data and str(data["errors"]).find("UAN-402") != -1:
+                        print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) na busca do Cofap! Verifique as credenciais.")
+                        
                     product_data = data.get("data", {}).get("product")
 
                     if not product_data or not product_data.get("vehicles"):
@@ -209,11 +213,16 @@ class CofapProvider(GraphQLProvider):
                 response = await client.post(self.url, json=payload, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
+                    if "errors" in data and str(data["errors"]).find("UAN-402") != -1:
+                        print(f"[{self.config.get('nome')}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) no discovery! Verifique as credenciais.")
+                        
                     nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
                     if nodes:
                         uuid = nodes[0]["product"]["id"]
                         print(f"[{self.config.get('nome')}] UUID descoberto no mercado {mkt}: {uuid}")
                         return uuid
+                elif response.status_code in [401, 403]:
+                    print(f"[{self.config.get('nome')}] ALERTA CRÍTICO: API retornou HTTP {response.status_code} no discovery! Verifique as credenciais.")
             except Exception as e:
                 print(f"[{self.config.get('nome')}] Falha discovery no mercado {mkt}: {e}")
                 continue
