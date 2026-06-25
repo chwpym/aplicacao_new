@@ -142,6 +142,27 @@ class BaseProvider(ABC):
         t = re.sub(r'\s+', ' ', t).strip()
         return t
 
+    def mesclar_motorizacao(self, termo: str, texto: str) -> str:
+        """Adiciona apenas as partes do termo que não existem no texto base (busca por tokens)."""
+        if not termo: return texto
+        if not texto: return termo
+        
+        t_texto = re.sub(r'[/()|,]', ' ', str(texto).upper())
+        tokens_texto = set(t_texto.split())
+        
+        partes_termo = str(termo).upper().split()
+        partes_para_adicionar = []
+        
+        for p in partes_termo:
+            p_clean = re.sub(r'[/()|,]', ' ', p)
+            todas_partes_presentes = all(sub_p in tokens_texto for sub_p in p_clean.split())
+            if not todas_partes_presentes:
+                partes_para_adicionar.append(p)
+                
+        if partes_para_adicionar:
+            return f"{' '.join(partes_para_adicionar)} {texto}".strip()
+        return str(texto).strip()
+
     def parse_specifications(self, specifications: any) -> dict:
         """Parser universal para transformar especificações em dicionário plano UPPER CASE."""
         if not specifications: return {}
@@ -231,15 +252,12 @@ class BaseProvider(ABC):
             m_p_ver, c_p_ver, versao_limpa = normalization_service.extrair_motorizacao(versao_bruta)
             
             # Se o modelo ou versão tinham cilindrada/válvulas que o motor não tem, nós mesclamos
-            if m_p_mod and m_p_mod not in motor_padrao:
-                motor_padrao = f"{m_p_mod} {motor_padrao}".strip()
-            if m_p_ver and m_p_ver not in motor_padrao:
-                motor_padrao = f"{m_p_ver} {motor_padrao}".strip()
-                
-            if c_p_mod and c_p_mod not in config_padrao:
-                config_padrao = f"{c_p_mod} {config_padrao}".strip()
-            if c_p_ver and c_p_ver not in config_padrao:
-                config_padrao = f"{c_p_ver} {config_padrao}".strip()
+            # Fase 3: Usando mesclar_motorizacao para evitar falso positivo (ex: 8V em 1.8V)
+            motor_padrao = self.mesclar_motorizacao(m_p_mod, motor_padrao)
+            motor_padrao = self.mesclar_motorizacao(m_p_ver, motor_padrao)
+            
+            config_padrao = self.mesclar_motorizacao(c_p_mod, config_padrao)
+            config_padrao = self.mesclar_motorizacao(c_p_ver, config_padrao)
 
             modelo_padrao = modelo_limpo
             versao_padrao = versao_limpa
