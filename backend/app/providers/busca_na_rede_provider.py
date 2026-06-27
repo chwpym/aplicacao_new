@@ -136,11 +136,13 @@ class BaseBuscaNaRedeProvider(BaseProvider):
             if app_table:
                 tr_texts = []
                 for tr in app_table.find_all("tr"):
+                    classes = tr.get("class", [])
+                    if "montadora" in classes:
+                        continue
+                        
                     t = tr.get_text(separator=" ", strip=True)
-                    if not t or "LEVE" in t.upper() or "PESADA" in t.upper() or "UTILITÁRIO" in t.upper():
-                        # Pula cabeçalhos de seção, a menos que pareçam uma linha de dado (tenham hífens ou anos)
-                        if "-" not in t and not re.search(r'\d{4}', t):
-                            continue
+                    if not t:
+                        continue
                     tr_texts.append(t)
                 if tr_texts:
                     description_text = " | ".join(tr_texts)
@@ -187,94 +189,122 @@ class BaseBuscaNaRedeProvider(BaseProvider):
                     except Exception as e:
                         logger.error("BUSCA_NA_REDE", f"Erro ao buscar referências remotas em {url}: {str(e)}")
 
-            # 5. Pré-processar blocos
-            if "|" in description_text:
-                raw_blocks = [b.strip() for b in description_text.split("|") if b.strip()]
-            else:
-                raw_blocks = re.split(r'\s{2,}', description_text.strip())
-
-            # Adiciona blocos de referência do og_text se não estiverem no description_text
-            if og_text and og_text != description_text:
-                og_blocks = re.split(r'\s{2,}', og_text.strip())
-                for ob in og_blocks:
-                    if ob.strip().startswith("-"):
-                        raw_blocks.append(ob.strip())
-
             items = []
             
-            # Pré-processamento: Limpar e classificar cada bloco
-            cleaned = []
-            for b in raw_blocks:
-                b = b.strip()
-                if not b or b == "-" or "Publicado" in b:
-                    continue
-                if b.startswith("-"):
-                    refs = [r.strip().upper() for r in b.split("-") if r.strip()]
-                    for ref in refs:
-                        if self._is_reference_code(ref):
-                            referencias.append(ref)
-                    continue
-                cleaned.append(b)
-
-            # Juntar blocos consecutivos: texto (veículo) + anos
-            merged_blocks = []
-            i = 0
-            while i < len(cleaned):
-                block = cleaned[i]
-                # Consideramos "TODOS" como um marcador de anos para a plataforma Busca na Rede
-                has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', block)) or "TODOS" in block.upper()
-                has_letters = bool(re.search(r'[A-Za-z]', block))
-
-                if has_year and has_letters:
-                    # Bloco completo (formato Tuba ou Tabela): veículo + anos/TODOS juntos
-                    merged_blocks.append(block)
-                elif has_letters and not has_year:
-                    # Bloco só com texto (formato Sampel): verifica se o próximo é de anos
-                    if i + 1 < len(cleaned):
-                        next_block = cleaned[i + 1]
-                        next_has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', next_block)) or "TODOS" in next_block.upper()
-                        if next_has_year:
-                            merged_blocks.append(f"{block} {next_block}")
-                            i += 2
-                            continue
-                    # Sem anos adjacentes -> pode ser código de referência ou texto de marketing
-                    clean_upper = block.strip().upper()
-                    # Só aceita como referência se parecer um código (curto, poucas palavras)
-                    if self._is_reference_code(clean_upper):
-                        referencias.append(clean_upper)
-                elif has_year and not has_letters:
-                    # Bloco de anos sozinho sem veículo anterior -> ignora
-                    pass
-                else:
-                    # Bloco sem nada útil - tenta como referência se for código
-                    clean_upper = block.strip().upper()
-                    if self._is_reference_code(clean_upper):
-                        referencias.append(clean_upper)
-                i += 1
-
-            # Parsear blocos mesclados
-            for block in merged_blocks:
-                parsed = self._parse_application_block(block)
-                if parsed:
-                    # Combina a observação extraída do bloco com a observação geral
-                    obs_parts = []
-                    if parsed.get("observacao"):
-                        obs_parts.append(parsed["observacao"])
+            # 1. Tenta extrair aplicações a partir da tabela estruturada (alta precisão)
+            app_table = soup.find("table", id="aplicacoes")
+            table_extracted = False
+            if app_table:
+                for tr in app_table.find_all("tr"):
+                    classes = tr.get("class", [])
+                    if "montadora" in classes or not tr.get_text(strip=True):
+                        continue
+                        
+                    mont_el = tr.find("span", style=lambda s: s and "display:none" in s)
+                    modelo_el = tr.find("b")
+                    anos_td = tr.find("td", class_="anos")
+                    model_td = tr.find("td", class_="models")
                     
-                    raw_data = {
-                        "marca_peca": marca_peca,
-                        "codigo": query.upper(),
-                        "montadora": parsed["montadora"],
-                        "modelo": parsed["modelo"],
-                        "versao": parsed["versao"],
-                        "motor": parsed["motor"],
-                        "ano_inicio": parsed["ano_inicio"],
-                        "ano_fim": parsed["ano_fim"],
-                        "observacao": " | ".join(obs_parts),
-                        "imagem": image_url,
-                        "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
-                    }
-                    items.append(raw_data)
+                    if mont_el and modelo_el:
+                        montadora = mont_el.get_text(strip=True)
+                        modelo = modelo_el.get_text(strip=True)
+                        anos_text = anos_td.get_text(strip=True) if anos_td else ""
+                        
+                        extra_text = ""
+                        if model_td:
+                            full_text = model_td.get_text(separator=" ", strip=True)
+                            extra_text = full_text.replace(montadora, "").replace(modelo, "").replace("-", " ").strip()
+                            extra_text = re.sub(r'\s+', ' ', extra_text)
+                            
+                        items.append({
+                            "marca_peca": marca_peca,
+                            "codigo": query.upper(),
+                            "montadora": montadora,
+                            "modelo": modelo,
+                            "versao": extra_text,
+                            "motor": "",
+                            "ano_inicio": anos_text,
+                            "ano_fim": "",
+                            "observacao": "",
+                            "imagem": image_url,
+                            "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
+                        })
+                        table_extracted = True
+                        
+            # 2. Fallback: Se não encontrou tabela, usa o texto de description
+            if not table_extracted:
+                if "|" in description_text:
+                    raw_blocks = [b.strip() for b in description_text.split("|") if b.strip()]
+                else:
+                    raw_blocks = re.split(r'\s{2,}', description_text.strip())
+                    
+                # Adiciona blocos de referência do og_text se não estiverem no description_text
+                if og_text and og_text != description_text:
+                    og_blocks = re.split(r'\s{2,}', og_text.strip())
+                    for ob in og_blocks:
+                        if ob.strip().startswith("-"):
+                            raw_blocks.append(ob.strip())
+                            
+                cleaned = []
+                for b in raw_blocks:
+                    b = b.strip()
+                    if not b or b == "-" or "Publicado" in b:
+                        continue
+                    if b.startswith("-"):
+                        refs = [r.strip().upper() for r in b.split("-") if r.strip()]
+                        for ref in refs:
+                            if self._is_reference_code(ref):
+                                referencias.append(ref)
+                        continue
+                    cleaned.append(b)
+
+                merged_blocks = []
+                i = 0
+                while i < len(cleaned):
+                    block = cleaned[i]
+                    has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', block)) or "TODOS" in block.upper()
+                    has_letters = bool(re.search(r'[A-Za-z]', block))
+
+                    if has_year and has_letters:
+                        merged_blocks.append(block)
+                    elif has_letters and not has_year:
+                        if i + 1 < len(cleaned):
+                            next_block = cleaned[i + 1]
+                            next_has_year = bool(re.search(r'\b(19[5-9]\d|20[0-3]\d)\b', next_block)) or "TODOS" in next_block.upper()
+                            if next_has_year:
+                                merged_blocks.append(f"{block} {next_block}")
+                                i += 2
+                                continue
+                        clean_upper = block.strip().upper()
+                        if self._is_reference_code(clean_upper):
+                            referencias.append(clean_upper)
+                    elif has_year and not has_letters:
+                        pass
+                    else:
+                        clean_upper = block.strip().upper()
+                        if self._is_reference_code(clean_upper):
+                            referencias.append(clean_upper)
+                    i += 1
+
+                for block in merged_blocks:
+                    parsed = self._parse_application_block(block)
+                    if parsed:
+                        obs_parts = []
+                        if parsed.get("observacao"):
+                            obs_parts.append(parsed["observacao"])
+                        items.append({
+                            "marca_peca": marca_peca,
+                            "codigo": query.upper(),
+                            "montadora": parsed["montadora"],
+                            "modelo": parsed["modelo"],
+                            "versao": parsed["versao"],
+                            "motor": parsed["motor"],
+                            "ano_inicio": parsed["ano_inicio"],
+                            "ano_fim": parsed["ano_fim"],
+                            "observacao": " | ".join(obs_parts),
+                            "imagem": image_url,
+                            "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
+                        })
 
             # Injeta referências em todos os itens (limpar e deduplicar)
             if referencias:
