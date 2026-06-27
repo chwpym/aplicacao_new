@@ -11,6 +11,9 @@ interface FilterSectionProps {
   clearResults: () => void;
   saveCurrentAsDefault: () => void;
   restoreDefault: () => void;
+  uniqueCodigos?: string[];
+  selectedCodigo?: string;
+  setSelectedCodigo?: (val: string) => void;
 }
 
 export const FilterSection: React.FC<FilterSectionProps> = ({
@@ -23,6 +26,9 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
   clearResults,
   saveCurrentAsDefault,
   restoreDefault,
+  uniqueCodigos = [],
+  selectedCodigo = "",
+  setSelectedCodigo = () => {},
 }) => {
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
@@ -87,7 +93,23 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
       <div className="flex flex-col items-end gap-2 lg:ml-auto w-full lg:w-auto mt-4 lg:mt-0">
         
         {/* PRIMEIRA LINHA: Toggle Agrupar + Limpar */}
-        <div className="flex items-center gap-4 justify-end w-full">
+        <div className="flex items-center gap-4 justify-end w-full flex-wrap">
+          {uniqueCodigos.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase">Peça:</span>
+              <select
+                value={selectedCodigo}
+                onChange={(e) => setSelectedCodigo(e.target.value)}
+                className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 outline-none text-slate-700 dark:text-slate-300 font-medium"
+              >
+                <option value="">Todas</option>
+                {uniqueCodigos.map(cod => (
+                  <option key={cod} value={cod}>{cod}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <label className="flex items-center gap-2 cursor-pointer group lg:border-l lg:border-slate-200 lg:dark:border-slate-800 lg:pl-4">
             <input
               type="checkbox"

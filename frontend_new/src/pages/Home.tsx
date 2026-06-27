@@ -19,6 +19,9 @@ const Home = () => {
     setVisibleFields,
     saveCurrentAsDefault,
     restoreDefault,
+    uniqueCodigos,
+    selectedCodigo,
+    setSelectedCodigo,
     uniqueReferences,
     displayResults,
     paginatedResults,
@@ -58,6 +61,9 @@ const Home = () => {
         clearResults={clearResults}
         saveCurrentAsDefault={saveCurrentAsDefault}
         restoreDefault={restoreDefault}
+        uniqueCodigos={uniqueCodigos}
+        selectedCodigo={selectedCodigo}
+        setSelectedCodigo={setSelectedCodigo}
       />
       
       <DataTable

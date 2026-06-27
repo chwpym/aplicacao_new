@@ -12,6 +12,7 @@ export const useCatalog = () => {
   const itemsPerPage = 30; // 30 itens por página
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+  const [selectedCodigo, setSelectedCodigo] = useState<string>("");
   const [provedores, setProvedores] = useState<any[]>([]);
   const [selectedProvedor, setSelectedProvedor] = useState<number | "">("");
   const [agrupar, setAgrupar] = useState(true);
@@ -247,6 +248,14 @@ export const useCatalog = () => {
   };
 
 
+  const uniqueCodigos = useMemo(() => {
+    return Array.from(new Set(results.map(r => r.codigo?.toUpperCase().trim()).filter(c => !!c))).sort();
+  }, [results]);
+
+  useEffect(() => {
+    setSelectedCodigo("");
+  }, [results]);
+
   const uniqueReferences = useMemo(() => {
     return generateUniqueReferences(results);
   }, [results]);
@@ -264,32 +273,40 @@ export const useCatalog = () => {
     } else if (mode === "tabela_tabulada") {
       copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow);
     } else {
-      performCopy(mode, results, visibleFields, automakers, uniqueReferences);
+      performCopy(mode, filteredResults, visibleFields, automakers, uniqueReferences);
     }
   };
 
-  // Lógica para processar os resultados que serão EXIBIDOS na tela
-  const displayResults = useMemo(() => {
+  // 1. FILTRAGEM DINÂMICA LOCAL
+  const filteredResults = useMemo(() => {
     if (results.length === 0) return [];
 
-    // 1. FILTRAGEM DINÂMICA LOCAL (Varre colunas VISÍVEIS)
     let filtered = results;
+
+    if (selectedCodigo) {
+      filtered = filtered.filter(r => r.codigo?.toUpperCase().trim() === selectedCodigo);
+    }
     if (filterText) {
       const lowerFilter = filterText.toLowerCase();
-      filtered = results.filter((res) => {
+      filtered = filtered.filter((res) => {
         return Object.entries(res).some(([key, val]) => {
-          // Ignora campos de controle ou ocultos para evitar falsos positivos
           if (visibleFields[key] === false) return false;
           return String(val).toLowerCase().includes(lowerFilter);
         });
       });
     }
+    return filtered;
+  }, [results, visibleFields, filterText, selectedCodigo]);
+
+  // Lógica para processar os resultados que serão EXIBIDOS na tela (agrupamento/ordenação)
+  const displayResults = useMemo(() => {
+    if (filteredResults.length === 0) return [];
 
     // Se "Agrupar Resultados" estiver desligado no topo, mostramos tudo individual
-    if (!agrupar) return filtered.sort(compareResults);
+    if (!agrupar) return [...filteredResults].sort(compareResults);
 
     const groups: any = {};
-    filtered.forEach((res) => {
+    filteredResults.forEach((res) => {
       // Chave baseada apenas no que está visível
       const keyParts = [];
       if (visibleFields.marca) keyParts.push(res.marca);
@@ -364,7 +381,7 @@ export const useCatalog = () => {
 
     // Ordenação dinâmica final baseada no que está visível
     return processed.sort(compareResults);
-  }, [results, visibleFields, agrupar, filterText]);
+  }, [filteredResults, visibleFields, agrupar]);
 
   const totalPages = Math.max(1, Math.ceil(displayResults.length / itemsPerPage));
 
@@ -476,6 +493,9 @@ export const useCatalog = () => {
     setVisibleFields,
     saveCurrentAsDefault,
     restoreDefault,
+    uniqueCodigos,
+    selectedCodigo,
+    setSelectedCodigo,
     uniqueReferences,
     displayResults,
     paginatedResults,
