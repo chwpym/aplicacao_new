@@ -233,13 +233,21 @@ export const copyToClipboard = (
     }
   }
 
-  if (Object.keys(uniqueReferences).length > 0) {
-    // Adiciona o separador rígido '...' para o sistema receptor
-    text += "\n\n...\nREFERÊNCIA DE SIMILARES :\n";
+  // ==========================================
+  // BLOCOS DE REFERÊNCIAS E FICHAS TÉCNICAS
+  // ==========================================
+  
+  const uniqueCodigos = Array.from(new Set(results.map(r => r.codigo?.toUpperCase().trim()).filter(c => !!c)));
+
+  const printReferencesForResults = (subset: any[], suffix: string) => {
+    const refs = generateUniqueReferences(subset);
+    if (Object.keys(refs).length === 0) return;
+
+    text += `\n\n...\nREFERÊNCIA DE SIMILARES${suffix} :\n`;
 
     // Identifica montadoras conhecidas presentes nos resultados
     const visibleManufacturers = new Set(
-      results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
+      subset.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
     );
 
     // Lista de fallback de montadoras principais no Brasil para garantir que fiquem no topo
@@ -281,171 +289,62 @@ export const copyToClipboard = (
 
       if (filteredCodes.length > 0) {
         const codesList = filteredCodes.join(" - ");
-        // Garante formato vertical: um marca por linha e espaçamento limpo
         text += `${brand}: ${codesList}\n`;
       }
     });
-  }
+  };
 
-  // Bloco de Medidas Técnicas (Específico Hipper Freios)
-  const hipperResults = results.filter(r => r.provedor === "HIPPER FREIOS" && r.ficha_tecnica);
-  if (hipperResults.length > 0) {
-    const ficha = hipperResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nMEDIDAS TÉCNICAS (HIPPER FREIOS):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        text += `${nome}: ${valor}\n`;
+  const printFichasTecnicasForResults = (subset: any[], suffix: string) => {
+    // Helper para extrair fichas únicas por provedor no subset
+    const printFicha = (filterFn: (r: any) => boolean, title: string) => {
+      const match = subset.find(filterFn);
+      if (match && match.ficha_tecnica && Object.keys(match.ficha_tecnica).length > 0) {
+        text += `\n\n...\n${title}${suffix}:\n`;
+        Object.entries(match.ficha_tecnica).forEach(([nome, valor]) => {
+          if (valor === "-") {
+            text += `${nome}\n`;
+          } else {
+            text += `${nome}: ${valor}\n`;
+          }
+        });
+      }
+    };
+
+    printFicha(r => r.provedor === "HIPPER FREIOS", "MEDIDAS TÉCNICAS (HIPPER FREIOS)");
+    printFicha(r => r.provedor === "NOTUS", "FICHA TÉCNICA (NOTUS)");
+    printFicha(r => r.provedor?.toUpperCase() === "MULTIQUALITA" || r.marca_peca === "MULTIQUALITÀ" || r.marca === "MULTIQUALITÀ", "FICHA TÉCNICA (MULTIQUALITÀ)");
+    printFicha(r => r.provedor?.toUpperCase() === "AUTAFASTAR" || r.marca?.toUpperCase() === "AUTAFASTAR", "FICHA TÉCNICA (AUTAFASTAR)");
+    printFicha(r => r.provedor?.toUpperCase() === "JAPANPARTS" || r.marca?.toUpperCase() === "JAPANPARTS", "FICHA TÉCNICA (JAPANPARTS)");
+    
+    // Schaeffler (LUK, FAG, INA)
+    const schaefflerBrands = ["LUK", "FAG", "INA"];
+    const schaefflerMatch = subset.find(r => 
+      schaefflerBrands.includes(r.provedor?.toUpperCase()) || schaefflerBrands.includes(r.marca?.toUpperCase())
+    );
+    if (schaefflerMatch && schaefflerMatch.ficha_tecnica && Object.keys(schaefflerMatch.ficha_tecnica).length > 0) {
+      const brandLabel = schaefflerMatch.provedor?.toUpperCase() || schaefflerMatch.marca?.toUpperCase() || "SCHAEFFLER";
+      text += `\n\n...\nFICHA TÉCNICA (${brandLabel})${suffix}:\n`;
+      Object.entries(schaefflerMatch.ficha_tecnica).forEach(([nome, valor]) => {
+        text += valor === "-" ? `${nome}\n` : `${nome}: ${valor}\n`;
       });
     }
-  }
 
-  // Bloco de Ficha Técnica (Específico NOTUS)
-  const notusResults = results.filter(r => r.provedor === "NOTUS" && r.ficha_tecnica);
-  if (notusResults.length > 0) {
-    const ficha = notusResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (NOTUS):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        const valFinal = (valor && String(valor).trim() !== "") ? valor : "-";
-        text += `${nome}: ${valFinal}\n`;
-      });
-    }
-  }
+    printFicha(r => r.provedor?.toUpperCase() === "BOSCH" || r.marca?.toUpperCase() === "BOSCH", "FICHA TÉCNICA (BOSCH)");
+    printFicha(r => r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA", "FICHA TÉCNICA (IMA)");
+    printFicha(r => r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC", "FICHA TÉCNICA (INTERMEC)");
+  };
 
-  // Bloco de Ficha Técnica (Específico MULTIQUALITÀ)
-  const multiResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "MULTIQUALITA" || r.marca_peca === "MULTIQUALITÀ" || r.marca === "MULTIQUALITÀ")
-    && r.ficha_tecnica
-  );
-  if (multiResults.length > 0) {
-    const ficha = multiResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (MULTIQUALITÀ):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
+  if (uniqueCodigos.length > 1) {
+    uniqueCodigos.forEach(codigo => {
+      const codeSubset = results.filter(r => r.codigo?.toUpperCase().trim() === codigo);
+      printReferencesForResults(codeSubset, ` (${codigo})`);
+      printFichasTecnicasForResults(codeSubset, ` (${codigo})`);
+    });
+  } else {
+    printReferencesForResults(results, "");
+    printFichasTecnicasForResults(results, "");
   }
-
-  // Bloco de Ficha Técnica (Específico AUTAFASTAR)
-  const autafastarResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "AUTAFASTAR" || r.marca?.toUpperCase() === "AUTAFASTAR")
-    && r.ficha_tecnica
-  );
-  if (autafastarResults.length > 0) {
-    const ficha = autafastarResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (AUTAFASTAR):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
-
-  // Bloco de Ficha Técnica (Específico JAPANPARTS)
-  const japanpartsResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "JAPANPARTS" || r.marca?.toUpperCase() === "JAPANPARTS")
-    && r.ficha_tecnica
-  );
-  if (japanpartsResults.length > 0) {
-    const ficha = japanpartsResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (JAPANPARTS):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
-
-  // Bloco de Ficha Técnica (Específico SCHAEFFLER — LUK, FAG, INA)
-  const schaefflerBrands = ["LUK", "FAG", "INA"];
-  const schaefflerResults = results.filter(r =>
-    schaefflerBrands.includes(r.provedor?.toUpperCase()) || schaefflerBrands.includes(r.marca?.toUpperCase())
-  );
-  if (schaefflerResults.length > 0) {
-    const withFicha = schaefflerResults.find(r => r.ficha_tecnica && Object.keys(r.ficha_tecnica).length > 0);
-    if (withFicha) {
-      const ficha = withFicha.ficha_tecnica;
-      const brandLabel = withFicha.provedor?.toUpperCase() || withFicha.marca?.toUpperCase() || "SCHAEFFLER";
-      text += `\n\n...\nFICHA TÉCNICA (${brandLabel}):\n`;
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
-
-  // Bloco de Ficha Técnica (Específico BOSCH)
-  const boschResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "BOSCH" || r.marca?.toUpperCase() === "BOSCH")
-    && r.ficha_tecnica
-  );
-  if (boschResults.length > 0) {
-    const ficha = boschResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (BOSCH):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
-
-  // Bloco de Ficha Técnica (Específico IMA)
-  const imaResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA")
-    && r.ficha_tecnica
-  );
-  if (imaResults.length > 0) {
-    const ficha = imaResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (IMA):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
-
-  // Bloco de Ficha Técnica (Específico INTERMEC)
-  const intermecResults = results.filter(r =>
-    (r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC")
-    && r.ficha_tecnica
-  );
-  if (intermecResults.length > 0) {
-    const ficha = intermecResults[0].ficha_tecnica;
-    if (Object.keys(ficha).length > 0) {
-      text += "\n\n...\nFICHA TÉCNICA (INTERMEC):\n";
-      Object.entries(ficha).forEach(([nome, valor]) => {
-        if (valor === "-") {
-          text += `${nome}\n`;
-        } else {
-          text += `${nome}: ${valor}\n`;
-        }
-      });
-    }
-  }
+  // (Fichas técnicas agora estão gerenciadas pela printFichasTecnicasForResults)
 
 
   // ==========================================
