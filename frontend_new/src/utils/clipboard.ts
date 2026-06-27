@@ -260,7 +260,7 @@ export const copyToClipboard = (
     ]);
 
     // Ordenação Padronizada de Marcas: ORIGINAL/Montadoras no topo, depois ordem alfabética
-    const sortedBrands = Object.entries(uniqueReferences).sort(([brandA], [brandB]) => {
+    const sortedBrands = Object.entries(refs).sort(([brandA], [brandB]) => {
       const isMkrA = automakers.includes(brandA) || visibleManufacturers.has(brandA) || knownAutomakers.has(brandA);
       const isMkrB = automakers.includes(brandB) || visibleManufacturers.has(brandB) || knownAutomakers.has(brandB);
 

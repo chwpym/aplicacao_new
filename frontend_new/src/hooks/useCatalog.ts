@@ -256,27 +256,6 @@ export const useCatalog = () => {
     setSelectedCodigo("");
   }, [results]);
 
-  const uniqueReferences = useMemo(() => {
-    return generateUniqueReferences(results);
-  }, [results]);
-
-  const copyToClipboard = (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
-    erpFont: string = "monospace",
-    erpFontSize: number = 9,
-    hideDashesRow: boolean = false
-  ) => {
-    if (mode === "tabela") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow);
-    } else if (mode === "tabela_limpa") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow);
-    } else if (mode === "tabela_tabulada") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow);
-    } else {
-      performCopy(mode, filteredResults, visibleFields, automakers, uniqueReferences);
-    }
-  };
-
   // 1. FILTRAGEM DINÂMICA LOCAL
   const filteredResults = useMemo(() => {
     if (results.length === 0) return [];
@@ -297,6 +276,28 @@ export const useCatalog = () => {
     }
     return filtered;
   }, [results, visibleFields, filterText, selectedCodigo]);
+
+  const uniqueReferences = useMemo(() => {
+    return generateUniqueReferences(filteredResults);
+  }, [filteredResults]);
+
+  const copyToClipboard = (
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
+    erpFont: string = "monospace",
+    erpFontSize: number = 9,
+    hideDashesRow: boolean = false
+  ) => {
+    if (mode === "tabela") {
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow);
+    } else if (mode === "tabela_limpa") {
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow);
+    } else if (mode === "tabela_tabulada") {
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow);
+    } else {
+      performCopy(mode, filteredResults, visibleFields, automakers, uniqueReferences);
+    }
+  };
+
 
   // Lógica para processar os resultados que serão EXIBIDOS na tela (agrupamento/ordenação)
   const displayResults = useMemo(() => {
