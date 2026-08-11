@@ -44,47 +44,123 @@ class HipperFreiosProvider(BaseProvider):
                 logger.info(f"[{self.config.get('nome')}] Nenhum resultado encontrado para: {query}")
                 return []
             
+            # --- MAPEAMENTO DINÂMICO DE COLUNAS ---
+            # Lê o header (th) para descobrir qual índice corresponde a qual campo.
+            # Isso torna o parser resiliente a tabelas com menos ou mais colunas
+            # (ex: "Cilindro Mestre" não tem coluna "Eixo", ficando com 7 colunas ao invés de 8).
+            header_row = table.find('tr')
+            col_map = {}  # nome_normalizado -> indice
+            if header_row:
+                headers = header_row.find_all(['th', 'td'])
+                for idx, th in enumerate(headers):
+                    nome = th.get_text(strip=True).upper()
+                    # Normaliza variações conhecidas para chaves estáveis
+                    if "MONTADORA" in nome:
+                        col_map["montadora"] = idx
+                    elif nome in ("VEÍCULO", "VEICULO"):
+                        col_map["veiculo"] = idx
+                    elif "DETALHE" in nome or "MOTOR" in nome:
+                        col_map["motor"] = idx
+                    elif "ANO" in nome:
+                        col_map["ano"] = idx
+                    elif "PRODUTO" in nome:
+                        col_map["produto"] = idx
+                    elif "EIXO" in nome:
+                        col_map["eixo"] = idx
+                    elif nome in ("CÓDIGO", "CODIGO", "CÓD", "COD"):
+                        col_map["codigo"] = idx
+                    elif "IMAGEM" in nome or "IMG" in nome:
+                        col_map["imagem"] = idx
+            
+            logger.info(f"[{self.config.get('nome')}] Mapa de colunas detectado: {col_map} ({len(col_map)} campos)")
+            
+            # Precisa pelo menos saber onde está o código
+            if "codigo" not in col_map:
+                logger.warning(f"[{self.config.get('nome')}] Coluna 'Código' não encontrada no header. Abortando.")
+                return []
+            
+            # Helper seguro para extrair texto de uma coluna por nome
+            def _get_col(cols, field, default=""):
+                idx = col_map.get(field)
+                if idx is not None and idx < len(cols):
+                    return cols[idx].get_text(strip=True)
+                return default
+            
             rows = table.find_all('tr', class_='hover-table')
             results = []
+            min_cols = min(col_map.values()) + 1 if col_map else 2  # mínimo de colunas necessário
             
-            # Cache de detalhes para não baixar a mesma coisa várias vezes
-            medidas_compartilhadas = {}
-            imagem_high_res = None
-            referencias_compartilhadas = ""
-            imagens_detalhe = []
-
-            for i, row in enumerate(rows):
+            # 1. Discovery (Fase de Descoberta)
+            # Mapeia as URLs únicas agrupadas pelo CÓDIGO DA PEÇA
+            unique_codes_map = {} # codigo -> url_detalhe
+            for row in rows:
                 cols = row.find_all('td')
-                if len(cols) < 8:
+                if len(cols) < min_cols: continue
+                codigo = _get_col(cols, "codigo")
+                url_detalhe = row.get('data-href')
+                if url_detalhe and codigo:
+                    if not url_detalhe.startswith('http'):
+                        url_detalhe = self.base_url + url_detalhe
+                    if codigo not in unique_codes_map:
+                        unique_codes_map[codigo] = url_detalhe
+            
+            url_to_codigo = {v: k for k, v in unique_codes_map.items()}
+            urls_para_hidratar = list(unique_codes_map.values())[:40] # 40 códigos únicos
+            
+            # 2. Hydration Concorrente (Baixa as peças ao mesmo tempo)
+            detalhes_por_codigo = {}
+            if urls_para_hidratar:
+                logger.info(f"[{self.config.get('nome')}] Hidratando concorrentemente {len(urls_para_hidratar)} códigos únicos...")
+                tasks = [self._enriquecer_detalhes(u) for u in urls_para_hidratar]
+                import asyncio
+                res_detalhes = await asyncio.gather(*tasks, return_exceptions=True)
+                
+                for u, dado in zip(urls_para_hidratar, res_detalhes):
+                    cod = url_to_codigo[u]
+                    if isinstance(dado, dict):
+                        detalhes_por_codigo[cod] = dado
+                    else:
+                        detalhes_por_codigo[cod] = {}
+            
+            # 3. Merge Final 
+            for row in rows:
+                cols = row.find_all('td')
+                if len(cols) < min_cols:
                     continue
                 
                 url_detalhe = row.get('data-href')
                 if url_detalhe and not url_detalhe.startswith('http'):
                     url_detalhe = self.base_url + url_detalhe
 
-                # Extração básica da linha
-                montadora = cols[1].get_text(strip=True)
-                veiculo = cols[2].get_text(strip=True)
-                motor = cols[3].get_text(strip=True)
-                ano_raw = cols[4].get_text(strip=True)
-                produto = cols[5].get_text(strip=True)
-                eixo = cols[6].get_text(strip=True)
-                codigo = cols[7].get_text(strip=True)
-                
+                # Extração dinâmica — usa o mapa de colunas
+                codigo = _get_col(cols, "codigo")
+                montadora = _get_col(cols, "montadora")
+                veiculo = _get_col(cols, "veiculo")
+                motor = _get_col(cols, "motor")
+                ano_raw = _get_col(cols, "ano")
+                produto = _get_col(cols, "produto")
+                eixo = _get_col(cols, "eixo")  # Retorna "" se coluna não existir
+
+                # Pega os detalhes corretos através do Código
+                detalhes = detalhes_por_codigo.get(codigo, {})
+
                 # Normalização de Anos
                 ano_inicio, ano_fim = self._parse_anos(ano_raw)
                 
-                # Se for o primeiro item (ou o código mudar), enriquecemos
-                if i == 0 and url_detalhe:
-                    logger.info(f"[{self.config.get('nome')}] Enriquecendo detalhes via: {url_detalhe}")
-                    detalhes = await self._enriquecer_detalhes(url_detalhe)
-                    if detalhes:
-                        medidas_compartilhadas = detalhes.get("medidas", {})
-                        imagem_high_res = detalhes.get("imagem")
-                        referencias_compartilhadas = detalhes.get("referencias", "")
-                        imagens_detalhe = [imagem_high_res] if imagem_high_res else []
-                        if detalhes.get("desenho"):
-                            imagens_detalhe.append(detalhes.get("desenho"))
+                # Definição segura das variáveis hidratadas
+                medidas_compartilhadas = detalhes.get("medidas", {})
+                imagem_high_res = detalhes.get("imagem")
+                referencias_compartilhadas = detalhes.get("referencias", "")
+                
+                imagens_detalhe = [imagem_high_res] if imagem_high_res else []
+                if detalhes.get("desenho"):
+                    imagens_detalhe.append(detalhes.get("desenho"))
+
+                # Imagem fallback da thumbnail da tabela
+                img_idx = col_map.get("imagem", 0)
+                img_fallback = None
+                if img_idx < len(cols) and cols[img_idx].find('img'):
+                    img_fallback = self.base_url + cols[img_idx].find('img')['src']
 
                 app = {
                     "provedor": self.config.get("nome"),
@@ -97,14 +173,15 @@ class HipperFreiosProvider(BaseProvider):
                     "posicao": eixo,
                     "codigo": codigo,
                     "observacao": produto,
-                    "imagem": imagem_high_res or (self.base_url + cols[0].find('img')['src'] if cols[0].find('img') else None),
+                    "imagem": imagem_high_res or img_fallback,
                     "imagens": imagens_detalhe,
                     "referencias": referencias_compartilhadas,
                     "ficha_tecnica": medidas_compartilhadas,
                     "url": url_detalhe
                 }
-                # Garante que passe pelo motor de normalização da BaseProvider
+                
                 results.append(self.formatar_resultado(app))
+
                 
             return results
             
