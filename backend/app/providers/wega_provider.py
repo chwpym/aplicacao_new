@@ -105,7 +105,14 @@ class WegaProvider(BaseProvider):
         resultados = []
         refs = self._extrair_conversoes_ajax(conversoes)
         
-        canonical_id = self.canonicalizar_id_para_imagem(cod_real)
+        # Opção 2: Pega o código oficial formatado (com hífen) direto da API
+        codigo_oficial = cod_real
+        if conversoes and len(conversoes) > 0:
+            oficial = conversoes[0].get("Código Wega")
+            if oficial:
+                codigo_oficial = oficial
+                
+        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
         base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
         
         for app in aplicacoes:
@@ -128,7 +135,7 @@ class WegaProvider(BaseProvider):
                 ],
                 "referencias": refs,
                 "ficha_tecnica": None,
-                "codigo": cod_real,
+                "codigo": codigo_oficial,
                 "provider_id": self.config.get("id"),
                 "provedor": "WEGA (BR)"  # Tag visual
             }
@@ -159,7 +166,14 @@ class WegaProvider(BaseProvider):
         resultados = []
         refs = self._extrair_conversoes_global(conversoes)
         
-        canonical_id = self.canonicalizar_id_para_imagem(cod_real)
+        # Opção 2: Pega o código oficial formatado direto da API (Global usa CodigoWega ou Código Wega)
+        codigo_oficial = cod_real
+        if conversoes and len(conversoes) > 0:
+            oficial = conversoes[0].get("CodigoWega") or conversoes[0].get("Código Wega")
+            if oficial:
+                codigo_oficial = oficial
+                
+        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
         base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
         
         for app in aplicacoes:
@@ -182,7 +196,7 @@ class WegaProvider(BaseProvider):
                 ],
                 "referencias": refs,
                 "ficha_tecnica": None,
-                "codigo": cod_real,
+                "codigo": codigo_oficial,
                 "provider_id": self.config.get("id"),
                 "provedor": "WEGA (GLOBAL)"  # Tag visual de Fallback
             }
@@ -201,18 +215,28 @@ class WegaProvider(BaseProvider):
     def _formatar_produto_sem_aplicacao(self, conversoes, cod_real, fonte, raw_data):
         """Formata resultado quando há conversões mas sem aplicações de veículos."""
         # Detecta a fonte das conversões para usar o extrator correto
+        codigo_oficial = cod_real
+        
         if fonte == "ajax":
             refs = self._extrair_conversoes_ajax(conversoes)
+            if conversoes and len(conversoes) > 0:
+                oficial = conversoes[0].get("Código Wega")
+                if oficial:
+                    codigo_oficial = oficial
         else:
             refs = self._extrair_conversoes_global(conversoes)
+            if conversoes and len(conversoes) > 0:
+                oficial = conversoes[0].get("CodigoWega") or conversoes[0].get("Código Wega")
+                if oficial:
+                    codigo_oficial = oficial
         
-        canonical_id = self.canonicalizar_id_para_imagem(cod_real)
+        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
         base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
         tag = "WEGA (BR)" if fonte == "ajax" else "WEGA (GLOBAL)"
         
         resultado = self.formatar_resultado({
             "marca_peca": "WEGA",
-            "codigo": cod_real,
+            "codigo": codigo_oficial,
             "montadora": "",
             "veiculo": "PRODUTO SEM APLICAÇÃO",
             "modelo": "",
