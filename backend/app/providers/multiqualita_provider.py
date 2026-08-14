@@ -1,5 +1,6 @@
 import httpx
 import re
+import asyncio
 from typing import List, Dict, Any
 from bs4 import BeautifulSoup
 from app.providers.base_provider import BaseProvider
@@ -30,10 +31,72 @@ class MultiqualitaProvider(BaseProvider):
                     print(f"Erro Multiqualita: Status {response.status_code}")
                     return []
 
-                return self._parse_html(response.text, part_id)
+                raw_items = self._parse_html(response.text, part_id)
+                if not raw_items:
+                    return []
+
+                # Mapeia imagens únicas por código de peça para evitar requisições redundantes
+                codigos_unicos = {}
+                for item in raw_items:
+                    cod = item.get("codigo")
+                    img_fallback = item.get("imagem")
+                    if cod and cod not in codigos_unicos:
+                        codigos_unicos[cod] = img_fallback
+
+                # Hidrata concorrentemente as imagens para todos os códigos únicos
+                imagens_por_codigo = {}
+                tasks = [
+                    self._descobrir_imagens(client, cod, fallback)
+                    for cod, fallback in codigos_unicos.items()
+                ]
+                resultados_imagens = await asyncio.gather(*tasks, return_exceptions=True)
+
+                for (cod, fallback), res_imgs in zip(codigos_unicos.items(), resultados_imagens):
+                    if isinstance(res_imgs, list) and res_imgs:
+                        imagens_por_codigo[cod] = res_imgs
+                    elif fallback:
+                        imagens_por_codigo[cod] = [fallback]
+                    else:
+                        imagens_por_codigo[cod] = []
+
+                # Atualiza os resultados com a lista completa de imagens no carrossel
+                for item in raw_items:
+                    cod = item.get("codigo")
+                    if cod in imagens_por_codigo and imagens_por_codigo[cod]:
+                        imgs = imagens_por_codigo[cod]
+                        item["imagens"] = imgs
+                        item["imagem"] = imgs[0]
+
+                return raw_items
             except Exception as e:
                 print(f"Erro ao buscar na Multiqualita: {e}")
                 return []
+
+    async def _descobrir_imagens(self, client: httpx.AsyncClient, codigo: str, fallback_img: str) -> List[str]:
+        """
+        Realiza sondagem assíncrona concorrente para descobrir imagens sequenciais (ex: AT0285_1.jpg, AT0285_2.jpg, etc).
+        """
+        if not codigo:
+            return [fallback_img] if fallback_img else []
+
+        base_url = "https://multiqualita.com.br/MULTIQUALITA/PRODS/medium"
+        candidatos = [f"{base_url}/{codigo}_{i}.jpg" for i in range(1, 7)]
+
+        async def _check(url):
+            try:
+                resp = await client.head(url, timeout=3.0)
+                if resp.status_code == 200:
+                    return url
+            except Exception:
+                pass
+            return None
+
+        results = await asyncio.gather(*[_check(u) for u in candidatos])
+        valid_urls = [u for u in results if u is not None]
+
+        if not valid_urls and fallback_img:
+            return [fallback_img]
+        return valid_urls
 
     def _parse_html(self, html: str, part_id: str) -> List[Dict[str, Any]]:
         soup = BeautifulSoup(html, "html.parser")
