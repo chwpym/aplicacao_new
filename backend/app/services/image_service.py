@@ -117,17 +117,31 @@ class ImageProcessor:
             return image_bytes, "application/octet-stream"
 
     @staticmethod
-    async def download_image(url: str, timeout: float = 10.0) -> Optional[bytes]:
-        """Faz o download utilitário de uma imagem."""
+    async def download_image(url: str, timeout: float = 10.0) -> Tuple[Optional[bytes], bool]:
+        """
+        Faz o download utilitário de uma imagem.
+        Retorna (content_bytes, teve_aviso_ssl).
+        """
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
+        # 1. Tenta com verificação SSL estrita
         try:
-            async with httpx.AsyncClient(timeout=timeout) as client:
-                headers = {"User-Agent": "Mozilla/5.0"}
+            async with httpx.AsyncClient(timeout=timeout, verify=True) as client:
                 resp = await client.get(url, headers=headers, follow_redirects=True)
                 if resp.status_code == 200:
-                    return resp.content
-                return None
+                    return resp.content, False
+        except Exception:
+            pass
+
+        # 2. Fallback com verify=False se o servidor do fabricante tiver SSL inválido/incompleto
+        try:
+            async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
+                resp = await client.get(url, headers=headers, follow_redirects=True)
+                if resp.status_code == 200:
+                    print(f"[ImageProcessor] Download concluído via fallback SSL ignorado para: {url}")
+                    return resp.content, True
+                return None, False
         except Exception as e:
             print(f"[ImageProcessor] Erro ao baixar {url}: {e}")
-            return None
+            return None, False
 
 image_service = ImageProcessor()

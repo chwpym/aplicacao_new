@@ -17,7 +17,7 @@ async def proxy_image(url: str):
         import httpx
         from fastapi.responses import Response
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
             # Algumas URLs podem vir com ponto final por erro de digitação/parsing, removemos
             clean_url = url.strip().rstrip(".")
 
@@ -51,7 +51,7 @@ async def download_image(url: str, db: Session = Depends(get_db)):
     try:
         from app.services.image_service import image_service
         # Baixa original
-        content = await image_service.download_image(url)
+        content, _ = await image_service.download_image(url)
         if not content:
             raise HTTPException(status_code=404, detail="Falha ao baixar imagem do fornecedor")
         
@@ -107,9 +107,12 @@ async def download_images_zip(
             config = models.ConfiguracaoImagem()
 
         zip_buffer = io.BytesIO()
+        ssl_warning_occurred = False
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED, False) as zip_file:
             for idx, url in enumerate(urls):
-                content = await image_service.download_image(url)
+                content, ssl_warn = await image_service.download_image(url)
+                if ssl_warn:
+                    ssl_warning_occurred = True
                 if content:
                     processed_bytes, media_type = image_service.process_image(
                         image_bytes=content,
@@ -135,7 +138,9 @@ async def download_images_zip(
         zip_buffer.seek(0)
         
         headers = {
-            "Content-Disposition": "attachment; filename=imagens.zip"
+            "Content-Disposition": "attachment; filename=imagens.zip",
+            "Access-Control-Expose-Headers": "X-SSL-Warning",
+            "X-SSL-Warning": "true" if ssl_warning_occurred else "false"
         }
         return StreamingResponse(zip_buffer, media_type="application/zip", headers=headers)
     except Exception as e:

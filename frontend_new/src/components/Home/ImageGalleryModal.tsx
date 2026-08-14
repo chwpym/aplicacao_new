@@ -100,6 +100,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
         throw new Error(errorData.detail || `Erro na API de conversão (Status: ${response.status})`);
       }
 
+      const hasSslWarning = response.headers.get("X-SSL-Warning") === "true";
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -107,6 +108,12 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
       link.download = `${title.replace(/\s+/g, '_')}_fotos.zip`;
       link.click();
       URL.revokeObjectURL(blobUrl);
+
+      if (hasSslWarning) {
+        setTimeout(() => {
+          alert("⚠️ Imagens baixadas e salvas com sucesso no arquivo ZIP!\n\nNota: Algumas imagens pertencem a um provedor cujo servidor possui alerta no certificado SSL de conexão.");
+        }, 300);
+      }
     } catch (err: any) {
       console.error("Erro ao gerar ZIP na galeria:", err);
       alert(err.message || "Erro ao gerar o arquivo ZIP com as imagens.");
