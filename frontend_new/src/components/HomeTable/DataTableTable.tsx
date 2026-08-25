@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX, ShoppingBag, ChevronDown, Settings } from "lucide-react";
+import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX, ShoppingBag, ChevronDown, Settings, Printer } from "lucide-react";
 import { FichaTecnicaModal } from "../Home/FichaTecnicaModal";
 import { ImageGalleryModal } from "../Home/ImageGalleryModal";
 import { MercadoLivreModal } from "../Home/MercadoLivreModal";
@@ -467,6 +467,9 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                       </button>
                       <button onClick={() => { copyToClipboard("tabela_tabulada", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
                         <Copy size={14} className="text-amber-600" /> Tabulado ERP
+                      </button>
+                      <button onClick={() => { copyToClipboard("etiqueta"); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Printer size={14} className="text-purple-600" /> Etiqueta (ZPL)
                       </button>
                     </div>
                   )}

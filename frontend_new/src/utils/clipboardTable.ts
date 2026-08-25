@@ -91,6 +91,8 @@ const padProportional = (
   return cleanVal + " ".repeat(numSpaces);
 };
 
+import { generateEtiquetaString } from "./clipboardEtiqueta";
+
 export const copyToClipboardTable = (
   results: any[],
   visibleFields: any,
@@ -214,7 +216,8 @@ export const copyToClipboardTable = (
     finalResults.sort(compareResults);
   }
 
-  let plainTextText = "";
+  const headerEtiqueta = generateEtiquetaString(results);
+  let plainTextText = headerEtiqueta ? `${headerEtiqueta}\n\n.....\n` : "";
 
   if (formatType === "grade" || formatType === "limpa") {
     if (erpFont !== "monospace") {
@@ -278,7 +281,7 @@ export const copyToClipboardTable = (
         }).join(" | ") + " |";
       });
 
-      plainTextText = hideDashesRow
+      plainTextText += hideDashesRow
         ? [headerRow, ...dataRows].join("\n")
         : [headerRow, separatorRow, ...dataRows].join("\n");
     } else {
@@ -335,7 +338,7 @@ export const copyToClipboardTable = (
         }).join(" | ") + " |";
       });
 
-      plainTextText = hideDashesRow
+      plainTextText += hideDashesRow
         ? [headerRow, ...dataRows].join("\n")
         : [headerRow, separatorRow, ...dataRows].join("\n");
     }
@@ -358,7 +361,7 @@ export const copyToClipboardTable = (
       }).join("\t");
     });
 
-    plainTextText = [headerRow, ...dataRows].join("\n");
+    plainTextText += [headerRow, ...dataRows].join("\n");
   }
 
   // ==========================================
@@ -514,11 +517,14 @@ export const copyToClipboardTable = (
     const parseYearTo4Digits = (yStr: string): number => {
       const y = parseInt(yStr, 10);
       if (yStr.length === 4) return y;
-      return y <= 50 ? 2000 + y : 1900 + y;
+      const currentYearShort = new Date().getFullYear() % 100;
+      const threshold = currentYearShort + 10;
+      return y <= threshold ? 2000 + y : 1900 + y;
     };
 
-    const yearRanges = finalSourceText.match(/\b(\d{2,4})\.\.\.(\d{2,4})\b/g) || [];
-    yearRanges.forEach(range => {
+    // Extrai ranges de anos globais do texto formatado (tanto fechados tipo 91...96 quanto abertos tipo 21...)
+    const closedRanges = finalSourceText.match(/\b(\d{2,4})\.\.\.(\d{2,4})\b/g) || [];
+    closedRanges.forEach(range => {
       const parts = range.split('...');
       if (parts.length === 2) {
         const startY = parseYearTo4Digits(parts[0]);
@@ -528,6 +534,19 @@ export const copyToClipboardTable = (
             expandedYears.add(y.toString());
             expandedYears.add(y.toString().substring(2));
           }
+        }
+      }
+    });
+
+    const openRanges = finalSourceText.match(/\b(\d{2,4})\.\.\.(?!\d)/g) || [];
+    openRanges.forEach(range => {
+      const startStr = range.replace('...', '');
+      const startY = parseYearTo4Digits(startStr);
+      const endY = new Date().getFullYear();
+      if (startY <= endY && endY - startY < 50) {
+        for (let y = startY; y <= endY; y++) {
+          expandedYears.add(y.toString());
+          expandedYears.add(y.toString().substring(2));
         }
       }
     });
@@ -553,6 +572,25 @@ export const copyToClipboardTable = (
       });
       return arr;
     };
+
+    // 0. Descrição do Produto (primeira linha do IDX, antes dos carros)
+    // Extrai a primeira parte do observacao (antes do primeiro '|') — que é sempre o nome do produto.
+    // Filtra qualificadores técnicos (Label: Valor) e textos muito curtos ou longos.
+    const descricaoProduto = (() => {
+      const freq: Record<string, number> = {};
+      for (const r of resultsData) {
+        const primeiraParte = (r.observacao || "").split("|")[0].trim().toUpperCase();
+        if (!primeiraParte || primeiraParte.length < 3 || primeiraParte.length > 80) continue;
+        if (primeiraParte.includes(":")) continue;
+        freq[primeiraParte] = (freq[primeiraParte] || 0) + 1;
+      }
+      let best = "", bestCount = 0;
+      for (const [val, count] of Object.entries(freq)) {
+        if (count > bestCount) { best = val; bestCount = count; }
+      }
+      return best;
+    })();
+    if (descricaoProduto) idxLines.push(descricaoProduto);
 
     const montadorasModelos = new Set<string>();
     resultsData.forEach(r => {
@@ -581,7 +619,12 @@ export const copyToClipboardTable = (
     });
 
     if (expandedYears.size > 0) {
-      const sortedYears = Array.from(expandedYears).sort();
+      const sortedYears = Array.from(expandedYears).sort((a, b) => {
+        if (a.length !== b.length) {
+          return a.length - b.length;
+        }
+        return parseYearTo4Digits(a) - parseYearTo4Digits(b);
+      });
       idxLines.push(`ANOS: ${sortedYears.join(" ")}`);
     }
 
