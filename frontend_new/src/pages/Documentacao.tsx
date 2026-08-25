@@ -104,6 +104,9 @@ export default function Documentacao() {
                         <pre className="text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
 {`query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
     id
     partNumber
     vehicles {

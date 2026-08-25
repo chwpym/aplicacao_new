@@ -176,6 +176,7 @@ class CofapProvider(GraphQLProvider):
 
         # Combinar observações (only, restriction, note) com an an segurança da Cofap
         obs_parts = [
+            product_data.get("applicationDescription", "").strip() if product_data else "",
             safe_label(vehicle.get("only")),
             safe_label(vehicle.get("restriction")),
             safe_label(vehicle.get("note")),

@@ -2,6 +2,7 @@ import { SearchSection } from "../components/Home/SearchSection";
 import { FilterSectionTable } from "../components/HomeTable/FilterSectionTable";
 import { DataTableTable } from "../components/HomeTable/DataTableTable";
 import { useCatalogTable } from "../hooks/useCatalogTable";
+import AlertModal from "../components/AlertModal";
 
 const HomeTable = () => {
   const {
@@ -12,6 +13,7 @@ const HomeTable = () => {
     provedores,
     selectedProvedor,
     setSelectedProvedor,
+    searchInputRef,
     agrupar,
     setAgrupar,
     visibleFields,
@@ -32,10 +34,19 @@ const HomeTable = () => {
     clearResults,
     downloadAllImages,
     cancelSearch,
+    alertConfig,
+    setAlertConfig,
   } = useCatalogTable();
 
   return (
     <div className="space-y-6 pb-20">
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
       <div className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-2xl text-xs font-semibold flex items-center justify-between">
         <span>🛠️ Você está visualizando a página de teste isolada do recurso <strong>Cópia de Tabela Inteligente</strong>.</span>
         <span className="text-[10px] uppercase font-bold bg-primary text-white px-2 py-0.5 rounded-lg shadow-sm">Ambiente de Teste</span>
@@ -50,6 +61,7 @@ const HomeTable = () => {
         loading={loading}
         handleSearch={handleSearch}
         cancelSearch={cancelSearch}
+        inputRef={searchInputRef}
       />
       
       <FilterSectionTable

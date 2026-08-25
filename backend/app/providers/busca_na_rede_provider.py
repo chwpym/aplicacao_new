@@ -225,7 +225,7 @@ class BaseBuscaNaRedeProvider(BaseProvider):
                             "motor": "",
                             "ano_inicio": anos_text,
                             "ano_fim": "",
-                            "observacao": "",
+                            "observacao": product_title,
                             "imagem": image_url,
                             "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
                         })

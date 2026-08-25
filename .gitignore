@@ -58,6 +58,7 @@ debug_analysis/
 *.duckdb
 backend/backups/
 backend/logs/
+backend/arquivados_testes/
 backend/scratch/
 test_*.py
 check_*.py

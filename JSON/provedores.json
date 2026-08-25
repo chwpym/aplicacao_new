@@ -79,6 +79,7 @@
         "nome": "Whaler",
         "url": "https://bff.catalogofraga.com.br/gateway/graphql",
         "tipo": "graphql",
+        "take_limit": 5,
         "ativo": true,
         "headers": {
             "origin": "https://catalogowahler.com.br",
@@ -240,6 +241,7 @@
         "nome": "WHALER NOVO",
         "url": "https://bff.catalogofraga.com.br/gateway/graphql",
         "tipo": "graphql",
+        "take_limit": 5,
         "ativo": true,
         "headers": {
             "origin": "https://catalogowahler.com.br",

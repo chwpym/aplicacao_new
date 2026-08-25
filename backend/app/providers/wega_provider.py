@@ -1,6 +1,7 @@
 import httpx
 import json
 import asyncio
+import re
 from app.providers.base_provider import BaseProvider
 
 class WegaProvider(BaseProvider):
@@ -37,11 +38,11 @@ class WegaProvider(BaseProvider):
                             conversoes = data["data"].get("conversoes", [])
                             if aplicacoes:
                                 # Sucesso no Ajax! Vamos formatar.
-                                return self._formatar_ajax(aplicacoes, conversoes, cod, id_peca, data)
+                                return await self._formatar_ajax(aplicacoes, conversoes, cod, id_peca, data, client)
                             elif conversoes:
                                 # Sem aplicações mas TEM conversões — retorna produto com referências e imagem
                                 print(f"[{self.config.get('nome')}] Sem aplicações mas {len(conversoes)} conversões encontradas para {cod}")
-                                return self._formatar_produto_sem_aplicacao(conversoes, cod, "ajax", data)
+                                return await self._formatar_produto_sem_aplicacao(conversoes, cod, "ajax", data, client)
                 except Exception as e:
                     print(f"[{self.config.get('nome')}] Erro na tentativa AJAX: {e}")
                     
@@ -57,11 +58,11 @@ class WegaProvider(BaseProvider):
                             aplicacoes = data["Obj"].get("DetailApl", [])
                             conversoes = data["Obj"].get("DetailConv", [])
                             if aplicacoes:
-                                return self._formatar_global(aplicacoes, conversoes, cod, id_peca, data)
+                                return await self._formatar_global(aplicacoes, conversoes, cod, id_peca, data, client)
                             elif conversoes:
                                 # Sem aplicações mas TEM conversões — retorna produto com referências e imagem
                                 print(f"[{self.config.get('nome')}] Fallback: Sem aplicações mas {len(conversoes)} conversões para {cod}")
-                                return self._formatar_produto_sem_aplicacao(conversoes, cod, "global", data)
+                                return await self._formatar_produto_sem_aplicacao(conversoes, cod, "global", data, client)
                 except Exception as e:
                     print(f"[{self.config.get('nome')}] Erro na tentativa Global: {e}")
                     
@@ -101,7 +102,39 @@ class WegaProvider(BaseProvider):
                 formatted.append(f"{marca}: {codigo}" if marca else str(codigo))
         return " | ".join(formatted)
 
-    def _formatar_ajax(self, aplicacoes, conversoes, cod_real, id_peca, raw_data):
+    async def _descobrir_imagem_valida(self, codigo_oficial: str, client: httpx.AsyncClient) -> str:
+        clean = str(codigo_oficial).upper().replace(" ", "").strip()
+        standard = self.canonicalizar_id_para_imagem(codigo_oficial)
+        no_first_hyphen = re.sub(r'^([A-Z]+)-(\d+.*)$', r'\1\2', clean)
+        no_hyphens = clean.replace("-", "")
+        
+        candidates = []
+        for cand in [no_first_hyphen, f"{no_first_hyphen}C", f"{no_first_hyphen}B", standard, no_hyphens, clean]:
+            if cand and cand not in candidates:
+                candidates.append(cand)
+                
+        async def check_url(url):
+            try:
+                resp = await client.head(url, timeout=2.0)
+                if resp.status_code == 200:
+                    return url
+            except Exception:
+                pass
+            return None
+
+        tasks = []
+        for cand in candidates:
+            url = f"https://www.wegamotors.com/assets/images/{cand}.jpg"
+            tasks.append(check_url(url))
+            
+        results = await asyncio.gather(*tasks)
+        for r in results:
+            if r:
+                return r
+
+        return f"https://www.wegamotors.com/assets/images/{standard}.jpg"
+
+    async def _formatar_ajax(self, aplicacoes, conversoes, cod_real, id_peca, raw_data, client):
         resultados = []
         refs = self._extrair_conversoes_ajax(conversoes)
         
@@ -112,8 +145,7 @@ class WegaProvider(BaseProvider):
             if oficial:
                 codigo_oficial = oficial
                 
-        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
-        base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
+        base_img = await self._descobrir_imagem_valida(codigo_oficial, client)
         
         for app in aplicacoes:
             res = {
@@ -162,7 +194,7 @@ class WegaProvider(BaseProvider):
                 formatted.append(f"{marca}: {codigo}" if marca else str(codigo))
         return " | ".join(formatted)
 
-    def _formatar_global(self, aplicacoes, conversoes, cod_real, id_peca, raw_data):
+    async def _formatar_global(self, aplicacoes, conversoes, cod_real, id_peca, raw_data, client):
         resultados = []
         refs = self._extrair_conversoes_global(conversoes)
         
@@ -173,8 +205,7 @@ class WegaProvider(BaseProvider):
             if oficial:
                 codigo_oficial = oficial
                 
-        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
-        base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
+        base_img = await self._descobrir_imagem_valida(codigo_oficial, client)
         
         for app in aplicacoes:
             res = {
@@ -212,7 +243,7 @@ class WegaProvider(BaseProvider):
             
         return resultados
 
-    def _formatar_produto_sem_aplicacao(self, conversoes, cod_real, fonte, raw_data):
+    async def _formatar_produto_sem_aplicacao(self, conversoes, cod_real, fonte, raw_data, client):
         """Formata resultado quando há conversões mas sem aplicações de veículos."""
         # Detecta a fonte das conversões para usar o extrator correto
         codigo_oficial = cod_real
@@ -230,8 +261,7 @@ class WegaProvider(BaseProvider):
                 if oficial:
                     codigo_oficial = oficial
         
-        canonical_id = self.canonicalizar_id_para_imagem(codigo_oficial)
-        base_img = f"https://www.wegamotors.com/assets/images/{canonical_id}.jpg"
+        base_img = await self._descobrir_imagem_valida(codigo_oficial, client)
         tag = "WEGA (BR)" if fonte == "ajax" else "WEGA (GLOBAL)"
         
         resultado = self.formatar_resultado({

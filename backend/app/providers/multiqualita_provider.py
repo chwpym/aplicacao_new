@@ -80,7 +80,7 @@ class MultiqualitaProvider(BaseProvider):
             return [fallback_img] if fallback_img else []
 
         base_url = "https://multiqualita.com.br/MULTIQUALITA/PRODS/medium"
-        candidatos = [f"{base_url}/{codigo}_{i}.jpg" for i in range(1, 7)]
+        candidatos = [f"{base_url}/{codigo}.jpg"] + [f"{base_url}/{codigo}_{i}.jpg" for i in range(1, 7)]
 
         async def _check(url):
             try:

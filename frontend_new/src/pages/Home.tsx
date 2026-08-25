@@ -1,8 +1,9 @@
-
+import { useEffect } from 'react';
 import { SearchSection } from "../components/Home/SearchSection";
 import { FilterSection } from "../components/Home/FilterSection";
 import { DataTable } from "../components/Home/DataTable";
 import { useCatalog } from "../hooks/useCatalog";
+import AlertModal from "../components/AlertModal";
 
 const Home = () => {
   const {
@@ -13,6 +14,7 @@ const Home = () => {
     provedores,
     selectedProvedor,
     setSelectedProvedor,
+    searchInputRef,
     agrupar,
     setAgrupar,
     visibleFields,
@@ -36,10 +38,30 @@ const Home = () => {
     clearResults,
     downloadAllImages,
     cancelSearch,
+    alertConfig,
+    setAlertConfig,
   } = useCatalog();
+
+  useEffect(() => {
+    if (selectedProvedor) {
+      const p = provedores.find(prov => String(prov.id) === String(selectedProvedor));
+      if (p) {
+        document.title = `Workspace - ${p.nome}`;
+        return;
+      }
+    }
+    document.title = "Workspace - Catálogo V4";
+  }, [selectedProvedor, provedores]);
 
   return (
     <div className="space-y-6 pb-20">
+      <AlertModal
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+      />
       <SearchSection
         partId={partId}
         setPartId={setPartId}
@@ -49,6 +71,7 @@ const Home = () => {
         loading={loading}
         handleSearch={handleSearch}
         cancelSearch={cancelSearch}
+        inputRef={searchInputRef}
       />
       
       <FilterSection

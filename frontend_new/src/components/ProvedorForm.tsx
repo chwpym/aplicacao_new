@@ -21,6 +21,9 @@ interface ProvedorFormProps {
 
 const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
     id
     partNumber
     crossReferences {

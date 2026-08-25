@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import HomeTable from './pages/HomeTable';
@@ -19,8 +19,7 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Navigate to="/catalogo" replace />} />
-          <Route path="/catalogo" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/table-test" element={<HomeTable />} />
           <Route path="/etiquetas" element={<Etiquetas />} />
           <Route path="/provedores" element={<Provedores />} />

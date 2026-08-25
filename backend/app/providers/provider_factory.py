@@ -56,6 +56,11 @@ def get_provider(config_model):
 
         return TecfilProvider(config)
 
+    elif config["tipo"] == "vox":
+        from app.providers.vox_provider import VoxProvider
+
+        return VoxProvider(config)
+
     elif config["tipo"] == "ima":
         from app.providers.ima_provider import IMAProvider
         return IMAProvider(config)
@@ -126,6 +131,18 @@ def get_provider(config_model):
     elif config["tipo"] == "intermec":
         from app.providers.intermec_provider import IntermecProvider
         return IntermecProvider(config)
+
+    elif config["tipo"] == "wega":
+        from app.providers.wega_provider import WegaProvider
+        return WegaProvider(config)
+
+    elif config["tipo"] == "irb":
+        from app.providers.irb_provider import IrbProvider
+        return IrbProvider(config)
+
+    elif config["tipo"] == "vetor":
+        from app.providers.vetor_provider import VetorProvider
+        return VetorProvider(config)
 
     return None
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { Search, Loader2 } from "lucide-react";
 
 interface SearchSectionProps {
@@ -10,6 +10,7 @@ interface SearchSectionProps {
   loading: boolean;
   handleSearch: (e: React.FormEvent) => void;
   cancelSearch: () => void;
+  inputRef?: RefObject<HTMLInputElement>;
 }
 
 export const SearchSection: React.FC<SearchSectionProps> = ({
@@ -21,6 +22,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
   loading,
   handleSearch,
   cancelSearch,
+  inputRef,
 }) => {
   return (
     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-6 shadow-xl shadow-slate-100/50 dark:shadow-none transition-all">
@@ -31,6 +33,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
               <Search size={20} />
             </div>
             <input
+              ref={inputRef}
               type="text"
               className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
               placeholder="Digite o código da peça..."
@@ -48,7 +51,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
               <option value="">Todos os Provedores</option>
               {provedores.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nome}
+                  {p.nome?.toUpperCase()}
                 </option>
               ))}
             </select>

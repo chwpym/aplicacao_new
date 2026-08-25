@@ -114,6 +114,13 @@ class ViemarProvider(BaseProvider):
                             ]
                         )
 
+                        # Rastreabilidade: se a busca foi por um código de concorrente,
+                        # injeta o termo original nas referências para o usuário entender a conversão
+                        if cod.upper() != str(reference_code).upper():
+                            label_busca = f"Buscado: {cod.upper()}"
+                            if label_busca not in cross_ref_str:
+                                cross_ref_str = (cross_ref_str + " | " + label_busca).strip(" | ")
+
                         # Imagem (Viemar pode retornar lista ou dicionário)
                         image_data = catalog.get("image")
                         primary_image = ""
@@ -151,12 +158,12 @@ class ViemarProvider(BaseProvider):
                                     self._parse_ano(year_global, False) or ""
                                 ),
                                 "posicao": catalog_positions,
-                                "observacao": more_info_str,
+                                "observacao": f"{product_line} | {more_info_str}".strip(" |") if product_line else more_info_str,
                                 "imagem": primary_image,
                                 "imagens": all_images,
                                 "referencias": cross_ref_str,
                                 "ficha_tecnica": ficha_tecnica,
-                                "codigo": reference_code,
+                                "codigo": reference_code or cod,
                             }
                             resultados.append(self.formatar_resultado(res))
                         else:
@@ -214,6 +221,8 @@ class ViemarProvider(BaseProvider):
 
                                 # Combina observações globais com qualificadores de aplicação
                                 obs_list = []
+                                if product_line:
+                                    obs_list.append(product_line)
                                 if more_info_str:
                                     obs_list.append(more_info_str)
                                 for q_text in qualificadores_app:
@@ -240,7 +249,7 @@ class ViemarProvider(BaseProvider):
                                     "imagens": all_images,
                                     "referencias": cross_ref_str,
                                     "ficha_tecnica": ficha_tecnica,
-                                    "codigo": reference_code,
+                                    "codigo": reference_code or cod,
                                 }
                                 resultados.append(self.formatar_resultado(res))
 

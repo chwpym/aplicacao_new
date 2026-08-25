@@ -23,6 +23,9 @@ import FieldManager from '../components/FieldManager';
 
 const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
     id
     partNumber
     crossReferences {
@@ -319,6 +322,9 @@ const DEFAULT_CONFIGS: Record<string, any> = {
         }, null, 2),
         query: `query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
     id
     partNumber
     crossReferences {
@@ -484,6 +490,12 @@ export default function Playground() {
 
         fetchRealProviders();
     }, []);
+
+    useEffect(() => {
+        const selectedStatic = API_OPTIONS.find(opt => opt.id === configs.tipo);
+        const nameToDisplay = selectedStatic ? selectedStatic.label : (configs.nome || configs.tipo);
+        document.title = `Playground - ${nameToDisplay}`;
+    }, [configs.tipo, configs.nome]);
 
     const fetchRealProviders = async () => {
         try {

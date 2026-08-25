@@ -73,10 +73,23 @@ class BaseProvider(ABC):
         text_upper = str(ano_str).upper()
         is_onwards = any(x in text_upper for x in ["-->", "...", "DIANTE", "ONWARDS", " ON", "..", ">"])
         
-        # Tenta capturar anos em formatos como 10/2000, 01/03 ou apenas 2005
-        # Regex procura por grupos de dígitos que podem estar precedidos por /
-        matches = re.findall(r"(?:/)?(\d{2,4})\b", str(ano_str))
-        
+        # Split by range delimiters, avoiding splitting date slashes
+        parts = []
+        if ">" in text_upper:
+            parts = text_upper.split(">")
+        elif "..." in text_upper:
+            parts = text_upper.split("...")
+        elif " - " in text_upper:
+            parts = text_upper.split(" - ")
+        elif " A " in text_upper:
+            parts = text_upper.split(" A ")
+        elif " TO " in text_upper:
+            parts = text_upper.split(" TO ")
+        else:
+            parts = [text_upper]
+
+        parts = [p.strip() for p in parts if p.strip()]
+
         def normalizar_ano(a):
             a = str(a).strip()
             if len(a) == 2:
@@ -84,29 +97,30 @@ class BaseProvider(ABC):
                 return str(2000 + val if val <= 40 else 1900 + val)
             return a
 
-        if not matches:
-            return str(ano_str), ""
-
-        # Se tiver formato MM/AAAA, o ano é o segundo grupo ou o grupo mais longo
-        # Vamos filtrar para pegar apenas o que parece ano (2 ou 4 dígitos, ignorando meses < 13 se houver ambiguidade)
-        anos_validos = []
-        for m in matches:
-            if len(m) == 4:
-                anos_validos.append(m)
-            elif len(m) == 2 and (not anos_validos or int(m) > 12): # Heurística simples
-                anos_validos.append(normalizar_ano(m))
-
-        if not anos_validos:
-            # Fallback para o primeiro match se nada for ideal
-            ano_ini = normalizar_ano(matches[0])
-            ano_fim = normalizar_ano(matches[1]) if len(matches) > 1 else ""
-        else:
-            ano_ini = anos_validos[0]
-            ano_fim = anos_validos[1] if len(anos_validos) > 1 else ""
-        
-        if is_onwards:
-            ano_fim = ""
+        def parse_single_part(part_str):
+            # Matches formats like DD/MM/YYYY, MM/YYYY, DD/MM/YY, MM/YY (accepts optional spaces around slashes)
+            slash_match = re.search(r'\b(?:(\d{1,2})\s*/\s*)?(\d{1,2})\s*/\s*(\d{2,4})\b', part_str)
+            if slash_match:
+                month = slash_match.group(2)
+                year = slash_match.group(3)
+                year_4d = normalizar_ano(year)
+                return f"{int(month):02d}/{year_4d}"
             
+            # Simple 2-digit or 4-digit year
+            digits_match = re.search(r'\b(\d{2,4})\b', part_str)
+            if digits_match:
+                return normalizar_ano(digits_match.group(1))
+            
+            return ""
+
+        ano_ini = ""
+        ano_fim = ""
+
+        if len(parts) >= 1:
+            ano_ini = parse_single_part(parts[0])
+        if len(parts) >= 2 and not is_onwards:
+            ano_fim = parse_single_part(parts[1])
+
         return ano_ini, ano_fim
 
     def extrair_combustivel(self, texto: str) -> str:
@@ -347,12 +361,19 @@ class BaseProvider(ABC):
             "posicao": str(raw_data.get("posicao", raw_data.get("position", ""))).upper(),
             "lado": str(raw_data.get("lado", raw_data.get("side", ""))).upper(),
             "direcao": str(raw_data.get("direcao", raw_data.get("steering", ""))).upper(),
-            "imagem": raw_data.get("imagem", raw_data.get("image", raw_data.get("imageUrl", ""))),
+        })
+
+        imagem_val = raw_data.get("imagem", raw_data.get("image", raw_data.get("imageUrl", "")))
+        if not imagem_val or "semfoto" in str(imagem_val).lower() or "no-image" in str(imagem_val).lower():
+            imagem_val = "https://placehold.co/600x400/e0e0e0/737373/png?text=Imagem+Indisponivel"
+
+        res_dict.update({
+            "imagem": imagem_val,
             "imagens": raw_data.get("imagens", raw_data.get("images", [])),
             "referencias": referencias_limpas,
             "ficha_tecnica": self.parse_specifications(raw_data.get("ficha_tecnica") or raw_data.get("specifications")),
             "provider_id": self.config.get("id"),
-            "provedor": str(self.config.get("nome")).upper(),
+            "provedor": str(raw_data.get("provedor", self.config.get("nome"))).upper(),
             "codigo": raw_data.get("codigo"),
         })
 

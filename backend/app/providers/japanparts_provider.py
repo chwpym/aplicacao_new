@@ -242,6 +242,7 @@ class JapanpartsProvider(BaseProvider):
             raw = {
                 "marca_peca": marca_peca,
                 "codigo": termo.upper(),
+                "observacao": subcategoria.upper() if subcategoria else "",
                 "referencias": referencias,
                 "imagem": imagem,
                 "imagens": imagens_extras,
@@ -285,6 +286,7 @@ class JapanpartsProvider(BaseProvider):
                 "configuracao_motor": config_motor,
                 "ano_inicio": ano_inicio,
                 "ano_fim": ano_fim,
+                "observacao": subcategoria.upper() if subcategoria else "",
                 "referencias": referencias,
                 "imagem": imagem,
                 "imagens": imagens_extras,

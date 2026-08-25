@@ -227,43 +227,69 @@ class NakataProvider(BaseProvider):
                     headers.append({"label": text, "start_idx": current_idx, "colspan": colspan})
                     current_idx += colspan
 
-            def get_val(row_cells, label_target):
+            rows = table.select("tbody tr")
+            data_rows = [r for r in rows if "badge-nakata" not in " ".join(r.get("class", []))]
+
+            # Construção de matriz (Grid) para resolver rowspan e colspan
+            grid = {}
+            for r_idx, row in enumerate(data_rows):
+                c_idx = 0
+                for cell in row.find_all(["td", "th"]):
+                    # Pula células já preenchidas pelo rowspan de linhas anteriores
+                    while grid.get((r_idx, c_idx)) is not None:
+                        c_idx += 1
+                        
+                    rowspan = int(cell.get("rowspan", 1))
+                    colspan = int(cell.get("colspan", 1))
+                    # get_text(separator=" ", strip=True) evita aglutinação (ex: 1.6<br>1.8 -> 1.6 1.8)
+                    text = cell.get_text(separator=" ", strip=True)
+                    
+                    for r_span in range(rowspan):
+                        for c_span in range(colspan):
+                            grid[(r_idx + r_span, c_idx + c_span)] = text
+                            
+                    c_idx += colspan
+                    
+            max_cols = max([c for (r, c) in grid.keys()]) + 1 if grid else 0
+
+            def get_val(row_cells_str, label_target):
                 for h in headers:
                     if label_target in h["label"]:
                         # Se for Veículo (colspan 2), o primeiro é montadora, segundo é modelo
                         if "veículo" in h["label"] and h["colspan"] == 2:
-                            m = row_cells[h["start_idx"]].get_text(strip=True).upper() if len(row_cells) > h["start_idx"] else ""
-                            v = row_cells[h["start_idx"]+1].get_text(strip=True).upper() if len(row_cells) > h["start_idx"]+1 else ""
+                            m = row_cells_str[h["start_idx"]].upper() if len(row_cells_str) > h["start_idx"] else ""
+                            v = row_cells_str[h["start_idx"]+1].upper() if len(row_cells_str) > h["start_idx"]+1 else ""
                             return m, v
                         
                         # Para colunas simples
-                        val = row_cells[h["start_idx"]].get_text(strip=True) if len(row_cells) > h["start_idx"] else ""
+                        val = row_cells_str[h["start_idx"]] if len(row_cells_str) > h["start_idx"] else ""
                         return val
                 return "" if "veículo" not in label_target else ("", "")
 
-            rows = table.select("tbody tr")
-            data_rows = [r for r in rows if "badge-nakata" not in " ".join(r.get("class", []))]
-
-            for row in data_rows:
-                cells = row.select("td")
-                if len(cells) < 2:
+            for r_idx in range(len(data_rows)):
+                # Constrói a linha virtual já achatada
+                row_cells_str = [grid.get((r_idx, c), "") for c in range(max_cols)]
+                
+                # Descarte de segurança caso a linha seja efetivamente vazia (improvável na matriz completa)
+                if not any(row_cells_str):
                     continue
 
-                montadora, modelo = get_val(cells, "veículo")
-                versao = get_val(cells, "modelo") # Coluna "Modelo" extra da Nakata vira "Versão"
-                ano_raw = get_val(cells, "ano")
-                posicao = get_val(cells, "posição")
-                lado = get_val(cells, "lado")
-                direcao = get_val(cells, "direção")
-                transmissao = get_val(cells, "transmissão")
-                motor = get_val(cells, "motor")
-                observacao_extra = get_val(cells, "observações")
+                montadora, modelo = get_val(row_cells_str, "veículo")
+                versao = get_val(row_cells_str, "modelo") # Coluna "Modelo" extra da Nakata vira "Versão"
+                ano_raw = get_val(row_cells_str, "ano")
+                posicao = get_val(row_cells_str, "posição")
+                lado = get_val(row_cells_str, "lado")
+                direcao = get_val(row_cells_str, "direção")
+                transmissao = get_val(row_cells_str, "transmissão")
+                motor = get_val(row_cells_str, "motor")
+                observacao_extra = get_val(row_cells_str, "observaç") or get_val(row_cells_str, "informações")
 
                 # Parse dos anos
                 ano_inicio, ano_fim = self._parse_anos(ano_raw)
 
                 # Montar observação combinada
                 obs_parts = []
+                if linha: obs_parts.append(linha)
                 if transmissao: obs_parts.append(f"Transmissão: {transmissao}")
                 if direcao: obs_parts.append(f"Direção: {direcao}")
                 if observacao_extra: obs_parts.append(observacao_extra)
@@ -310,6 +336,58 @@ class NakataProvider(BaseProvider):
             results.append(self.formatar_resultado(app))
 
         return results
+
+    def _processar_motorizacao(self, raw_data: dict, modelo_final: str, versao_bruta: str) -> tuple:
+        """
+        Sobrescrita específica da Nakata para tratar múltiplos motores na mesma linha.
+        Ex: "1.6 8V / 1.8 8V / 2.0 8V" ou "1.6, 1.8, 2.0 8V".
+        """
+        motor_bruto = str(raw_data.get("motor", "")).strip().upper()
+        
+        if not motor_bruto or motor_bruto == "-":
+            return super()._processar_motorizacao(raw_data, modelo_final, versao_bruta)
+
+        # Padronizar separadores
+        motor_limpo = re.sub(r'[,|]', '/', motor_bruto)
+        motor_limpo = motor_limpo.replace(' - ', ' / ')
+
+        partes = [p.strip() for p in motor_limpo.split('/') if p.strip()]
+        
+        # Lógica de distribuição inteligente (se só o último tem válvulas, compartilha com os anteriores)
+        if len(partes) > 1:
+            ultimo = partes[-1]
+            match_v = re.search(r'\b(\d{1,2}V)\b', ultimo)
+            if match_v:
+                valvula = match_v.group(1)
+                for i in range(len(partes) - 1):
+                    if not re.search(r'\b\d{1,2}V\b', partes[i]):
+                        partes[i] = f"{partes[i]} {valvula}"
+
+        motores_finais = []
+        configs = []
+        modelo_limpo = modelo_final
+        versao_limpa = versao_bruta
+
+        for p in partes:
+            temp_data = raw_data.copy()
+            temp_data["motor"] = p
+            m_p, c_p, mod_l, ver_l = super()._processar_motorizacao(temp_data, modelo_final, versao_bruta)
+            
+            if m_p and m_p not in motores_finais:
+                motores_finais.append(m_p)
+            
+            if c_p:
+                for cp_part in c_p.split():
+                    if cp_part not in configs:
+                        configs.append(cp_part)
+                
+            modelo_limpo = mod_l
+            versao_limpa = ver_l
+
+        motor_padrao = " / ".join(motores_finais) if motores_finais else motor_bruto
+        config_padrao = " ".join(configs)
+
+        return motor_padrao, config_padrao, modelo_limpo, versao_limpa
 
     def _parse_anos(self, ano_raw: str) -> tuple:
         """

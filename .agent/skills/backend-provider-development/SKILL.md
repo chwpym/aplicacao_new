@@ -94,3 +94,36 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR) # backend
 DB_PATH = os.path.join(PROJECT_ROOT, "catalogo.db")
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
 ```
+
+## 8. Tratamento de Edge Cases em APIs REST (Padrão Vetor)
+
+Durante a implementação de catálogos via API JSON, alguns padrões de resiliência devem ser adotados:
+
+### A. Encoding Oculto e Caracteres Quebrados
+Muitas APIs antigas (como Vetor) retornam JSON com caracteres em `Windows-1252` (`cp1252`) ou `Latin-1`, mas omitem o charset no header `Content-Type`. O `httpx` usa UTF-8 por padrão, causando caracteres como `TENS?O` (`\uFFFD`) ou erros como `'charmap' codec can't encode character '\x98'`.
+**Solução:** Force a decodificação com fallback iterativo.
+```python
+def _parse_json_encoded(resp):
+    for enc in ("cp1252", "latin-1"):
+        try:
+            return json.loads(resp.content.decode(enc))
+        except Exception:
+            continue
+    return resp.json() # Fallback para UTF-8 do httpx
+```
+
+### B. Valores `null` que viram `"NONE"`
+Se a API retornar `null` (ex: `"vehicle_characteristic": null`), o Python carrega como `None`. O BaseProvider e o Frontend frequentemente fazem `.upper()`, transformando isso na string literal `"NONE"`.
+**Solução:** Sempre limpe os campos com `or ""` ao extrair de dicionários.
+```python
+# Errado: motor = app.get("vehicle_characteristic", "") -> se for null, falha ao dar .upper() ou vira "NONE"
+# Correto:
+motor = app.get("vehicle_characteristic") or ""
+```
+
+### C. Certificados SSL Inválidos
+Se a API apresentar erro de certificado, use `verify=False` no `httpx.AsyncClient`. Lembre-se que o mesmo deve ser feito no endpoint de Proxy de Imagens (`/api/search/proxy/image`) no backend, para permitir o download de imagens de domínios com SSL quebrado pela UI.
+
+### D. Imagens Múltiplas e Tamanhos
+Sempre procure extrair a lista completa de imagens do produto. Se a API fornecer tamanhos diferentes (ex: `small`, `large`, `default`), priorize a chave de maior qualidade. O Frontend já está preparado para exibir um array de imagens (`imagens`) em um carrossel (ex: `ImageGalleryModal`).
+

@@ -157,6 +157,16 @@ class DSProvider(BaseProvider):
                 elif any(c in val_upper for c in tipos_combustivel):
                     fuel_detected = val_complemento
 
+                ano_raw = cols[4].get_text(strip=True) if len(cols) > 4 else ""
+                start_yr = ""
+                end_yr = ""
+                if ">" in ano_raw:
+                    parts = ano_raw.split(">")
+                    start_yr = parts[0].strip()
+                    end_yr = parts[1].strip() if len(parts) > 1 else ""
+                else:
+                    start_yr = ano_raw
+
                 res = {
                     "brand": cols[0].get_text(strip=True),
                     "name": cols[1].get_text(strip=True),
@@ -164,7 +174,8 @@ class DSProvider(BaseProvider):
                     "motor": cols[2].get_text(strip=True),
                     "fuel": fuel_detected,
                     "configuracao_motor": config_motor,
-                    "startYear": cols[4].get_text(strip=True) if len(cols) > 4 else "",
+                    "startYear": start_yr,
+                    "endYear": end_yr,
                     "note": cols[5].get_text(strip=True) if len(cols) > 5 else "",
                     "description": f"{titulo_produto} {categoria_produto}", 
                     "images": imagens,
