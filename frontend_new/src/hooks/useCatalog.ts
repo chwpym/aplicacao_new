@@ -6,6 +6,7 @@ import { copyToClipboardTable } from "../utils/clipboardTable";
 import JSZip from "jszip";
 export const useCatalog = () => {
   const { automakers } = useAutomakerCache();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [partId, setPartId] = useState("");
   const [filterText, setFilterText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,6 +17,7 @@ export const useCatalog = () => {
   const [provedores, setProvedores] = useState<any[]>([]);
   const [selectedProvedor, setSelectedProvedor] = useState<number | "">("");
   const [agrupar, setAgrupar] = useState(true);
+  const [alertConfig, setAlertConfig] = useState<{isOpen: boolean, title: string, message: string, type: 'warning'|'info'|'danger'}>({isOpen: false, title: '', message: '', type: 'warning'});
   const abortControllerRef = useRef<AbortController | null>(null);
   const defaultFields: Record<string, boolean> = {
     marca: true,
@@ -193,7 +195,18 @@ export const useCatalog = () => {
           ...r,
           marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p?.nome || "---").toUpperCase()
         }));
-        const sorted = cleanedData.sort(compareResults);
+        // Intercepta aviso especial do provedor Wega (código incompleto sem '/')
+        const avisos = cleanedData.filter((r: any) => r.metadados?._aviso_wega);
+        const reais = cleanedData.filter((r: any) => !r.metadados?._aviso_wega);
+        if (avisos.length > 0) {
+          setAlertConfig({
+            isOpen: true,
+            title: "Aviso do Catálogo",
+            message: avisos[0].metadados.mensagem_aviso,
+            type: 'warning'
+          });
+        }
+        const sorted = reais.sort(compareResults);
         setResults(sorted);
       } else {
         const promises = provedores.map(async (p) => {
@@ -209,10 +222,17 @@ export const useCatalog = () => {
                 ...r,
                 marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p.nome || "---").toUpperCase()
               }));
-              setResults((prev) => {
-                const combined = [...prev, ...cleanedData];
-                return combined.sort(compareResults);
-              });
+              // Intercepta aviso especial do provedor Wega (código incompleto sem '/')
+              const avisos = cleanedData.filter((r: any) => r.metadados?._aviso_wega);
+              const reais = cleanedData.filter((r: any) => !r.metadados?._aviso_wega);
+              // Não exibimos o modal de aviso quando buscamos em TODOS os provedores
+              // para não interromper a busca global com alertas específicos de um catálogo.
+              if (reais.length > 0) {
+                setResults((prev) => {
+                  const combined = [...prev, ...reais];
+                  return combined.sort(compareResults);
+                });
+              }
             }
           } catch (err: any) {
             if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
@@ -282,12 +302,16 @@ export const useCatalog = () => {
   }, [filteredResults]);
 
   const copyToClipboard = (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta",
     erpFont: string = "monospace",
     erpFontSize: number = 9,
     hideDashesRow: boolean = false
   ) => {
-    if (mode === "tabela") {
+    if (mode === "etiqueta") {
+      import("../utils/clipboardEtiqueta").then(({ copyToClipboardEtiqueta }) => {
+        copyToClipboardEtiqueta(filteredResults);
+      });
+    } else if (mode === "tabela") {
       copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow);
     } else if (mode === "tabela_limpa") {
       copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow);
@@ -397,6 +421,8 @@ export const useCatalog = () => {
     setPartId("");
     setFilterText("");
     setCurrentPage(1);
+    // Devolve o foco ao campo de busca após limpar
+    setTimeout(() => searchInputRef.current?.focus(), 0);
   };
 
   const downloadAllImages = async () => {
@@ -481,6 +507,7 @@ export const useCatalog = () => {
   };
 
   return {
+    searchInputRef,
     partId,
     setPartId,
     loading,
@@ -505,6 +532,8 @@ export const useCatalog = () => {
     currentPage,
     setCurrentPage,
     totalPages,
+    alertConfig,
+    setAlertConfig,
     handleSearch,
     getFieldLabel,
     copyToClipboard,
