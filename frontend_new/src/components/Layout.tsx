@@ -15,7 +15,9 @@ import {
   HelpCircle,
   Download,
   SlidersHorizontal,
-  Car
+  Car,
+  ArrowUp,
+  Printer
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -62,6 +64,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     }
   }, [isDark]);
 
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/table-test': 'Tabela - Catálogo V4',
+      '/provedores': 'Provedores - Catálogo V4',
+      '/siglas': 'Siglas - Catálogo V4',
+      '/palavras': 'Limpeza - Catálogo V4',
+      '/automakers': 'Biblioteca - Catálogo V4',
+      '/design-preview': 'Design Preview - Catálogo V4',
+      '/ajuda': 'Ajuda - Catálogo V4',
+      '/manual-provedores': 'Manual de Provedores - Catálogo V4',
+      '/documentacao': 'Documentação - Catálogo V4',
+      '/configuracoes': 'Configurações - Catálogo V4',
+    };
+
+    if (titles[location.pathname]) {
+      document.title = titles[location.pathname];
+    } else if (location.pathname !== '/' && location.pathname !== '/playground') {
+      document.title = 'Catálogo V4';
+    }
+  }, [location.pathname]);
+
   const toggleTheme = () => {
     setIsDark(!isDark);
   };
@@ -107,6 +130,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navItems = [
     { name: 'Workspace', path: '/', icon: <Search size={20} /> },
+    { name: 'Etiquetas', path: '/etiquetas', icon: <Printer size={20} /> },
     { name: 'Provedores', path: '/provedores', icon: <Database size={20} /> },
     { name: 'Siglas', path: '/siglas', icon: <Hash size={20} /> },
     { name: 'Playground', path: '/playground', icon: <FlaskConical size={20} /> },
@@ -118,6 +142,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className={`min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 flex flex-col md:flex-row transition-colors duration-200`}>
@@ -242,6 +280,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 />
               </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Gerenciador de Peças</span>
+              <span className="text-[9px] text-slate-400/80 font-bold uppercase mt-1">Hoje: {new Date().toLocaleDateString('pt-BR')}</span>
             </div>
           </div>
         </div>
@@ -280,17 +319,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Rodapé Fixo (Perfil e Tema) */}
         <div className="p-6 pt-4 space-y-4 shrink-0 border-t border-slate-100 dark:border-slate-800/50 bg-surface-light dark:bg-surface-dark z-10">
-          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3 mb-1">
+          <div className="flex items-center gap-3 px-1">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xs shrink-0">
-                AC
+                AD
               </div>
               <div className="flex flex-col overflow-hidden">
-                <span className="text-xs font-bold truncate">Estoque Original</span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">Administrador</span>
+                <span className="text-xs font-bold truncate">Administrador</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase">Catalogo V4</span>
               </div>
             </div>
-          </div>
 
           <button
             onClick={toggleTheme}
@@ -306,15 +343,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
 
           <div className="text-[9px] text-slate-400 text-center font-bold uppercase tracking-widest pt-2">
-            v4.0.0-react | 2024
+            v4.0.0-react | {new Date().getFullYear()}
           </div>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         <main className="flex-1 overflow-auto p-4 md:p-8 max-w-[1600px] mx-auto w-full">
           {children}
         </main>
+        
+        {/* Botão Flutuante Voltar ao Topo */}
+        <button
+          onClick={scrollToTop}
+          className={`
+            fixed bottom-8 right-8 md:bottom-12 md:right-12 p-3.5 rounded-full bg-primary text-white 
+            shadow-lg shadow-primary/40 transition-all duration-300 z-[100] 
+            hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/50
+            flex items-center justify-center
+            ${showScrollTop ? 'opacity-100 translate-y-0 visible pointer-events-auto' : 'opacity-0 translate-y-8 invisible pointer-events-none'}
+          `}
+          title="Voltar ao topo"
+          aria-label="Voltar ao topo"
+        >
+          <ArrowUp size={24} strokeWidth={2.5} />
+        </button>
       </div>
     </div>
   );

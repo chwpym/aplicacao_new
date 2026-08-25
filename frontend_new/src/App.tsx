@@ -11,19 +11,24 @@ import Configuracoes from './pages/Configuracoes';
 import ManualProvedores from './pages/ManualProvedores';
 import Documentacao from './pages/Documentacao';
 import Automakers from './pages/Automakers';
+import DesignPreview from './pages/DesignPreview';
+import { Etiquetas } from "./pages/Etiquetas";
 
 function App() {
   return (
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/catalogo" replace />} />
+          <Route path="/catalogo" element={<Home />} />
           <Route path="/table-test" element={<HomeTable />} />
+          <Route path="/etiquetas" element={<Etiquetas />} />
           <Route path="/provedores" element={<Provedores />} />
           <Route path="/siglas" element={<Siglas />} />
           <Route path="/palavras" element={<Palavras />} />
           <Route path="/playground" element={<Playground />} />
           <Route path="/automakers" element={<Automakers />} />
+          <Route path="/design-preview" element={<DesignPreview />} />
           <Route path="/ajuda" element={<Ajuda />} />
           <Route path="/manual-provedores" element={<ManualProvedores />} />
           <Route path="/documentacao" element={<Documentacao />} />
