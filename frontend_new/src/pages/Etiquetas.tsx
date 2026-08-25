@@ -20,7 +20,8 @@ export const Etiquetas: React.FC = () => {
     dir_linha1: '',
     dir_linha2: '',
     dir_linha3: '',
-    dir_linha4: ''
+    dir_linha4: '',
+    fonte_tamanho: 40
   });
 
   const [loading, setLoading] = useState(false);
@@ -155,26 +156,41 @@ export const Etiquetas: React.FC = () => {
                 )}
               </>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Etiqueta Esquerda */}
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Esquerda</h3>
-                  {['esq_linha1', 'esq_linha2', 'esq_linha3', 'esq_linha4'].map((fieldName, i) => (
-                    <div key={fieldName} className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
-                      <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                  <div className="space-y-1.5 flex-1 max-w-xs">
+                    <label className="text-xs font-bold text-purple-700 dark:text-purple-400 uppercase">Tamanho da Fonte (Pontos)</label>
+                    <div className="flex items-center gap-3">
+                      <input type="range" name="fonte_tamanho" min="20" max="100" step="10" value={formData.fonte_tamanho} onChange={handleChange} className="flex-1 accent-purple-600" />
+                      <span className="text-sm font-bold w-12 text-center text-slate-700 dark:text-slate-300">{formData.fonte_tamanho}</span>
                     </div>
-                  ))}
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed hidden sm:block">
+                    Ajusta dinamicamente a altura e a margem entre as linhas para que não se sobreponham.
+                  </p>
                 </div>
-                {/* Etiqueta Direita */}
-                <div className="space-y-4">
-                  <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Direita</h3>
-                  {['dir_linha1', 'dir_linha2', 'dir_linha3', 'dir_linha4'].map((fieldName, i) => (
-                    <div key={fieldName} className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
-                      <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
-                    </div>
-                  ))}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Etiqueta Esquerda */}
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Esquerda</h3>
+                    {['esq_linha1', 'esq_linha2', 'esq_linha3', 'esq_linha4'].map((fieldName, i) => (
+                      <div key={fieldName} className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
+                        <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
+                      </div>
+                    ))}
+                  </div>
+                  {/* Etiqueta Direita */}
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Direita</h3>
+                    {['dir_linha1', 'dir_linha2', 'dir_linha3', 'dir_linha4'].map((fieldName, i) => (
+                      <div key={fieldName} className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
+                        <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

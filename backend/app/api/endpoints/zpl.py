@@ -15,6 +15,7 @@ class ZPLRequest(BaseModel):
     linha4: str = ""
     linha5: str = ""
     rotacionar: bool = False
+    fonte_tamanho: int = 40
     
     esq_linha1: str = ""
     esq_linha2: str = ""
@@ -60,13 +61,21 @@ def gerar_etiqueta_rotacionada(req: ZPLRequest) -> str:
     zpl = "^XA\n^LH0,0^FS\n^PRA^FS\n^MTD^FS\n^PQ  1^FS\n"
     
     # Parâmetros de fonte e Y (Rotacionado 90 graus)
-    font_cmd = "^A0R,40,40"
+    ft = req.fonte_tamanho
+    font_cmd = f"^A0R,{ft},{ft}"
     y_pos = "020"
     
-    # Eixo X para as 4 linhas na Etiqueta Esquerda (leitura de baixo pra cima, começa pela direita)
-    esq_x = ["280", "200", "120", "040"]
+    # Eixo X dinâmico (começando em 40)
+    gap = ft + 20
+    # Linha 4 fica no X=40, Linha 3 = 40+gap, Linha 2 = 40+2*gap, Linha 1 = 40+3*gap
+    x4 = 40
+    x3 = x4 + gap
+    x2 = x3 + gap
+    x1 = x2 + gap
+    
+    esq_x = [f"{x1:03d}", f"{x2:03d}", f"{x3:03d}", f"{x4:03d}"]
     # Eixo X para as 4 linhas na Etiqueta Direita (+415 de offset)
-    dir_x = ["695", "615", "535", "455"]
+    dir_x = [f"{x1 + 415:03d}", f"{x2 + 415:03d}", f"{x3 + 415:03d}", f"{x4 + 415:03d}"]
     
     # Esquerda
     if req.esq_linha1: zpl += f"^FO{esq_x[0]},{y_pos},{font_cmd}^FD{req.esq_linha1}^FS\n"
