@@ -15,6 +15,15 @@ class ZPLRequest(BaseModel):
     linha4: str = ""
     linha5: str = ""
     rotacionar: bool = False
+    
+    esq_linha1: str = ""
+    esq_linha2: str = ""
+    esq_linha3: str = ""
+    esq_linha4: str = ""
+    dir_linha1: str = ""
+    dir_linha2: str = ""
+    dir_linha3: str = ""
+    dir_linha4: str = ""
 
 def gerar_etiqueta_dupla(req: ZPLRequest) -> str:
     # Ajuste fino para os eixos Y
@@ -48,10 +57,29 @@ def gerar_etiqueta_dupla(req: ZPLRequest) -> str:
     return zpl
 
 def gerar_etiqueta_rotacionada(req: ZPLRequest) -> str:
-    # Exemplo: Rotacionada, como o usuário enviou
-    zpl = "^XA\n^PW399\n^LL240\n"
-    zpl += f"^FO250,20\n^A0R,80,80\n^FD{req.linha1}^FS\n"
-    zpl += f"^FO80,20\n^A0R,80,80\n^FD{req.linha2}^FS\n"
+    zpl = "^XA\n^LH0,0^FS\n^PRA^FS\n^MTD^FS\n^PQ  1^FS\n"
+    
+    # Parâmetros de fonte e Y (Rotacionado 90 graus)
+    font_cmd = "^A0R,40,40"
+    y_pos = "020"
+    
+    # Eixo X para as 4 linhas na Etiqueta Esquerda (leitura de baixo pra cima, começa pela direita)
+    esq_x = ["280", "200", "120", "040"]
+    # Eixo X para as 4 linhas na Etiqueta Direita (+415 de offset)
+    dir_x = ["695", "615", "535", "455"]
+    
+    # Esquerda
+    if req.esq_linha1: zpl += f"^FO{esq_x[0]},{y_pos},{font_cmd}^FD{req.esq_linha1}^FS\n"
+    if req.esq_linha2: zpl += f"^FO{esq_x[1]},{y_pos},{font_cmd}^FD{req.esq_linha2}^FS\n"
+    if req.esq_linha3: zpl += f"^FO{esq_x[2]},{y_pos},{font_cmd}^FD{req.esq_linha3}^FS\n"
+    if req.esq_linha4: zpl += f"^FO{esq_x[3]},{y_pos},{font_cmd}^FD{req.esq_linha4}^FS\n"
+    
+    # Direita
+    if req.dir_linha1: zpl += f"^FO{dir_x[0]},{y_pos},{font_cmd}^FD{req.dir_linha1}^FS\n"
+    if req.dir_linha2: zpl += f"^FO{dir_x[1]},{y_pos},{font_cmd}^FD{req.dir_linha2}^FS\n"
+    if req.dir_linha3: zpl += f"^FO{dir_x[2]},{y_pos},{font_cmd}^FD{req.dir_linha3}^FS\n"
+    if req.dir_linha4: zpl += f"^FO{dir_x[3]},{y_pos},{font_cmd}^FD{req.dir_linha4}^FS\n"
+    
     zpl += "^XZ"
     return zpl
 

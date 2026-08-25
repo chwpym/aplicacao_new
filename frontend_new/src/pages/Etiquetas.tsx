@@ -12,7 +12,15 @@ export const Etiquetas: React.FC = () => {
     linha2: '',
     linha3: '',
     linha4: '',
-    linha5: ''
+    linha5: '',
+    esq_linha1: '',
+    esq_linha2: '',
+    esq_linha3: '',
+    esq_linha4: '',
+    dir_linha1: '',
+    dir_linha2: '',
+    dir_linha3: '',
+    dir_linha4: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -114,29 +122,61 @@ export const Etiquetas: React.FC = () => {
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase">
-                {activeTab === 'peca' ? 'Descrição da Peça (Linha 1)' : 'Linha 1'}
-              </label>
-              <input type="text" name="linha1" value={formData.linha1} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Ex: DISCO FREIO DIANTEIRO SOLIDO M" />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase">
-                {activeTab === 'peca' ? 'Complemento (Linha 2)' : 'Linha 2'}
-              </label>
-              <input type="text" name="linha2" value={formData.linha2} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Ex: DS D28" />
-            </div>
-
-            {activeTab !== 'rotacionada' && (
+            {activeTab !== 'rotacionada' ? (
               <>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500 uppercase">Aplicações (Linhas 3, 4, 5)</label>
-                  <input type="text" name="linha3" value={formData.linha3} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 3 (Ex: GM CORSA 10 / 14...)" />
-                  <input type="text" name="linha4" value={formData.linha4} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 4" />
-                  <input type="text" name="linha5" value={formData.linha5} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Linha 5" />
+                  <label className="text-xs font-semibold text-slate-500 uppercase">
+                    {activeTab === 'peca' ? 'Descrição da Peça (Linha 1)' : 'Linha 1'}
+                  </label>
+                  <input type="text" name="linha1" value={formData.linha1} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Ex: DISCO FREIO DIANTEIRO SOLIDO M" />
                 </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 uppercase">
+                    {activeTab === 'peca' ? 'Complemento (Linha 2)' : 'Linha 2'}
+                  </label>
+                  <input type="text" name="linha2" value={formData.linha2} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Ex: DS D28" />
+                </div>
+
+                {activeTab === 'peca' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Aplicações (Linhas 3, 4, 5)</label>
+                    <input type="text" name="linha3" value={formData.linha3} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 3 (Ex: GM CORSA 10 / 14...)" />
+                    <input type="text" name="linha4" value={formData.linha4} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 4" />
+                    <input type="text" name="linha5" value={formData.linha5} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Linha 5" />
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500 uppercase">Aplicações Livres (Linhas 3, 4, 5)</label>
+                    <input type="text" name="linha3" value={formData.linha3} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 3" />
+                    <input type="text" name="linha4" value={formData.linha4} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm mb-2" placeholder="Linha 4" />
+                    <input type="text" name="linha5" value={formData.linha5} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder="Linha 5" />
+                  </div>
+                )}
               </>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Etiqueta Esquerda */}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Esquerda</h3>
+                  {['esq_linha1', 'esq_linha2', 'esq_linha3', 'esq_linha4'].map((fieldName, i) => (
+                    <div key={fieldName} className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
+                      <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
+                    </div>
+                  ))}
+                </div>
+                {/* Etiqueta Direita */}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 pb-2">Etiqueta Direita</h3>
+                  {['dir_linha1', 'dir_linha2', 'dir_linha3', 'dir_linha4'].map((fieldName, i) => (
+                    <div key={fieldName} className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-500 uppercase">Linha {i + 1}</label>
+                      <input type="text" name={fieldName} value={(formData as any)[fieldName]} onChange={handleChange} className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm" placeholder={`Texto Linha ${i + 1}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
           
