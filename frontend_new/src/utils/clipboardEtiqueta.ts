@@ -57,7 +57,7 @@ export const generateEtiquetaString = (results: any[]): string => {
       textoAdicionar = marcaAbrev;
     } else {
       if (modelos.length > 0) {
-        textoAdicionar = `${marcaAbrev} ${modelos.join("/")}`;
+        textoAdicionar = `${marcaAbrev} ${modelos.join("/ ")}`;
       } else {
         textoAdicionar = marcaAbrev;
       }
