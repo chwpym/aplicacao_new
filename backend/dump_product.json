@@ -1,0 +1,1437 @@
+{
+  "approvalStatus": "APPROVED",
+  "approved": true,
+  "brand": {
+    "code": "3",
+    "logo": {
+      "altText": "LuK",
+      "url": "/medias/logo-luk.svg?context=bWFzdGVyfGltYWdlc3w1MDkzMHxpbWFnZS9zdmcreG1sfGltYWdlcy9oMDcvaDIxLzkxMTA4NzY5MTM2OTQuc3ZnfDcxMmU0NTk4ZjUzYTYwNmUwNWMwNzRmOWJlNTFiYzdkYjBlY2EyNmU5OGIwMjA1MWZlZmJjZTcxMGM5NTQwMmQ"
+    },
+    "name": "LuK",
+    "supplierNumber": "6"
+  },
+  "catalogArticleNumber": "619 3015 00",
+  "catalogArticleNumbers": [
+    {
+      "label": "Global catalog number",
+      "number": "619 3015 00"
+    }
+  ],
+  "catalogStatus": {
+    "code": "normal",
+    "name": "Normal"
+  },
+  "categories": [
+    {
+      "benefitDescription": "Cada LuK RepSet dá resposta aos requisitos diários da oficina e inclui componentes perfeitamente adequados entre si. Assim, a embraiagem pode ser substituída de forma rápida e profissional. Além disso, utilizamos apenas componentes da mais alta qualidade. Por exemplo, no domínio das embraiagens autorreguladoras, nas quais a Schaeffler é líder em inovação com a sua marca de produtos LuK.",
+      "code": "LUK_REPSET",
+      "damImage": {
+        "code": "damMedia_255593",
+        "mime": "image/jpeg",
+        "altText": "Packaging LuK RepSet for light commercial vehicles",
+        "description": "3D new packaging for LuK RepSet for passenger car (left)",
+        "url": "https://media-vls.schaeffler.com/__image/a/255593/alias/{{alias}}/ar/{{ar}}/fn/schaeffler-aftermarket-packaging-luk-repset-pc",
+        "downloadUrl": "https://media-vls.schaeffler.com/__image/a/255593/alias/{{alias}}/ar/{{ar}}/d/true/fn/schaeffler-aftermarket-packaging-luk-repset-pc",
+        "title": "Packaging LuK RepSet for light commercial vehicles",
+        "nocropFormats": [
+          "9-16",
+          "1-1",
+          "16-9",
+          "schaeffler-header",
+          "4-1",
+          "16-6",
+          "3-4",
+          "4-3",
+          "21-9"
+        ],
+        "languages": [],
+        "previewImageUrl": "https://media-vls.schaeffler.com/_storage/asset/255593/storage/thumbnail/file/11654967/995072.jpg",
+        "date": "2024-10-02T13:48:02Z",
+        "mediaType": "Pack Shot"
+      },
+      "description": "Cada LuK RepSet dá resposta aos requisitos diários da oficina e inclui componentes perfeitamente adequados entre si. Assim, a embraiagem pode ser substituída de forma rápida e profissional. Além disso, utilizamos apenas componentes da mais alta qualidade. Por exemplo, no domínio das embraiagens autorreguladoras, nas quais a Schaeffler é líder em inovação com a sua marca de produtos LuK.",
+      "name": "LuK RepSet",
+      "pageLabel": "/luk-repset",
+      "shortDescription": "Solução de reparação para embraiagem manual.",
+      "url": "/AAM-BR/catalogs/SAAM-ProductCatalog/Online/categories/LUK_REPSET"
+    }
+  ],
+  "classifications": [
+    {
+      "code": "attributes",
+      "features": [
+        {
+          "code": "TA-ProductClassificationSystem/default/479.836",
+          "comparable": true,
+          "featureValues": [
+            {
+              "value": "com rolamento de desengate"
+            }
+          ],
+          "immediateDisplay": true,
+          "name": "artigo complementar/informação complementar 2",
+          "range": false,
+          "valuesFiltered": false,
+          "warning": false
+        },
+        {
+          "code": "TA-ProductClassificationSystem/default/0.200",
+          "comparable": true,
+          "featureUnit": {
+            "name": "mm",
+            "symbol": "mm",
+            "unitType": "unknown"
+          },
+          "featureValues": [
+            {
+              "value": "190"
+            }
+          ],
+          "immediateDisplay": false,
+          "name": "Diâmetro [mm]",
+          "range": false,
+          "valuesFiltered": false,
+          "warning": false
+        },
+        {
+          "code": "TA-ProductClassificationSystem/default/0.1504",
+          "comparable": true,
+          "featureValues": [
+            {
+              "value": "Sem qualquer substâncias SVHC!"
+            }
+          ],
+          "immediateDisplay": false,
+          "name": "SVHC",
+          "range": false,
+          "valuesFiltered": false,
+          "warning": false
+        }
+      ],
+      "name": "Article Attributes"
+    }
+  ],
+  "code": "TA-479-6193015000",
+  "collectableBonusPoints": {
+    "bonusPointsAvailable": false
+  },
+  "description": "",
+  "dimensions": {
+    "height": 83,
+    "length": 258,
+    "width": 265
+  },
+  "documentGroups": [
+    {
+      "documents": [
+        {
+          "documentSize": 694539,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_he.PDF",
+          "url": "/medias/LuK-0073-he.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2OTQ1Mzl8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTYvaDQ5LzkzMDU4NTM4ODY0OTQucGRmfDFhNzI2ODMzYTI5MTdlMWFiMTAwYTY2MGU4ZTQ3ZTllZDEyMzgyNWY5NGJhMGU4NzJlZjlhM2RiNjg2MzI3OTE"
+        },
+        {
+          "documentSize": 620484,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_he.PDF",
+          "url": "/medias/LuK-0025-he.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2MjA0ODR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNTUvaGZhLzkzMDU0NDU4NTkzNTgucGRmfDJhN2IwNGRhYjk1NzM2ZGFhMWVlMjEzZGUyNTFjNmEyYmFkOGM4NTE4YzY5MzdkMzIzNTJmYWViNGMxOTM1OTk"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": false,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "he",
+        "name": "Hebrew",
+        "nativeName": "Hebrew"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 634668,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_uk.PDF",
+          "url": "/medias/LuK-0073-uk.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2MzQ2Njh8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYTYvaGU0LzkzMDU1MDM4NTg3MTgucGRmfDVkZWE2MmVjYmIzYzU0MWU4ODlkOTVmYTM4YjMyM2ZlYjIzMDBkOTliZmI4NTYwZmRlM2NkNjljYWE2ZmJjODk"
+        },
+        {
+          "documentSize": 502621,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_uk.PDF",
+          "url": "/medias/LuK-0025-uk.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDI2MjF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYmEvaGYyLzkzMDU1MTg1MDYwMTQucGRmfGI4ODMxMDliMTEyOWI4MjkxZGNmMDYxNWFhOGYyYTBlMDBkNDY2MWQ5NWE4MjQ5YjE1OTUwNGJjMjBlOTg4ZTU"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "ru",
+            "name": "Russian"
+          },
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "uk",
+        "name": "Ukranian",
+        "nativeName": "Українська"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 505286,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_da.PDF",
+          "url": "/medias/LuK-0025-da.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDUyODZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzgvaDQ5LzkzMDUyMzAzNzY5OTAucGRmfDgwNWQ2MzYwZDM3MTZmYzQxNjA4M2UyNTU2YTRmYTlmNWU1MzA2NjBiN2M3ZDU0MWQxNTkyYjBmMjYyYzAzNjU"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "da",
+        "name": "Danish",
+        "nativeName": "Dansk"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 639736,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_cs.PDF",
+          "url": "/medias/LuK-0073-cs.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2Mzk3MzZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZjMvaDY4LzkzMDUyNDQ0NjcyMzAucGRmfGIwOTg3MWZlZTM5MjA3NDYzMDg0ZDdhYjU0YTY4YzRmZDQyZDVhYTFhYTRiNGY3MTcwNDgzYTBkOGJhYWJjNGQ"
+        },
+        {
+          "documentSize": 504324,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_cs.PDF",
+          "url": "/medias/LuK-0025-cs.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDQzMjR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oY2QvaDk4LzkzMDU4NzA4OTMwODYucGRmfGY2YTBiNjM3MTI5NTFmYjEzMjU4MjQ5ZTQzZmY1OWY1ZTgwOGUzMWQ0MzA1OGU4MWIxODAwZTExZmI4MTUzNzI"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "cs",
+        "name": "Czech",
+        "nativeName": "Čeština"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 500033,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_no.PDF",
+          "url": "/medias/LuK-0025-no.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDAwMzN8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMzEvaDNhLzkzMDUxNDM5Njc3NzQucGRmfGNhNzhjNThhOTBiMjhiNzA4NmUzMGZjODhjZGUyMGVkNTY4Zjk3OTliNjIzZWU3YTZmOWVlNWI3MTU2ZjYxNzI"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": false,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "no",
+        "name": "Norwegian",
+        "nativeName": "Norwegian"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 462694,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_tr.PDF",
+          "url": "/medias/LuK-0073-tr.PDF?context=bWFzdGVyfGRvY3VtZW50c3w0NjI2OTR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZTUvaDE2LzkzMDYyNDY0MTQzNjYucGRmfDUxNmIyYzU2MWQyODQ3NzQyOWNkMmQ5YjIyNDBhNDNiM2RhZjNiMjEwZGU4MDkxZTg0NzY1YTE2MzJkMmVlMjU"
+        },
+        {
+          "documentSize": 215186,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_en.PDF",
+          "url": "/medias/LuK-0025-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTUxODZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZWUvaDlmLzkzMDUzOTkxOTc3MjYucGRmfGVmZGU3Y2I4YzVjNzE0ZWRmMjNmNmJjMTNlYmFjNGU2NjYzNDE1NGMyNzQxNWQ5NGFlYTNjYzc0MTQyMjUyNTM"
+        },
+        {
+          "documentSize": 503231,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_tr.PDF",
+          "url": "/medias/LuK-0098-tr.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDMyMzF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNmYvaGMxLzkzMDU5MDE3OTMzMTAucGRmfDc1ZjgyOTkzOTQyNTQ2YjgzMzE3ZjlkN2FjOWU3OTU4NWYzMTk0ZTAxZmNhM2I1MzljMWIzZTFlY2EyNGVjYjE"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "tr",
+        "name": "Turkish",
+        "nativeName": "Türkçe"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 306713,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_nl.PDF",
+          "url": "/medias/LuK-0073-nl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMDY3MTN8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oN2IvaDUzLzkzMDUzODg1NDgxMjYucGRmfDBiM2UyN2IwYzE1MTI2NmNhZWNhYzU1MzMzMjgxZThlMzc1MGIwZTc4NTgzNTYwMzI5MWE1MjA1NWYwNWQxMjU"
+        },
+        {
+          "documentSize": 211064,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_nl.PDF",
+          "url": "/medias/LuK-0025-nl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTEwNjR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZjAvaDBhLzkzMDY0MzU3MTUxMDIucGRmfDU0MGU0MzU4YTI2Zjk4YWFiNWQ0ZWEyNGQ1NmQzMzU5MDRmNDVkMjQ4ZDk3ZWYxMjY4YWU2ZmYxZWQ3MzExZWE"
+        },
+        {
+          "documentSize": 217640,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_nl.PDF",
+          "url": "/medias/LuK-0098-nl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTc2NDB8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNWUvaDM1LzkzMDYxMDU2NzU4MDYucGRmfGM2OTRlNzk3MDgyYmFhODY2YjViYTg2N2U4YjNjOTlkOWRiMmJlNTYyYTdjNjc2OTBiMjU1M2NlNmRlYzdjMzc"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "nl",
+        "name": "Dutch",
+        "nativeName": "Nederlands"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 309956,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_it.PDF",
+          "url": "/medias/LuK-0073-it.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMDk5NTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYjYvaGU1LzkzMDQ4NjEwODE2MzAucGRmfDY4OTBmMTk1YjY4MjkzZWUwM2Y5NGU1MDRhMGUxMGY1NThjZjM2ZmM0NTkyYWJjMTFlMjliNDk3ZTZiYjhmMDk"
+        },
+        {
+          "documentSize": 213287,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_it.PDF",
+          "url": "/medias/LuK-0025-it.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTMyODd8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMGEvaDUyLzkzMDQ5NTU4NDY2ODYucGRmfDY0ZGQ3NzM3Nzk0ZWQ2NDljOWJiYjAzZTM4ZDY2OTRiNDI5M2ExZDcwMmM4MzE3NTE5NjQ2NWU2NDczYjQwMDY"
+        },
+        {
+          "documentSize": 222505,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_it.PDF",
+          "url": "/medias/LuK-0098-it.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjI1MDV8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNzEvaDlmLzkzMDYzOTUyNDY2MjIucGRmfDA5MmMzYjNiNWUyODFjMzM0NzFiOGQ4N2U4MzQ0NWU5YzhlM2RlMWNmOTFmNjM1NmQxN2MzNDdlNGU5MTJlOWE"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "it",
+        "name": "Italian",
+        "nativeName": "Italiano"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 310022,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_de.PDF",
+          "url": "/medias/LuK-0073-de.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTAwMjJ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oODIvaDA5LzkzMDQ4NTgyNjM1ODIucGRmfGVjMmNiYWNhMzY0ZDUyNzI5MzY1YTM5YzNmMDk0MTBhMGIzNGIyMzNlZjE2ZDY3NmIyZGQ5Mjg2ODlkZDY3NWI"
+        },
+        {
+          "documentSize": 212830,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_de.PDF",
+          "url": "/medias/LuK-0025-de.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTI4MzB8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYWIvaGNkLzkzMDU5NjcwMzQzOTgucGRmfGI0NTJjMThjZmQ5ZDgwOWZlMDkwNjBjNTFhNmViM2RlYzEwNjRkNWM1NzU0NDg5ZTY4MWY0ZTllNmUwNDZmNzg"
+        },
+        {
+          "documentSize": 222903,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_de.PDF",
+          "url": "/medias/LuK-0098-de.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjI5MDN8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzgvaGJiLzkzMDU3MTQ5MTc0MDYucGRmfDQwN2QxN2NlYjMwMDQ0MmQ5YTAxOTA3NGVjMzM3YmFiZWMzNjA5NWE3MzE5NThjMjM3N2Q3NWE1NWYxMzM2YTA"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "de",
+        "name": "German",
+        "nativeName": "Deutsch"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 308486,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_fr.PDF",
+          "url": "/medias/LuK-0073-fr.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMDg0ODZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNmMvaDBkLzkzMDY2Mzc0Njc2NzgucGRmfDQwZTUxZjA3OTU3YzQwM2NmYzU1ZDgwNzA1MjhmMjk0MGQ4NWIxZTY5OTc1N2ZjNDYzYjYzNDBiODVjNzVjMzY"
+        },
+        {
+          "documentSize": 213061,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_fr.PDF",
+          "url": "/medias/LuK-0025-fr.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTMwNjF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYTYvaGI1LzkzMDYyNTUyOTQ0OTQucGRmfDIzMDFmMzMzN2JlYzMzMzViOWQ5YjhjZmQ3NGZhMTdlZGI2M2ZkNTg2ZjhhOTEzY2E4MGNmOGU3ZWJhNTJiNjM"
+        },
+        {
+          "documentSize": 222695,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_fr.PDF",
+          "url": "/medias/LuK-0098-fr.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjI2OTV8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYjQvaGUxLzkzMDU5MDQ2NzY4OTQucGRmfGIwMjY5ZTdiZDJjNDIzZTk2NGVhZWI1YWU3MmI1MmQ4NjJmZTFjNWY2MzQyNDJkZjU2ZjQzNDlkODlmMWU5YzU"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "fr",
+        "name": "French",
+        "nativeName": "Français"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 519272,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_sv.PDF",
+          "url": "/medias/LuK-0025-sv.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MTkyNzJ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTEvaDYxLzkzMDUwMzIwMzIyODYucGRmfGRjZjEyYzNjNDU4MjQ3MjIzNWMzNTIzYzYxZjVmNGEzZGYzM2I1MjhlZGZjNGE1OTdkNDYwMzg2NWYwNDg2ZjA"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "sv",
+        "name": "Swedish",
+        "nativeName": "Svenska"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 343169,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_sl.PDF",
+          "url": "/medias/LuK-0025-sl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzNDMxNjl8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMDYvaDA0LzkzMDYyNzQxMDMzMjYucGRmfDMwOTYwZGU3ZGY5MGUyZTRhYzA4NDIzYWE4NDhkMzhkZDU3YTNlZDQ5MjBiNDBmOTE2MTE3NWFhOTA4OGMxYWM"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": false,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "sl",
+        "name": "Slovenian",
+        "nativeName": "Slovenian"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 508237,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_bg.PDF",
+          "url": "/medias/LuK-0025-bg.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDgyMzd8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZWUvaDk2LzkzMDU3MTYxNjI1OTAucGRmfDMxNTM5YTliMGFiOWRjZjk2Zjk5ZWIyMzQ3NTRmYzg5ZGI2NmMwZGY2ZTY1OTkwZTg2ODcyZWZiNjNmNjI0ZWM"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "bg",
+        "name": "Bulgarian",
+        "nativeName": "Български"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 516448,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_fi.PDF",
+          "url": "/medias/LuK-0025-fi.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MTY0NDh8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzMvaGQ5LzkzMDU1ODc0ODI2NTQucGRmfGMyY2FmNzFkNjQyOTRkNDkwZTRkM2FkMDU5YTFmNGYyMWQyOTY1YzZjNTcxMTk3NGIzMWU3Njc4Yjg0Y2M0YTA"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "fi",
+        "name": "Finnish",
+        "nativeName": "Suomalainen"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 214276,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_PT.PDF",
+          "url": "/medias/LuK-0025-PT.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTQyNzZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTEvaGQ3LzkzMDUzMDIxNzE2NzgucGRmfDg0MThjYzY2YjA5MDE1ODViZjcyN2I4YjkxNzc0YzE5YWEzMzMxY2UxN2ZhY2UxY2QxNWNjMDViNDA3NWY0Yjg"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "pt",
+        "name": "Português",
+        "nativeName": "Português"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 633751,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_hu.PDF",
+          "url": "/medias/LuK-0073-hu.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2MzM3NTF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZWMvaGI0LzkzMDUxMTY1NDA5NTgucGRmfDQyOTJlYzhmMjY5ODBkOGM4YmFkNDNiOGUyNzUyM2IxZThlMjAyNmIzOGYwMDk3ZjE2ODI4MDIyMjRhNWI3OTE"
+        },
+        {
+          "documentSize": 503364,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_hu.PDF",
+          "url": "/medias/LuK-0025-hu.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDMzNjR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oOWIvaDdlLzkzMDUzOTkyMzA0OTQucGRmfDM5Yjc3ZTQzMjkwNjA5MjM4N2UwMDk0MjRjNGU1ZDUwYzE3OTFmZmVkNjdiMGUyZjFlNDI3N2I5ZTc3YmEyNzk"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "hu",
+        "name": "Hungarian",
+        "nativeName": "Magyarország"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 215186,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_en.PDF",
+          "url": "/medias/LuK-0025-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTUxODZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZWUvaDlmLzkzMDUzOTkxOTc3MjYucGRmfGVmZGU3Y2I4YzVjNzE0ZWRmMjNmNmJjMTNlYmFjNGU2NjYzNDE1NGMyNzQxNWQ5NGFlYTNjYzc0MTQyMjUyNTM"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "isocode": "en",
+        "name": "English",
+        "nativeName": "English"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 642163,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_ru.PDF",
+          "url": "/medias/LuK-0073-ru.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2NDIxNjN8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMzkvaDhjLzkzMDUyNDQ0MzQ0NjIucGRmfDNmMTdkZWEwNGE4MzkwNDU5OWMxYjA5OWJiZTZkNjFhODQ4MDJhMzFkZmJhYjUzMDc5MjdkNjY0OGQwYzhjZmU"
+        },
+        {
+          "documentSize": 507142,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_ru.PDF",
+          "url": "/medias/LuK-0025-ru.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDcxNDJ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNTkvaDcyLzkzMDUzOTY5Njk1MDIucGRmfDNjNzAxYzQzNzdkY2E2MGM2MmFlNWJlOTQxNDQxMjI4MWU3YTA1ZTY3YTQwYTkwYzYxM2M0YjlhN2U1YzY2Yjk"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "ru",
+        "name": "Russian",
+        "nativeName": "Русский"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 632527,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_RO.PDF",
+          "url": "/medias/LuK-0073-RO.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2MzI1Mjd8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oODEvaDUxLzkzMDY1NTAyMDY0OTQucGRmfGE1ZjdjYWU4OGEyODEyYTZhMDgzNzJjZTM0Y2Q5MmZkNTIxMWI1ODM4NGY4NDA5YjlhY2NlMmUyMmFhNjhmZDg"
+        },
+        {
+          "documentSize": 500868,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_RO.PDF",
+          "url": "/medias/LuK-0025-RO.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDA4Njh8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNTQvaDM2LzkzMDU1ODcyODYwNDYucGRmfDlhMjA1OTIzNjVhM2E2ZGU4YTk1NDVmYjNkMGYyYjJkMWI2ODk0NGM3YTQxNmEwNjI5MmRlZmE1YzlmOWE3NzU"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "ro",
+        "name": "Romanian",
+        "nativeName": "Română"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 637064,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_el.PDF",
+          "url": "/medias/LuK-0073-el.PDF?context=bWFzdGVyfGRvY3VtZW50c3w2MzcwNjR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZjYvaDZkLzkzMDU4NTc1MjM3NDIucGRmfDBiNjFiODIzMWFhNzgxOWY2NzhlNDY3NWQyODc0YWM5ZmYyYTkwYTIxYWI3YzJkN2Y0NDAwZTY2ZmM5MTRlZDY"
+        },
+        {
+          "documentSize": 506652,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_el.PDF",
+          "url": "/medias/LuK-0025-el.PDF?context=bWFzdGVyfGRvY3VtZW50c3w1MDY2NTJ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNTMvaGIyLzkzMDU4NjU5Nzc4ODYucGRmfGIwZmMzOTNhMWUxZjY3ODE1MzZmNzBjODk4OGQxMTU4ZTczY2E0OWEyYzMzYWYwZDlkOGMzYTIzMGY1YTMzZGI"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "el",
+        "name": "Greek",
+        "nativeName": "Eλληνικά"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 311716,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_en.PDF",
+          "url": "/medias/LuK-0073-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMTE3MTZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oYzkvaGNhLzkzMDY0MjY5NjYwNDYucGRmfDU2ZjUwNTcwNjIwM2Y1ZGNmN2E4YjJkMDNlN2ZkYWFhOTdiNjFiOTNjZDYyZTdjMjk3ZmI3NjY2OTNiYmNiNGE"
+        },
+        {
+          "documentSize": 343787,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_hr.PDF",
+          "url": "/medias/LuK-0025-hr.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzNDM3ODd8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNmUvaDNiLzkzMDUyNTIxMDIxNzQucGRmfGIwNGM1ZjU0MmYyNTJlNmQyYWEyMjM0MzYyN2Q3ZDU5ZGY4ZTI3ZWQzN2NkZjQwOGRkNzMxZjI3YWYzZmNmMTE"
+        },
+        {
+          "documentSize": 224726,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_en.PDF",
+          "url": "/medias/LuK-0098-en.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjQ3MjZ8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oZDcvaDg4LzkzMDUyOTAzNzUxOTgucGRmfDVlODZkYTNmOWY3YTVlNjVhMTZmNjc2YzZiZDkyOWQ4N2MzMmVhMDFlNjk5YTVhNTBlOWZmNjhiYTI1MTU4Yzg"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "hr",
+        "name": "Croatian",
+        "nativeName": "Hrvatski"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 4104009,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_pl.PDF",
+          "url": "/medias/LuK-0073-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3w0MTA0MDA5fGFwcGxpY2F0aW9uL3BkZnxkb2N1bWVudHMvaDFhL2gxZi85MzcxMzA5NjA0ODk0LnBkZnxiZmY0MTVjNTAyZDliODY0MDhlM2RhYzQ3MGJlMmYxNDI1NThhZTNhY2ZlOTljM2U5YzA3MjVlY2ViYjU0OWRi"
+        },
+        {
+          "documentSize": 3745685,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_pl.PDF",
+          "url": "/medias/LuK-0025-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzNzQ1Njg1fGFwcGxpY2F0aW9uL3BkZnxkb2N1bWVudHMvaDA3L2g0Zi85MzcxMzA3MDE2MjIyLnBkZnxkODViOGNhOWNkYjZkNzNmZjkzMTYxNmJkMWNjNjI0ODM5YWE2ZmNmY2Q0ZjYyM2UxYzNmMzA1MTQ3OWViNDRk"
+        },
+        {
+          "documentSize": 3664188,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_PL.PDF",
+          "url": "/medias/LuK-0098-PL.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzNjY0MTg4fGFwcGxpY2F0aW9uL3BkZnxkb2N1bWVudHMvaDQzL2hkZC85MzcxMzEwODgyODQ2LnBkZnxkYzRkMDQ5OTllYWZjYjk0NDBlMzMwYzkzODMzMjdkODM4NDBkNDY0NTBkYjA1MGY2YTQwZDlmNDY2NmFmYTBk"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "pl",
+        "name": "Polish",
+        "nativeName": "Polski"
+      }
+    },
+    {
+      "documents": [
+        {
+          "documentSize": 309961,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0073_es.PDF",
+          "url": "/medias/LuK-0073-es.PDF?context=bWFzdGVyfGRvY3VtZW50c3wzMDk5NjF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oNmQvaDZkLzkzMDYxNjYzNjIxNDIucGRmfGNiNTIyNDU3ZTgxODQyZjEyZDNmMDQ0OTZiNTMyMzdkNDllOTAyZGRhYjE1ZTg2ZDEyYzk4OGRhNjJkNmMwODQ"
+        },
+        {
+          "documentSize": 213831,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0025_es.PDF",
+          "url": "/medias/LuK-0025-es.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMTM4MzF8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oM2UvaDU1LzkzMDUzOTkxNjQ5NTgucGRmfDA1N2Y4ZTJkMjVmMTEyYWM2ZmI1NTRiNDViNDA2YjRhYjEwNzY1MTQyMjZiOGFiMTAxZTk5OWZiNjkyZTgwMzc"
+        },
+        {
+          "documentSize": 222788,
+          "documentType": {
+            "code": "SERVICE_INFORMATION",
+            "name": "Informações de serviço"
+          },
+          "fileName": "LuK_0098_es.PDF",
+          "url": "/medias/LuK-0098-es.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyMjI3ODh8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oOTYvaGUwLzkzMDY1NDI5OTc1MzQucGRmfGMyNGEwYzQwODRhYjBjNGVjODcxNTc3ZDNkMTEyZjMxMjY1ZWVmMmM1MzI0ZjFhYWU5MGE3YTI3YTE5YmRkMWE"
+        },
+        {
+          "documentSize": 267004,
+          "documentType": {
+            "code": "PRODUCT_INFORMATION",
+            "name": "Informação do produto"
+          },
+          "fileName": "PI_LuK_P0003_en_de_fr_es_it_pl.PDF",
+          "url": "/medias/PI-LuK-P0003-en-de-fr-es-it-pl.PDF?context=bWFzdGVyfGRvY3VtZW50c3wyNjcwMDR8YXBwbGljYXRpb24vcGRmfGRvY3VtZW50cy9oMTgvaDg5LzkzMDY1ODg2NDMzNTgucGRmfGM1NjJjOTBmNmExZDA4Yzc1MGI5NmFjMzM3OWFlOTgwYThiNWE5YTY0ZmM0NDI5ZDNjNWE2NTFkNGRiNDJlZGE"
+        }
+      ],
+      "language": {
+        "active": true,
+        "fallbackLanguages": [
+          {
+            "active": false,
+            "isocode": "en",
+            "name": "English"
+          }
+        ],
+        "isocode": "es",
+        "name": "Spanish",
+        "nativeName": "Español"
+      }
+    }
+  ],
+  "fullName": "Kit de embreagem LuK RepSet",
+  "images": [
+    {
+      "format": "thumbnail",
+      "imageType": "PRIMARY",
+      "url": "/medias/csccProductThumb-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8MjcwNDZ8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g0Yy9oZmIvOTMyMTE5NDM4OTUzNC53ZWJwfGQyZmUwOGYzMGZhNzk3OTgxYTU3MDdlZGVlYTYwZGEwMjA0MTNiMjQ5ZDVhMjAzMzFjYzRmZWM4NWRkYWM0M2M"
+    },
+    {
+      "format": "zoom",
+      "imageType": "PRIMARY",
+      "url": "/medias/csccProductZoom-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8NzkwNDJ8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g4OC9oNjUvOTMyMTE5NDMyMzk5OC53ZWJwfDU5N2Y2ZjQ2YzgxZDFiNWNiZGUyNjZlYzk0ODU5Y2UyMWYxYWZjMTM0Mjg1YmZiYmMxYWFiOGE1N2MyYWMwZWQ"
+    },
+    {
+      "format": "zoom",
+      "galleryIndex": 0,
+      "imageType": "GALLERY",
+      "url": "/medias/csccProductZoom-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8NzkwNDJ8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g4OC9oNjUvOTMyMTE5NDMyMzk5OC53ZWJwfDU5N2Y2ZjQ2YzgxZDFiNWNiZGUyNjZlYzk0ODU5Y2UyMWYxYWZjMTM0Mjg1YmZiYmMxYWFiOGE1N2MyYWMwZWQ"
+    },
+    {
+      "format": "cartIcon",
+      "imageType": "PRIMARY",
+      "url": "/medias/csccProductThumb-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8MjcwNDZ8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g0Yy9oZmIvOTMyMTE5NDM4OTUzNC53ZWJwfGQyZmUwOGYzMGZhNzk3OTgxYTU3MDdlZGVlYTYwZGEwMjA0MTNiMjQ5ZDVhMjAzMzFjYzRmZWM4NWRkYWM0M2M"
+    },
+    {
+      "format": "product",
+      "galleryIndex": 0,
+      "imageType": "GALLERY",
+      "url": "/medias/csccProductDetail-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8NTc4ODR8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g4Ny9oYTAvOTMyMTE5NDI1ODQ2Mi53ZWJwfGU3ODgwNzA1ZDYyMmMwOTI2ZWFiNTE3ZTgxNThjZDk4NmRkMWYwMGRkZTE5NDQwNzYxNWE4ODdiNDg2Y2FmMWQ"
+    },
+    {
+      "format": "product",
+      "imageType": "PRIMARY",
+      "url": "/medias/csccProductDetail-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8NTc4ODR8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g4Ny9oYTAvOTMyMTE5NDI1ODQ2Mi53ZWJwfGU3ODgwNzA1ZDYyMmMwOTI2ZWFiNTE3ZTgxNThjZDk4NmRkMWYwMGRkZTE5NDQwNzYxNWE4ODdiNDg2Y2FmMWQ"
+    },
+    {
+      "format": "thumbnail",
+      "galleryIndex": 0,
+      "imageType": "GALLERY",
+      "url": "/medias/csccProductThumb-00-LUK-PC-RepSet.webp?context=bWFzdGVyfHByb2R1Y3RpbWFnZXN8MjcwNDZ8aW1hZ2Uvd2VicHxwcm9kdWN0aW1hZ2VzL2g0Yy9oZmIvOTMyMTE5NDM4OTUzNC53ZWJwfGQyZmUwOGYzMGZhNzk3OTgxYTU3MDdlZGVlYTYwZGEwMjA0MTNiMjQ5ZDVhMjAzMzFjYzRmZWM4NWRkYWM0M2M"
+    }
+  ],
+  "maxOrderQuantity": 10000,
+  "minOrderQuantity": 5,
+  "name": "LuK RepSet",
+  "newToRange": false,
+  "packingUnit": 1,
+  "packingUnitQuantity": 1,
+  "primaryAssemblyGroupPath": [
+    {
+      "code": "100050",
+      "name": "Componentes: Embreagem",
+      "seoPath": [
+        "clutch-attachment-parts"
+      ],
+      "uuid": "TA-100050"
+    },
+    {
+      "code": "100051",
+      "name": "Kit de reparação, embreagem completa",
+      "seoPath": [
+        "clutch-attachment-parts",
+        "clutch-kit"
+      ],
+      "uuid": "TA-100051"
+    }
+  ],
+  "productClass": {
+    "code": "479",
+    "name": "Kit de embreagem"
+  },
+  "productReferences": [],
+  "purchasable": true,
+  "purchasableStatus": {
+    "code": "normal",
+    "name": "Comprar Online"
+  },
+  "seoPath": [
+    "clutch-attachment-parts",
+    "clutch-kit",
+    "clutch-kit-luk-repset"
+  ],
+  "tradeNumbers": [],
+  "type": "VehiclePartVariantProduct",
+  "url": "/AAM-BR/products/TA-479-6193015000",
+  "videos": [
+    {
+      "videoId": "3cNQteX1uvI",
+      "videoType": "YOUTUBE"
+    }
+  ],
+  "weight": {
+    "net": true,
+    "value": 3.344
+  }
+}

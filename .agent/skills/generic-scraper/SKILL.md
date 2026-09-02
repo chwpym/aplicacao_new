@@ -13,6 +13,7 @@ Esta skill define como configurar novos provedores de scraping no sistema sem me
     - `td.modelo` -> `veiculo`
     - `td.motor` -> `motor`
     - `td.ano` -> `ano_inicio`
+    - `td.codigo` -> `codigo_peca` (código específico da peça no catálogo)
 
 ## 2. Padrões de Navegação
 - Sempre configure a URL de busca com o marcador `{id}` (ex: `https://site.com/busca?q={id}`).

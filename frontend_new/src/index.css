@@ -1,16 +1,23 @@
+/* ─── Google Fonts — DM Sans (headings/labels) ──────────────────────────── */
+/* Inter já vem do sistema/Vite; DM Sans importada aqui                       */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
 
+/* ─── Paleta: Cobalto Técnico ────────────────────────────────────────────── */
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-background-light: #f8fafc;
-  --color-background-dark: #0f172a;
-  --color-surface-light: #ffffff;
-  --color-surface-dark: #1e293b;
+  --color-primary:           #0f52ba;   /* Azul cobalto — aprovado              */
+  --color-primary-hover:     #0a3d8f;
+  --color-accent:            #00b4d8;
+  --color-background-light:  #e8ecf0;   /* Cinza Suave para o fundo da tela     */
+  --color-background-dark:   #0a0f1e;
+  --color-surface-light:     #ffffff;   /* Branco Puro para os cards e sidebar  */
+  --color-surface-dark:      #111827;
 }
 
+/* ─── Base: Inter para tudo (denso, compacto, ideal para tabelas) ────────── */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -28,7 +35,7 @@
 
 .dark {
   background-color: var(--color-background-dark);
-  color: #f8fafc;
+  color: #f1f5f9;
 }
 
 body {
@@ -36,6 +43,23 @@ body {
   min-height: 100vh;
 }
 
+/* ─── DM Sans: apenas headings e labels de navegação ────────────────────── */
+/* Não toca em tabelas, inputs, código de referência — esses ficam com Inter  */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Labels de navegação na sidebar */
+aside nav span {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* Títulos de seção (labels uppercase como "Navegação") */
+aside nav > span {
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* ─── Scrollbar customizada ──────────────────────────────────────────────── */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -50,5 +74,5 @@ body {
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #334155;
 }

@@ -11,6 +11,7 @@ const Provedores = () => {
     const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'nome' | 'tipo'>('nome');
+    const [filterStatus, setFilterStatus] = useState<'todos' | 'ativos' | 'inativos'>('todos');
 
     useEffect(() => {
         fetchProvedores();
@@ -65,6 +66,11 @@ const Provedores = () => {
 
     const filteredProvedores = useMemo(() => {
         return provedores
+            .filter(p => {
+                if (filterStatus === 'ativos' && !p.ativo) return false;
+                if (filterStatus === 'inativos' && p.ativo) return false;
+                return true;
+            })
             .filter(p =>
                 p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 p.tipo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -74,7 +80,7 @@ const Provedores = () => {
                 if (sortBy === 'nome') return a.nome.localeCompare(b.nome);
                 return a.tipo.localeCompare(b.tipo);
             });
-    }, [provedores, searchTerm, sortBy]);
+    }, [provedores, searchTerm, sortBy, filterStatus]);
 
     return (
         <div className="space-y-6 pb-10">
@@ -124,11 +130,20 @@ const Provedores = () => {
                     <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 hidden md:block" />
                     <select
                         className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value as any)}
+                    >
+                        <option value="todos">Status: Todos</option>
+                        <option value="ativos">Status: Ativos</option>
+                        <option value="inativos">Status: Inativos</option>
+                    </select>
+                    <select
+                        className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
                         value={sortBy}
                         onChange={(e) => setSortBy(e.target.value as any)}
                     >
-                        <option value="nome">Ordenar por Nome</option>
-                        <option value="tipo">Ordenar por Tipo</option>
+                        <option value="nome">Ordernar: Nome</option>
+                        <option value="tipo">Ordernar: Tipo</option>
                     </select>
                 </div>
             </div>

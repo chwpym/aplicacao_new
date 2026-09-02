@@ -7,3 +7,5 @@ pydantic
 python-dotenv
 pyjwt
 httpx
+duckdb
+thefuzz

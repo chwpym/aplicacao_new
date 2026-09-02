@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import models, schemas
@@ -84,3 +84,114 @@ def delete_palavra(palavra_id: int, db: Session = Depends(get_db)):
     db.delete(db_palavra)
     db.commit()
     return {"message": "Palavra excluída"}
+
+@router.get("/automakers")
+def get_automakers():
+    from app.services.automaker_service import automaker_service
+    return {
+        "status": "ok", 
+        "count": len(automaker_service._model_to_brand),
+        "last_update": getattr(automaker_service, "_last_update", "N/A"),
+        "catalog": automaker_service._catalog, # Retorna o dicionário completo {Marca: [Modelos]}
+        "brands": automaker_service._brands
+    }
+
+@router.post("/fipe/sync")
+async def sync_fipe():
+    try:
+        from scripts.sync_fipe_catalog import sync_catalog
+        from app.services.automaker_service import automaker_service
+        from app.services.status_service import status_service
+        
+        # Roda de forma síncrona/aguardada
+        await sync_catalog()
+        automaker_service.reload()
+        
+        # Limpa o cache de status para forçar um novo check que ficará verde
+        status_service._cache = {}
+        status_service._cache_time = 0
+            
+        return {"status": "success", "message": "Catálogo da Fipe sincronizado com sucesso!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao iniciar sincronização: {str(e)}")
+
+@router.post("/automakers/model")
+def add_custom_model(data: dict):
+    brand = data.get("brand")
+    model = data.get("model")
+    if not brand or not model:
+        raise HTTPException(status_code=400, detail="Marca e modelo são obrigatórios")
+    
+    from app.services.automaker_service import automaker_service
+    if automaker_service.add_model_manual(brand, model):
+        return {"status": "success", "message": f"Modelo {model} adicionado à {brand}"}
+    raise HTTPException(status_code=500, detail="Erro ao salvar modelo")
+
+@router.delete("/automakers/model")
+def remove_custom_model(brand: str, model: str):
+    from app.services.automaker_service import automaker_service
+    if automaker_service.remove_model_manual(brand, model):
+        return {"status": "success", "message": f"Modelo {model} removido de {brand}"}
+    raise HTTPException(status_code=500, detail="Erro ao remover modelo")
+
+# --- Backup ---
+@router.post("/backup/export")
+def export_backup():
+    try:
+        from scripts.export_system_state import export_state
+        backup_path = export_state()
+        return {"status": "success", "message": f"Backup realizado em: {backup_path}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao realizar backup: {str(e)}")
+
+
+# --- Preferências Globais ---
+@router.get("/preferencias/{chave}")
+def get_preferencia(chave: str, db: Session = Depends(get_db)):
+    config = db.query(models.Configuracao).filter(models.Configuracao.chave == chave).first()
+    if not config:
+        return {"chave": chave, "valor": None}
+    return {"chave": chave, "valor": config.valor}
+
+@router.post("/preferencias")
+def save_preferencia(data: dict, db: Session = Depends(get_db)):
+    chave = data.get("chave")
+    valor = data.get("valor")
+    if not chave:
+        raise HTTPException(status_code=400, detail="Chave é obrigatória")
+    
+    config = db.query(models.Configuracao).filter(models.Configuracao.chave == chave).first()
+    if config:
+        config.valor = valor
+    else:
+        config = models.Configuracao(chave=chave, valor=valor)
+        db.add(config)
+    
+    db.commit()
+    return {"status": "success", "message": "Preferência salva"}
+
+# --- Configuração de Imagens ---
+@router.get("/imagens", response_model=schemas.ConfiguracaoImagem)
+def get_config_imagens(db: Session = Depends(get_db)):
+    config = db.query(models.ConfiguracaoImagem).first()
+    if not config:
+        config = models.ConfiguracaoImagem()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+    return config
+
+@router.put("/imagens", response_model=schemas.ConfiguracaoImagem)
+def update_config_imagens(config_data: schemas.ConfiguracaoImagemBase, db: Session = Depends(get_db)):
+    config = db.query(models.ConfiguracaoImagem).first()
+    if not config:
+        config = models.ConfiguracaoImagem()
+        db.add(config)
+    
+    for key, value in config_data.dict().items():
+        setattr(config, key, value)
+    
+    db.commit()
+    db.refresh(config)
+    return config
+

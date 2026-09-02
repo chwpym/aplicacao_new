@@ -3,7 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./catalogo.db"
+# Define o caminho absoluto para o banco de dados para evitar duplicatas
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # backend/app
+PROJECT_ROOT = os.path.dirname(BASE_DIR) # backend
+DB_PATH = os.path.join(PROJECT_ROOT, "catalogo.db")
+
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

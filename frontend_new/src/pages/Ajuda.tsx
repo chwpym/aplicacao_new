@@ -5,8 +5,10 @@ import {
     HelpCircle,
     CheckCircle2,
     Info,
-    ArrowRight
+    ArrowRight,
+    BookOpen
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const GuiaCard = ({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) => (
     <div className="bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all">
@@ -34,6 +36,8 @@ const Passo = ({ number, children }: { number: number, children: React.ReactNode
 );
 
 const Ajuda = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
             {/* Header */}
@@ -90,11 +94,19 @@ const Ajuda = () => {
                             <span className="font-bold text-slate-900 dark:text-slate-100">Salvando</span>: Quando tudo estiver funcionando no Playground, basta clicar no botão de salvar para integrar a nova marca ao Workspace global.
                         </Passo>
                     </div>
-                    <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-2xl flex items-start gap-3">
-                        <Info size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-amber-700 dark:text-amber-400 uppercase font-black tracking-tight">
-                            Lembrete: O manual dinâmico no Playground te ensina a usar o F12 (Inspecionar).
-                        </p>
+                    <div className="mt-8 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-2xl flex flex-col gap-4">
+                        <div className="flex items-start gap-3">
+                            <Info size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-[11px] text-amber-700 dark:text-amber-400 uppercase font-black tracking-tight">
+                                Lembrete: Leia O Manual Detalhado de Provedores para exemplos práticos!
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => navigate('/manual-provedores')}
+                            className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 rounded-xl py-2 px-4 text-xs font-bold flex items-center justify-center gap-2 transition-all w-full md:w-auto"
+                        >
+                            <BookOpen size={14} /> Ler Manual de Provedores (CRUD)
+                        </button>
                     </div>
                 </GuiaCard>
             </div>

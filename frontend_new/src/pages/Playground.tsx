@@ -18,10 +18,14 @@ import {
     Settings,
     Package
 } from 'lucide-react';
-import { searchApi } from '../services/api';
+import { searchApi, configApi } from '../services/api';
+import FieldManager from '../components/FieldManager';
 
 const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
     id
     partNumber
     crossReferences {
@@ -44,7 +48,68 @@ const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   }
 }`;
 
+const API_OPTIONS = [
+    { id: 'graphql', label: 'GraphQL Fraga' },
+    { id: 'rest', label: 'REST API' },
+    { id: 'scraper', label: 'Scraper' },
+    { id: 'ds', label: 'Site DS' },
+    { id: 'viemar', label: 'Viemar' },
+    { id: 'bosch', label: 'Bosch' },
+    { id: 'mte_thomson', label: 'MTE Thomson' },
+    { id: 'tecfil', label: 'Tecfil' },
+    { id: 'ima', label: 'IMA' },
+    { id: 'tsa', label: 'TSA' },
+    { id: 'dayco', label: 'Dayco' },
+    { id: 'hipper_freios', label: 'Hipper Freios' },
+    { id: 'japanparts', label: 'Japanparts' },
+    { id: 'notus', label: 'Notus' },
+    { id: 'nakata', label: 'Nakata' },
+    { id: 'autoexperts', label: 'AutoExperts' },
+    { id: 'multiqualita', label: 'Multiqualità' },
+    { id: 'autafastar', label: 'Autafastar' },
+    { id: 'native', label: 'Nativo' }
+].sort((a, b) => a.label.localeCompare(b.label));
+
 const TEMPLATES = [
+    {
+        id: 'authomix-template',
+        nome: 'Authomix (GraphQL)',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "origin": "https://catalogo.authomix.com.br",
+            "referer": "https://catalogo.authomix.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            modelo: 'model',
+            motor: 'engineName',
+            configuracao_motor: 'engineConfiguration',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    {
+        id: 'autafastar-template',
+        nome: 'Autafastar (Hydration)',
+        tipo: 'autafastar',
+        url: 'https://www.autafastar.com.br/busca/{id}/',
+        mapeamento: JSON.stringify({
+            container: '.wrapper-produto',
+            detalhes: 'Hydration automática de Refs e Ficha Técnica'
+        }, null, 2)
+    },
+    {
+        id: 'autoexperts-template',
+        nome: 'AutoExperts Parts',
+        tipo: 'autoexperts',
+        url: 'API INTEGRADA',
+        mapeamento: JSON.stringify({
+            note: 'Usa lógica nativa do sistema'
+        }, null, 2)
+    },
     {
         id: 'ds-template',
         nome: 'DS (Scraper)',
@@ -68,15 +133,15 @@ const TEMPLATES = [
         }, null, 2)
     },
     {
-        id: 'sabo-template',
-        nome: 'SABÓ (GraphQL)',
+        id: 'indisa-template',
+        nome: 'INDISA (GraphQL)',
         tipo: 'graphql',
         url: 'https://bff.catalogofraga.com.br/gateway/graphql',
-        query: GRAPHQL_TEMPLATE,
         headers: JSON.stringify({
-            "Referer": "https://catalogo.sabo.com.br/",
-            "Origin": "https://catalogo.sabo.com.br"
+            "origin": "https://indisa.catalogofraga.com.br",
+            "referer": "https://indisa.catalogofraga.com.br/"
         }, null, 2),
+        query: GRAPHQL_TEMPLATE,
         mapeamento: JSON.stringify({
             marca: 'brand',
             veiculo: 'name',
@@ -86,62 +151,26 @@ const TEMPLATES = [
         }, null, 2)
     },
     {
-        id: 'ima-template',
-        nome: 'IMA (GraphQL)',
-        tipo: 'graphql',
-        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
-        query: GRAPHQL_TEMPLATE,
-        headers: JSON.stringify({
-            "Referer": "https://catalogoi.com.br/",
-            "Origin": "https://catalogoi.com.br"
-        }, null, 2),
+        id: 'multiqualita-template',
+        nome: 'Multiqualità (Scraper)',
+        tipo: 'multiqualita',
+        url: 'https://multiqualita.com.br/MULTIQUALITA/sessioncode/?SESSION=WEB_LISTAPRODUTOS',
         mapeamento: JSON.stringify({
-            marca: 'brand',
-            veiculo: 'name',
-            motor: 'engineName',
-            ano_inicio: 'startYear',
-            imagem: 'images'
+            container: '.CADAPRODUTOX',
+            veiculo: '.NIGs (Labels)',
+            motor: '.NIGs (Labels)',
+            referencias: '.NIGs (Labels)',
+            ficha_tecnica: '.NIGs (Labels)'
         }, null, 2)
     },
     {
-        id: 'ampri-template',
-        nome: 'AMPRI (GraphQL)',
-        tipo: 'graphql',
-        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
-        query: GRAPHQL_TEMPLATE,
-        headers: JSON.stringify({
-            "Referer": "https://catalogodepecasampri.com.br/",
-            "Origin": "https://catalogodepecasampri.com.br"
-        }, null, 2),
-        mapeamento: JSON.stringify({
-            marca: 'brand',
-            veiculo: 'name',
-            motor: 'engineName',
-            ano_inicio: 'startYear',
-            imagem: 'images'
-        }, null, 2)
-    },
-    {
-        id: 'generic-scraper',
-        nome: 'Generic Scraper Base',
-        tipo: 'scraper',
-        url: 'https://exemplo.com/busca?q={id}',
-        mapeamento: JSON.stringify({
-            marca: '.marca',
-            veiculo: '.nome',
-            motor: '.motor',
-            ano_inicio: '.ano',
-            imagem: 'img.foto'
-        }, null, 2)
-    },
-    {
-        id: 'wega-template',
-        nome: 'WEGA (API REST)',
+        id: 'nakata-template',
+        nome: 'Nakata (API REST)',
         tipo: 'rest',
-        url: 'https://wega.wedigi.com.br/api/v1/produto?cod={id}',
+        url: 'https://www.catalogonakata.com.br/detalhe/{id}',
         headers: JSON.stringify({
-            "Origin": "https://wegamotors.com",
-            "Referer": "https://wegamotors.com/"
+            "origin": "https://www.catalogonakata.com.br",
+            "referer": "https://www.catalogonakata.com.br/detalhe/{id}"
         }, null, 2),
         mapeamento: JSON.stringify({
             "container": "Obj.DetailApl",
@@ -150,31 +179,254 @@ const TEMPLATES = [
             "modelo": "DescModelo",
             "motor": "Motor",
             "ano_inicio": "Ano",
-            "referencias": "root:Obj.DetailConv",
-            "ref_marca": "Marca",
-            "ref_codigo": "CodigoConcorrente"
+            "referencias": "root:Obj.DetailConv"
+        }, null, 2)
+    },
+    {
+        id: 'perfect-template',
+        nome: 'Perfect (GraphQL)',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "Origin": "https://perfect.catalogofraga.com.br",
+            "Referer": "https://perfect.catalogofraga.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    {
+        id: 'sabo-template',
+        nome: 'SABÓ (GraphQL)',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "Origin": "https://catalogo.sabo.com.br",
+            "Referer": "https://catalogo.sabo.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    {
+        id: 'spicer-template',
+        nome: 'Spicer (GraphQL)',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "origin": "https://spicer.catalogofraga.com.br",
+            "referer": "https://spicer.catalogofraga.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    {
+        id: 'wega-template',
+        nome: 'WEGA (API REST)',
+        tipo: 'rest',
+        url: 'https://wega.wedigi.com.br/api/v1/produto?cod={id}',
+        headers: JSON.stringify({
+            "origin": "https://wegamotors.com",
+            "referer": "https://wegamotors.com/"
+        }, null, 2),
+        mapeamento: JSON.stringify({
+            "container": "Obj.DetailApl",
+            "marca": "Montadora",
+            "veiculo": "Modelo",
+            "modelo": "DescModelo",
+            "motor": "Motor",
+            "ano_inicio": "Ano",
+            "referencias": "root:Obj.DetailConv"
         }, null, 2)
     }
 ];
 
-const Playground = () => {
+const DEFAULT_CONFIGS: Record<string, any> = {
+    graphql: {
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "Origin": "https://[BRAND].catalogofraga.com.br",
+            "Referer": "https://[BRAND].catalogofraga.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    },
+    rest: {
+        url: 'https://api.exemplo.com/v1/produto/{id}',
+        headers: JSON.stringify({
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }, null, 2),
+        mapeamento: JSON.stringify({
+            container: 'Obj.Resultados',
+            marca: 'Marca',
+            veiculo: 'Veiculo',
+            ano_inicio: 'Ano'
+        }, null, 2)
+    },
+    ds: {
+        url: 'https://www.ds.ind.br/pt/busca-full?q={id}',
+        mapeamento: JSON.stringify({
+            container: '.jq-apps tr',
+            marca: 'td.montadora',
+            veiculo: 'td.modelo',
+            motor: 'td.motor',
+            ano_inicio: 'td.ano'
+        }, null, 2)
+    },
+    viemar: {
+        url: 'https://catalogo.viemar.com.br/catalog/search/catalog/code',
+        headers: JSON.stringify({
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json;charset=UTF-8",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+        }, null, 2),
+        query: JSON.stringify({
+            "searchCode": "{id}",
+            "cardMode": true
+        }, null, 2),
+        mapeamento: JSON.stringify({
+            marca: 'brand.value',
+            veiculo: 'model.value',
+            ano_inicio: 'year.value',
+            referencias: 'crossReference.valueList'
+        }, null, 2)
+    },
+    cofap: {
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "Origin": "https://cofap.catalogofraga.com.br",
+            "Referer": "https://cofap.catalogofraga.com.br/"
+        }, null, 2),
+        query: `query getProduct($id: String!, $market: MarketType!) {
+  product(id: $id, market: $market) {
+    applicationDescription
+    productGroup { name }
+    specifications { description value }
+    id
+    partNumber
+    crossReferences {
+      brand { name }
+      partNumber
+    }
+    vehicles {
+      brand
+      name
+      model
+      engineName
+      engineConfiguration
+      startYear
+      endYear
+      note
+    }
+    images {
+      imageUrl
+    }
+  }
+}`,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2)
+    }
+};
+
+export default function Playground() {
     const [configs, setConfigs] = useState({
-        nome: 'Novo Teste',
-        tipo: 'scraper',
-        url: '',
-        headers: '{}',
-        query: '',
-        mapeamento: '{}',
+        nome: 'Meu Teste',
+        tipo: 'graphql',
+        url: 'https://bff.catalogofraga.com.br/gateway/graphql',
+        headers: JSON.stringify({
+            "Origin": "https://perfect.catalogofraga.com.br",
+            "Referer": "https://perfect.catalogofraga.com.br/"
+        }, null, 2),
+        query: GRAPHQL_TEMPLATE,
+        mapeamento: JSON.stringify({
+            marca: 'brand',
+            veiculo: 'name',
+            motor: 'engineName',
+            ano_inicio: 'startYear',
+            imagem: 'images'
+        }, null, 2),
         login_required: false,
         username: '',
         password: ''
     });
+
+    const handleTypeChange = (newType: string) => {
+        const defaultConfig = DEFAULT_CONFIGS[newType];
+        if (defaultConfig) {
+            setConfigs(prev => {
+                const isDefaultUrl = prev.url === '' || 
+                                   prev.url.includes('exemplo.com') || 
+                                   prev.url.includes('catalogofraga.com.br') ||
+                                   prev.url.includes('ds.ind.br') ||
+                                   prev.url.includes('viemar.com.br');
+                
+                const isDefaultHeaders = prev.headers === '{}' || 
+                                       prev.headers === '' || 
+                                       prev.headers.includes('[BRAND]') ||
+                                       prev.headers.includes('catalogofraga.com.br') ||
+                                       prev.headers.includes('viemar.com.br');
+
+                const isDefaultMapping = prev.mapeamento === '{}' || 
+                                       prev.mapeamento === '' || 
+                                       prev.mapeamento.includes('brand') || // Fraga default
+                                       prev.mapeamento.includes('name') ||
+                                       prev.mapeamento.includes('crossReference.valueList');
+
+                const isViemar = newType === 'viemar';
+                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata', 'japanparts'].includes(newType);
+
+                return {
+                    ...prev,
+                    tipo: newType,
+                    // Se estivermos mudando para VIEMAR ou marca nativa, forçamos a URL se for a da Fraga ou se estiver vazia
+                    url: (isDefaultUrl || isViemar || isNativeBrand) ? (defaultConfig?.url || prev.url) : prev.url,
+                    // Cabeçalhos: Forçamos se for padrão ou se estivermos indo para Viemar ou marca nativa
+                    headers: (isDefaultHeaders || isViemar || isNativeBrand) ? (defaultConfig?.headers || prev.headers) : prev.headers,
+                    // Query: Se for Viemar, forçamos porque o payload POST é obrigatório e único
+                    query: (prev.query === '' || prev.tipo === 'graphql' || isViemar) ? (defaultConfig?.query || '') : prev.query,
+                    // Mapeamento: Forçamos se for padrão ou se estivermos indo para Viemar ou marca nativa
+                    mapeamento: (isDefaultMapping || isViemar || isNativeBrand) ? (defaultConfig?.mapeamento || prev.mapeamento) : prev.mapeamento
+                };
+            });
+        } else {
+            setConfigs(prev => ({ ...prev, tipo: newType }));
+        }
+    };
 
     const [testId, setTestId] = useState('');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<any[]>([]);
     const [viewMode, setViewMode] = useState<'table' | 'json'>('table');
     const [drafts, setDrafts] = useState<any[]>([]);
+    const [provedores, setProvedores] = useState<any[]>([]); // New: Saved providers from DB
     const [error, setError] = useState<string | null>(null);
 
     // Modals visibility
@@ -235,7 +487,24 @@ const Playground = () => {
                 localStorage.removeItem('playground_auto_load');
             } catch { }
         }
+
+        fetchRealProviders();
     }, []);
+
+    useEffect(() => {
+        const selectedStatic = API_OPTIONS.find(opt => opt.id === configs.tipo);
+        const nameToDisplay = selectedStatic ? selectedStatic.label : (configs.nome || configs.tipo);
+        document.title = `Playground - ${nameToDisplay}`;
+    }, [configs.tipo, configs.nome]);
+
+    const fetchRealProviders = async () => {
+        try {
+            const response = await configApi.getProvedores();
+            setProvedores(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar provedores:', error);
+        }
+    };
 
     const handleLoadTemplate = (tpl: any) => {
         setConfigs({
@@ -289,12 +558,16 @@ const Playground = () => {
             marca: 'Marca',
             veiculo: 'Veículo',
             modelo: 'Modelo',
+            versao: 'Versão',
             motor: 'Motor',
             configuracao_motor: 'Combustível',
             ano: 'Ano',
             imagem: 'Imagens',
             referencias: 'Referências',
-            observacao: 'Observação'
+            observacao: 'Observação',
+            posicao: 'Posição',
+            lado: 'Lado',
+            direcao: 'Direção'
         };
         return defaults[field] || field;
     };
@@ -368,12 +641,11 @@ const Playground = () => {
                         <select
                             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 appearance-none uppercase"
                             value={configs.tipo}
-                            onChange={(e) => setConfigs({ ...configs, tipo: e.target.value })}
+                            onChange={(e) => handleTypeChange(e.target.value)}
                         >
-                            <option value="graphql">GraphQL</option>
-                            <option value="rest">REST API</option>
-                            <option value="scraper">Scraper</option>
-                            <option value="ds">Site DS</option>
+                            {API_OPTIONS.map(opt => (
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="md:col-span-5">
@@ -411,6 +683,46 @@ const Playground = () => {
                             <Save size={18} />
                         </button>
                     </div>
+                </div>
+
+                {/* Login Info Row */}
+                <div className="flex flex-wrap items-center gap-6 px-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-10 h-6 rounded-full transition-all flex items-center px-1 ${configs.login_required ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-all transform ${configs.login_required ? 'translate-x-4' : 'translate-x-0'}`} />
+                        </div>
+                        <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={configs.login_required}
+                            onChange={(e) => setConfigs({ ...configs, login_required: e.target.checked })}
+                        />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary transition-colors">Requer Autenticação?</span>
+                    </label>
+
+                    {configs.login_required && (
+                        <div className="flex items-center gap-4 animate-in slide-in-from-left-2 duration-200">
+                            <div className="flex flex-col">
+                                <label className="text-[8px] font-bold text-slate-400 uppercase mb-1">E-mail / Usuário</label>
+                                <input
+                                    className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:border-primary w-48"
+                                    placeholder="usuario@email.com"
+                                    value={configs.username}
+                                    onChange={(e) => setConfigs({ ...configs, username: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-[8px] font-bold text-slate-400 uppercase mb-1">Senha</label>
+                                <input
+                                    type="password"
+                                    className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-[10px] font-bold outline-none focus:border-primary w-32"
+                                    placeholder="••••••••"
+                                    value={configs.password}
+                                    onChange={(e) => setConfigs({ ...configs, password: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {error && (
@@ -479,10 +791,10 @@ const Playground = () => {
                                 <tr>
                                     <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('marca')}</th>
                                     <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('veiculo')}</th>
+                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('modelo')}</th>
+                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('versao')}</th>
                                     <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('motor')}</th>
-                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">{getFieldLabel('configuracao_motor')}</th>
-                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">Ano</th>
-                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800 text-center">Status</th>
+                                    <th className="px-8 py-5 border-b border-slate-150 dark:border-slate-800">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -490,11 +802,9 @@ const Playground = () => {
                                     <tr key={i} className="hover:bg-primary/[0.02] transition-colors group">
                                         <td className="px-8 py-4 font-black text-primary text-[10px] uppercase tracking-wider">{res.marca}</td>
                                         <td className="px-8 py-4 text-sm font-bold text-slate-700 dark:text-slate-200">{res.veiculo}</td>
+                                        <td className="px-8 py-4 text-xs font-bold text-slate-500 dark:text-slate-400">{res.modelo}</td>
+                                        <td className="px-8 py-4 text-xs font-bold text-slate-500 dark:text-slate-400">{res.versao}</td>
                                         <td className="px-8 py-4 text-xs font-bold text-slate-500 dark:text-slate-400">{res.motor}</td>
-                                        <td className="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-tight">{res.configuracao_motor || '---'}</td>
-                                        <td className="px-8 py-4 text-xs font-black font-mono">
-                                            {res.ano_inicio || res.ano_fim ? `${res.ano_inicio || ''}..${res.ano_fim || ''}` : '---'}
-                                        </td>
                                         <td className="px-8 py-4 flex justify-center">
                                             <span className="bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">SUCESSO</span>
                                         </td>
@@ -523,7 +833,7 @@ const Playground = () => {
                     <div>
                         <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">Templates Originais</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {TEMPLATES.map(tpl => (
+                            {[...TEMPLATES].sort((a, b) => a.nome.localeCompare(b.nome)).map(tpl => (
                                 <button
                                     key={tpl.id}
                                     onClick={() => handleLoadTemplate(tpl)}
@@ -540,8 +850,33 @@ const Playground = () => {
                     </div>
 
                     <div>
+                        <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-4">Seus Provedores Configurados</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {provedores.length === 0 ? (
+                                <div className="col-span-2 text-center py-6 text-[10px] font-bold text-slate-400 border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                                    Nenhum provedor salvo no banco.
+                                </div>
+                            ) : (
+                                provedores.map(p => (
+                                    <button
+                                        key={p.id}
+                                        onClick={() => handleLoadTemplate(p)}
+                                        className="text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all group"
+                                    >
+                                        <div className="text-xs font-black mb-1 flex items-center justify-between">
+                                            {p.nome}
+                                            <span className="text-[8px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 px-1.5 py-0.5 rounded">SALVO</span>
+                                        </div>
+                                        <div className="text-[9px] font-bold text-slate-400">{p.tipo.toUpperCase()} • {p.url?.substring(0, 30)}...</div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em]">Seus Rascunhos Recentes</h4>
+                            <h4 className="text-[10px] font-black text-slate-400 tracking-[0.2em]">Rascunhos Locais</h4>
                             <button
                                 onClick={() => { setDrafts([]); localStorage.removeItem('playground_drafts'); }}
                                 className="text-[9px] font-black text-rose-500 hover:underline"
@@ -551,7 +886,7 @@ const Playground = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {drafts.length === 0 ? (
-                                <div className="col-span-2 text-center py-10 text-[10px] font-bold text-slate-400 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                                <div className="col-span-2 text-center py-6 text-[10px] font-bold text-slate-400 border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
                                     Nenhum rascunho salvo ainda.
                                 </div>
                             ) : (
@@ -559,7 +894,7 @@ const Playground = () => {
                                     <button
                                         key={d.id}
                                         onClick={() => { setConfigs(d); setShowLibrary(false); }}
-                                        className="text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all"
+                                        className="text-left p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all font-mono"
                                     >
                                         <div className="text-xs font-black truncate">{d.nome}</div>
                                         <div className="text-[9px] font-bold text-slate-400 mt-1">{new Date(d.date).toLocaleDateString()} • {d.tipo.toUpperCase()}</div>
@@ -631,46 +966,11 @@ const Playground = () => {
                                 <span className="flex items-center gap-2"><Database size={14} /> Campos de Mapeamento</span>
                                 <span className="text-slate-400/50 italic">Sincronizado com o JSON abaixo</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                {['container', 'product_link', 'marca', 'veiculo', 'modelo', 'motor', 'configuracao_motor', 'ano_inicio', 'ano_fim', 'imagem', 'image_pattern', 'referencias', 'ref_marca', 'ref_codigo', 'observacao'].map(field => {
-                                    const labels: Record<string, string> = {
-                                        veiculo: 'Nome do Carro',
-                                        modelo: 'Modelo / Versão',
-                                        configuracao_motor: 'Combustível / Detalhes',
-                                        ano_inicio: 'Ano Inicial',
-                                        ano_fim: 'Ano Final',
-                                        image_pattern: 'Padrão Imagem ({id})',
-                                        product_link: 'Link da Página',
-                                        ref_marca: 'Ref: Marca',
-                                        ref_codigo: 'Ref: Código'
-                                    };
-                                    const label = labels[field] || field.toUpperCase().replace('_', ' ');
-                                    
-                                    let fieldValue = '';
-                                    try {
-                                        const m = JSON.parse(configs.mapeamento);
-                                        fieldValue = m[field] || '';
-                                    } catch { }
-
-                                    return (
-                                        <div key={field} className="space-y-1">
-                                            <label className="text-[9px] font-bold text-slate-500 uppercase">{label}</label>
-                                            <input
-                                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-[10px] outline-none focus:border-primary font-mono transition-all"
-                                                placeholder={configs.tipo === 'rest' ? `Atributo: ${field}` : `CSS: .${field}`}
-                                                value={fieldValue}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    let currentMap = {};
-                                                    try { currentMap = JSON.parse(configs.mapeamento); } catch { }
-                                                    const nextMap = { ...currentMap, [field]: val };
-                                                    setConfigs({ ...configs, mapeamento: JSON.stringify(nextMap, null, 2) });
-                                                }}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            
+                            <FieldManager
+                                mapping={configs.mapeamento}
+                                onChange={(newMap) => setConfigs({ ...configs, mapeamento: newMap })}
+                            />
                         </div>
                     )}
 
@@ -692,11 +992,12 @@ const Playground = () => {
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                            <Settings size={14} /> Headers JSON (Segurança)
+                            <Settings size={14} /> Headers JSON (Segurança / Origin / Referer)
                         </label>
-                        <input
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-primary/20 font-mono"
-                            placeholder='{"Referer": "https://..."}'
+                        <textarea
+                            rows={3}
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-5 py-3 text-xs outline-none focus:ring-2 focus:ring-primary/20 font-mono custom-scrollbar"
+                            placeholder='{"Origin": "https://...", "Referer": "https://..."}'
                             value={configs.headers}
                             onChange={(e) => setConfigs({ ...configs, headers: e.target.value })}
                         />
@@ -714,6 +1015,4 @@ const Playground = () => {
             </Modal>
         </div>
     );
-};
-
-export default Playground;
+}

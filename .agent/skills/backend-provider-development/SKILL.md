@@ -24,22 +24,106 @@ class MeuNovoProvider(BaseProvider):
         return [self.formatar_resultado(v) for v in resultados]
 ```
 
-## 2. Padronização de Retorno
-O método `buscar` deve retornar uma lista de dicionários com as seguintes chaves (exigidas pelo Frontend):
-- `brand` (Marca)
-- `name` (Veículo)
-- `engineName` (Motor)
-- `engineConfiguration` (Combustível/Complemento)
-- `startYear` / `endYear` (String ou Inteiro - o sistema converte para string automaticamente para suportar formatos como "2014 -->")
-- `images` (Lista de URLs)
-- `originalNumbers` (String separada por ` | `)
+## 2. Padronização de Retorno (Smart Mapping)
+O `BaseProvider.formatar_resultado()` é inteligente e aceita diversos nomes de chaves (sinônimos) para preencher os campos do Frontend. O desenvolvedor deve retornar um dicionário com os dados brutos; o sistema cuidará da normalização (Upper Case, limpeza Wega, extração de anos e combustíveis).
 
-## 3. Registro e Ativação
-Para que o sistema reconheça o novo provedor:
-1. Importe-o no `backend/app/services/provider_service.py` (ou onde o Factory estiver).
-2. Adicione ao mapeamento de tipos no `ProviderManager`.
+| Campo Final | Chaves Aceitas no Raw Data (Sinônimos) | Descrição |
+| :--- | :--- | :--- |
+| **Marca Peça** | `marca_peca`, `marca`, `provedor` | Marca da peça (ex: NAKATA, COFAP) |
+| **Cód. Peça** | `codigo` | Código do fabricante |
+| **Montadora** | `montadora`, `brand` | A marca do veículo (**CHEVROLET**, **GM**) |
+| **Veículo** | `modelo`, `name` | O nome do carro (**CELTA**, **CORSA**) |
+| **Versão** | `versao`, `model`, `version` | Versão/Detalhe (**SPIRIT**, **LIFE**) |
+| **Motor** | `motor`, `engineName` | Cilindrada e Válvulas (**1.0 8V**) |
+| **Config.** | `configuracao_motor` | Siglas técnicas e combustível (**VHC FLEX**) |
 
-## 4. Tratamento de Erros
-- Use blocos `try/except` para capturar falhas de rede.
-- Retorne uma lista vazia `[]` em caso de erro, para não interromper a busca nos outros provedores.
-- Use logs para registrar o status do request.
+> [!CAUTION]
+> **NÃO USE A CHAVE `veiculo` PARA MARCA**: Historicamente, a chave `veiculo` causou inversão de colunas. Use sempre `montadora` para a marca e `modelo` para o nome do carro. O `BaseProvider` possui um **Master Catalog (DuckDB)** que validará se o que você enviou é realmente uma marca FIPE ou um modelo trocado, corrigindo automaticamente se necessário.
+
+## 3. Inteligência de Normalização (Master Catalog)
+O sistema utiliza o **DuckDB** com dados da FIPE para garantir a integridade:
+- **Maker Guard**: Valida se a Montadora informada existe. Se você enviar "CELTA" na montadora, o sistema detectará que é um modelo da "GM" e fará o swap automático.
+- **Resíduo de Motor**: O `NormalizationService` remove termos como "VHC", "MPFI" e "FLEX" da coluna de motor e os move para a coluna de configuração, mantendo a busca padronizada.
+
+## 4. Registro e Ativação
+1. Adicione a classe ao diretório `backend/app/providers/`.
+2. Registre o novo tipo no `ProviderFactory` em `backend/app/providers/provider_factory.py`.
+3. Ative o provedor no banco de dados oficial `backend/catalogo.db` (tabela `provedores`).
+
+
+## 5. Arquitetura de Busca em 2 Níveis (Discovery-Hydration)
+Para sites complexos onde a lista de resultados não traz todos os dados técnicos:
+1.  **Discovery:** Captura o ID interno ou a URL da peça no site.
+2.  **Hydration:** Realiza uma segunda requisição para a página de detalhes para extrair Referências OE e Fichas Técnicas.
+3.  **Performance:** Use `asyncio.gather` para hidratar múltiplos itens se necessário, mas prefira hidratar apenas o primeiro se as referências forem globais para o código.
+## 6. Padrões Avançados de Scraping (HTML)
+
+Para provedores que extraem dados de tabelas HTML (Web Scraping), utilize o padrão de **Mapeamento Dinâmico de Colunas**. Isso evita quebras se o fabricante mudar a ordem das colunas ou adicionar novas.
+
+### Dynamic Column Mapping (O "Padrão Nakata")
+1.  **Discovery de Cabeçalhos:** No `buscar()`, leia o `<thead>` primeiro para identificar o índice de cada coluna.
+2.  **Helper `get_val`:** Utilize uma função auxiliar para buscar o valor pelo nome da coluna, tratando `colspan` e ausência de campos.
+
+```python
+# Exemplo de implementação resiliente
+headers = [{"label": th.text.lower(), "idx": i} for i, th in enumerate(soup.select("thead th"))]
+
+def get_field(cells, target):
+    for h in headers:
+        if target in h["label"]:
+            return cells[h["idx"]].text.strip()
+    return "" # Retorno seguro se a coluna não existir
+```
+
+### Boas Práticas:
+- **Fallback de Código:** Se o código não estiver na tabela, tente extrair do `<h1>` ou `title` da página.
+- **Normalização de Anos:** Converta formatos como `01/94` para `1994` usando regex no provedor antes de enviar para o `formatar_resultado`.
+- **User-Agent:** Sempre utilize um User-Agent de navegador moderno para evitar bloqueios (403 Forbidden).
+## 7. Infraestrutura de Dados e Banco de Dados Único
+
+Para evitar problemas de dessincronização e duplicidade, o sistema utiliza um **Banco de Dados Único e Centralizado**.
+
+- **Caminho Oficial:** `backend/catalogo.db`
+- **Configuração de Conexão:** Localizada em `backend/app/database.py`.
+- **Regra de Ouro:** Nunca utilize caminhos relativos como `./catalogo.db`. Utilize sempre caminhos absolutos calculados em tempo de execução para garantir que o banco seja aberto corretamente, independente de onde o servidor ou script seja disparado.
+
+### Como o caminho é resolvido no código:
+```python
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # backend/app
+PROJECT_ROOT = os.path.dirname(BASE_DIR) # backend
+DB_PATH = os.path.join(PROJECT_ROOT, "catalogo.db")
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+```
+
+## 8. Tratamento de Edge Cases em APIs REST (Padrão Vetor)
+
+Durante a implementação de catálogos via API JSON, alguns padrões de resiliência devem ser adotados:
+
+### A. Encoding Oculto e Caracteres Quebrados
+Muitas APIs antigas (como Vetor) retornam JSON com caracteres em `Windows-1252` (`cp1252`) ou `Latin-1`, mas omitem o charset no header `Content-Type`. O `httpx` usa UTF-8 por padrão, causando caracteres como `TENS?O` (`\uFFFD`) ou erros como `'charmap' codec can't encode character '\x98'`.
+**Solução:** Force a decodificação com fallback iterativo.
+```python
+def _parse_json_encoded(resp):
+    for enc in ("cp1252", "latin-1"):
+        try:
+            return json.loads(resp.content.decode(enc))
+        except Exception:
+            continue
+    return resp.json() # Fallback para UTF-8 do httpx
+```
+
+### B. Valores `null` que viram `"NONE"`
+Se a API retornar `null` (ex: `"vehicle_characteristic": null`), o Python carrega como `None`. O BaseProvider e o Frontend frequentemente fazem `.upper()`, transformando isso na string literal `"NONE"`.
+**Solução:** Sempre limpe os campos com `or ""` ao extrair de dicionários.
+```python
+# Errado: motor = app.get("vehicle_characteristic", "") -> se for null, falha ao dar .upper() ou vira "NONE"
+# Correto:
+motor = app.get("vehicle_characteristic") or ""
+```
+
+### C. Certificados SSL Inválidos
+Se a API apresentar erro de certificado, use `verify=False` no `httpx.AsyncClient`. Lembre-se que o mesmo deve ser feito no endpoint de Proxy de Imagens (`/api/search/proxy/image`) no backend, para permitir o download de imagens de domínios com SSL quebrado pela UI.
+
+### D. Imagens Múltiplas e Tamanhos
+Sempre procure extrair a lista completa de imagens do produto. Se a API fornecer tamanhos diferentes (ex: `small`, `large`, `default`), priorize a chave de maior qualidade. O Frontend já está preparado para exibir um array de imagens (`imagens`) em um carrossel (ex: `ImageGalleryModal`).
+

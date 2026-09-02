@@ -5,13 +5,16 @@ const api = axios.create({
 });
 
 export const searchApi = {
-    buscarPeca: (id: string, provedorIds?: number[], agrupar = true) => {
+    buscarPeca: (id: string, provedorIds?: number[], agrupar = true, config: any = {}) => {
         const params: any = { agrupar };
         if (provedorIds) params.provedores = provedorIds.join(',');
-        return api.get(`/search/${id}`, { params });
+        return api.get(`/search/${encodeURIComponent(id)}`, { ...config, params });
     },
-    testarProvedor: (idPeca: string, config: any) => {
-        return api.post('/search/test', { id_peca: idPeca, config });
+    getDetalhesPeca: (codigo: string, provedorId: number) => {
+        return api.get(`/search/details/peca`, { params: { codigo, provedor_id: provedorId } });
+    },
+    testarProvedor: (id_peca: string, config: any) => {
+        return api.post('/search/test', { id_peca, config });
     }
 };
 
@@ -28,6 +31,21 @@ export const configApi = {
     getPalavras: () => api.get('/config/palavras'),
     createPalavra: (data: any) => api.post('/config/palavras', data),
     deletePalavra: (id: number) => api.delete(`/config/palavras/${id}`),
+
+    getHealth: () => api.get('/api/health'),
+    exportBackup: () => api.post('/config/backup/export'),
+
+    getPreferencias: (chave: string) => api.get(`/config/preferencias/${chave}`),
+    savePreferencias: (chave: string, valor: any) => api.post('/config/preferencias', { chave, valor: JSON.stringify(valor) }),
+    
+    getAutomakersInfo: () => api.get('/config/automakers'),
+    syncFipe: () => api.post('/config/fipe/sync'),
+    addModel: (brand: string, model: string) => api.post('/config/automakers/model', { brand, model }),
+    deleteModel: (brand: string, model: string) => api.delete('/config/automakers/model', { params: { brand, model } }),
+
+    getConfiguracoesImagens: () => api.get('/config/imagens'),
+    updateConfiguracoesImagens: (data: any) => api.put('/config/imagens', data),
 };
+
 
 export default api;
