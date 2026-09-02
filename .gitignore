@@ -67,6 +67,26 @@ update_*.py
 backend/data/providers/notus_cache.json
 NEW_PROVIDER.txt
 tmp/
+scratch/
+ARQ/
+JSON/
+VeiculosModelosImportacaoPlanilhaModelo_*.XLSX
+VeiculosModelosImportacaoPlanilhaModelo_60410678.XLSX
+backend/scratch_*
+backend/*_dump*
+backend/*_debug*
+backend/test_*output*
+backend/ideia2001.js
+backend/fetch_js.py
+backend/parse_irb.py
+backend/insert_irb_db.py
+backend/scripts/debug_*.py
+backend/scripts/brute_force_oe.py
+backend/scripts/find_contains.py
+backend/scripts/fix_ativo.py
+backend/scripts/inspect_product.py
+backend/scripts/scan_js.py
+backend/scripts/verify_notus.py
 
 # Agent/Gemini Data
 .gemini/
