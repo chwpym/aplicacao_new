@@ -1,0 +1,357 @@
+from typing import Dict, Any, List
+import httpx
+from bs4 import BeautifulSoup
+import re
+import asyncio
+from .base_provider import BaseProvider
+
+
+class TecfilLegacyProvider(BaseProvider):
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.base_url = "https://tecfil-catalago.gruposofape.com.br/CatalogoTecfil"
+        self.client = httpx.AsyncClient(
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            },
+            verify=False,
+            timeout=15.0,
+            follow_redirects=True,
+        )
+
+    async def fechar(self):
+        await self.client.aclose()
+
+    async def _descobrir_imagens(self, fallback_cod: str) -> List[str]:
+        base_url = "https://www.tecfil.com.br/imagens/tecfil"
+        candidatos = [
+            f"{base_url}/{fallback_cod}_A.jpg",
+            f"{base_url}/{fallback_cod}A.jpg",
+            f"{base_url}/{fallback_cod}.jpg",
+            f"{base_url}/{fallback_cod}.png"
+        ]
+        
+        async def check_url(url):
+            try:
+                resp = await self.client.head(url, timeout=2.0)
+                if resp.status_code == 200:
+                    return url
+            except Exception:
+                pass
+            return None
+
+        results = await asyncio.gather(*[check_url(u) for u in candidatos])
+        valid_urls = [r for r in results if r]
+        
+        return valid_urls if valid_urls else [f"{base_url}/{fallback_cod}A.jpg"]
+
+    async def buscar(self, codigo: str) -> List[Dict[str, Any]]:
+        resultados = []
+        codigo_buscado = codigo.strip().upper()
+
+        endpoints_map = {
+            "Automóveis": "resultadoAutomoveis.xhtml",
+            "Caminhões": "resultadoCaminhoes.xhtml",
+            "Ônibus": "resultadoOnibus.xhtml",
+            "Tratores": "resultadoTratores.xhtml",
+            "Colheitadeiras": "resultadoColheitadeiras.xhtml",
+            "Motocicletas": "resultadoMotocicletas.xhtml",
+            "Máquinas e Equipamentos": "resultadoMaquinasEquipamentos.xhtml",
+            "Marítima": "resultadoMaritima.xhtml",
+            "Conversões": "resultadoConversoes.xhtml",
+        }
+
+        try:
+            # 1. Inicia Sessão e faz o POST de busca
+            res_index = await self.client.get(f"{self.base_url}/index.xhtml")
+            soup_index = BeautifulSoup(res_index.text, "html.parser")
+
+            form_index = soup_index.find("form", id="j_idt94") or soup_index.find("form")
+            vs_input = form_index.find("input", {"name": "javax.faces.ViewState"}) if form_index else None
+            view_state_index = vs_input["value"] if vs_input else ""
+
+            data_index = {
+                "j_idt94": "j_idt94",
+                "j_idt94:termoConsulta1": codigo_buscado,
+                "j_idt94:botaoTermoConsulta1": "Search",
+                "javax.faces.ViewState": view_state_index,
+            }
+            res_search = await self.client.post(f"{self.base_url}/index.xhtml", data=data_index)
+
+            # 2. Identifica quais categorias têm resultados (incluindo Conversões)
+            soup = BeautifulSoup(res_search.text, "html.parser")
+            buttons = soup.find_all("input", type="submit")
+            categories_to_fetch = []
+            referencias_encontradas = []
+
+            for btn in buttons:
+                val = btn.get("value", "")
+                match = re.search(r"Total Resultados\s*\[\s*(\d+)\s*\]", val)
+                if match and int(match.group(1)) > 0:
+                    row = btn.find_parent("div", class_="row")
+                    label = row.find("label").text.strip().replace(":", "") if row and row.find("label") else ""
+
+                    if label in endpoints_map:
+                        categories_to_fetch.append({"label": label, "endpoint": endpoints_map[label]})
+
+            # 3. Primeiro, capturamos as Conversões (Similares) para anexar aos veículos depois
+            conv_cat = next((c for c in categories_to_fetch if c["label"] == "Conversões"), None)
+            if conv_cat:
+                print(f"[TECFIL LEGACY] Extraindo Conversões para {codigo_buscado}...")
+                res_conv = await self.client.get(f"{self.base_url}/{conv_cat['endpoint']}?search-term={codigo_buscado}")
+                if res_conv.status_code == 200:
+                    soup_conv = BeautifulSoup(res_conv.text, "html.parser")
+                    
+                    def extract_conversoes(soup_frag):
+                        trows_conv = soup_frag.find_all("tr", class_=lambda c: c and "ui-widget-content" in c and "ui-datatable-empty-message" not in c)
+                        for r in trows_conv:
+                            cells = r.find_all("td")
+                            if len(cells) >= 3:
+                                marca_ref = cells[0].text.strip().upper()
+                                codigo_similar = cells[2].text.strip().upper()
+                                
+                                # Se o similar for igual ao buscado, ignoramos
+                                if codigo_similar == codigo_buscado.upper():
+                                    continue
+                                if marca_ref and codigo_similar:
+                                    referencias_encontradas.append(f"{marca_ref}: {codigo_similar}")
+
+                    extract_conversoes(soup_conv)
+
+                    # Verificar paginador para Conversões
+                    paginator_current = soup_conv.find("span", class_="ui-paginator-current")
+                    total_pages = 1
+                    if paginator_current:
+                        match = re.search(r"\(1 of (\d+)\)", paginator_current.text)
+                        if match:
+                            total_pages = int(match.group(1))
+
+                    if total_pages > 1:
+                        print(f"    -> Paginador detectado: {total_pages} páginas em Conversões.")
+                        current_vs = soup_conv.find("input", {"name": "javax.faces.ViewState"})
+                        current_vs = current_vs["value"] if current_vs else view_state_index
+                        form = soup_conv.find("form")
+                        
+                        for page_num in range(1, total_pages):
+                            first_index = page_num * 20
+                            page_payload = {}
+                            if form:
+                                for inp in form.find_all(["input", "select"]):
+                                    name = inp.get("name")
+                                    if name:
+                                        value = inp.get("value", "")
+                                        if inp.name == "select":
+                                            selected = inp.find("option", selected=True)
+                                            if selected: value = selected.get("value", "")
+                                        page_payload[name] = value
+
+                            page_payload.update({
+                                "javax.faces.ViewState": current_vs,
+                                "javax.faces.partial.ajax": "true",
+                                "javax.faces.source": "form:conversoes",
+                                "javax.faces.partial.execute": "form:conversoes",
+                                "javax.faces.partial.render": "form:conversoes",
+                                "form:conversoes": "form:conversoes",
+                                "form:conversoes_pagination": "true",
+                                "form:conversoes_first": str(first_index),
+                                "form:conversoes_rows": "20",
+                                "form:conversoes_skipChildren": "true",
+                                "form:conversoes_encodeFeature": "true",
+                                "javax.faces.behavior.event": "page",
+                            })
+
+                            res_ajax = await self.client.post(
+                                f"{self.base_url}/{conv_cat['endpoint']}",
+                                data=page_payload,
+                                headers={"Faces-Request": "partial/ajax", "X-Requested-With": "XMLHttpRequest"}
+                            )
+                            
+                            if res_ajax.status_code == 200:
+                                vs_match = re.search(r'<update id="[^"]*javax\.faces\.ViewState[^"]*"><!\[CDATA\[(.*?)\]\]></update>', res_ajax.text)
+                                if vs_match: current_vs = vs_match.group(1)
+                                
+                                update_match = re.search(r'<update id="form:conversoes"><!\[CDATA\[(.*?)\]\]></update>', res_ajax.text, re.DOTALL)
+                                if update_match:
+                                    extract_conversoes(BeautifulSoup(update_match.group(1), "html.parser"))
+                
+                # Remove conversões da lista de categorias de veículos para não tentar processar como carro
+                categories_to_fetch = [c for c in categories_to_fetch if c["label"] != "Conversões"]
+
+            referencias_str = " | ".join(referencias_encontradas)
+
+            if not categories_to_fetch:
+                return []
+
+            # 4. Extração das Aplicações (Veículos)
+            for cat in categories_to_fetch:
+                print(f"[TECFIL LEGACY] Extraindo {cat['label']} para {codigo_buscado}...")
+
+                # Fetch first page to grab ViewState and set session context
+                res_cat = await self.client.get(
+                    f"{self.base_url}/{cat['endpoint']}?search-term={codigo_buscado}"
+                )
+
+                if res_cat.status_code != 200:
+                    print(f"  -> Falha {res_cat.status_code}")
+                    continue
+
+                soup_cat = BeautifulSoup(res_cat.text, "html.parser")
+                vs_input = soup_cat.find("input", {"name": "javax.faces.ViewState"})
+                current_vs = vs_input["value"] if vs_input else view_state_index
+
+                form = soup_cat.find("form")
+                payload = {}
+                if form:
+                    for inp in form.find_all(["input", "select"]):
+                        name = inp.get("name")
+                        if name:
+                            value = inp.get("value", "")
+                            if inp.name == "select":
+                                selected = inp.find("option", selected=True)
+                                if selected:
+                                    value = selected.get("value", "")
+                            payload[name] = value
+
+                async def parse_table_rows(html_content, is_soup=False):
+                    if is_soup:
+                        frag_soup = html_content
+                    else:
+                        frag_soup = BeautifulSoup(html_content, "html.parser")
+
+                    trows = frag_soup.find_all(
+                        "tr",
+                        class_=lambda c: c
+                        and "ui-widget-content" in c
+                        and "ui-datatable-empty-message" not in c,
+                    )
+
+                    for r in trows:
+                        cells = r.find_all("td")
+                        if len(cells) >= 7:
+                            codigos_na_linha = [c.text.strip().upper() for c in cells[7:]]
+                            match_found = False
+                            for cod in codigos_na_linha:
+                                if codigo_buscado in cod or cod in codigo_buscado:
+                                    match_found = True
+                                    break
+                            
+                            if not match_found:
+                                continue
+
+                            montadora = cells[0].text.strip()
+                            modelo = cells[1].text.strip()
+                            motor = cells[2].text.strip()
+                            ano_ini = cells[3].text.strip()
+                            ano_fim = cells[4].text.strip()
+                            desc = cells[5].text.strip()
+                            combustivel = cells[6].text.strip()
+                            config_motor = combustivel if combustivel else motor
+                            observacao = f"Categoria: {cat['label']}"
+                            imagens_validas = await self._descobrir_imagens(codigo_buscado)
+                            imagem_url = imagens_validas[0] if imagens_validas else f"https://www.tecfil.com.br/imagens/tecfil/{codigo_buscado}A.jpg"
+
+                            raw = {
+                                "veiculo": montadora,
+                                "modelo": modelo,
+                                "versao": desc,
+                                "motor": motor,
+                                "configuracao_motor": config_motor,
+                                "ano_inicio": ano_ini,
+                                "ano_fim": ano_fim,
+                                "observacao": observacao,
+                                "imagem": imagem_url,
+                                "imagens": imagens_validas,
+                                "codigo": codigo_buscado,
+                                "referencias": referencias_str
+                            }
+                            resultados.append(self.formatar_resultado(raw))
+
+                # Extrair página 1 direto do GET
+                await parse_table_rows(soup_cat, is_soup=True)
+
+                # Detectar paginador
+                paginator_current = soup_cat.find("span", class_="ui-paginator-current")
+                total_pages = 1
+                if paginator_current:
+                    match = re.search(r"\(1 of (\d+)\)", paginator_current.text)
+                    if match:
+                        total_pages = int(match.group(1))
+
+                if total_pages > 1:
+                    print(
+                        f"    -> Paginador detectado: {total_pages} páginas em {cat['label']}."
+                    )
+                    for page_num in range(1, total_pages):
+                        first_index = page_num * 20
+
+                        page_payload = {}
+                        if form:
+                            for inp in form.find_all(["input", "select"]):
+                                name = inp.get("name")
+                                if name:
+                                    value = inp.get("value", "")
+                                    if inp.name == "select":
+                                        selected = inp.find("option", selected=True)
+                                        if selected:
+                                            value = selected.get("value", "")
+                                    page_payload[name] = value
+
+                        page_payload.update(
+                            {
+                                "javax.faces.ViewState": current_vs,
+                                "javax.faces.partial.ajax": "true",
+                                "javax.faces.source": "form:aplicacao",
+                                "javax.faces.partial.execute": "form:aplicacao",
+                                "javax.faces.partial.render": "form:aplicacao",
+                                "form:aplicacao": "form:aplicacao",
+                                "form:aplicacao_pagination": "true",
+                                "form:aplicacao_first": str(first_index),
+                                "form:aplicacao_rows": "20",
+                                "form:aplicacao_skipChildren": "true",
+                                "form:aplicacao_encodeFeature": "true",
+                                "javax.faces.behavior.event": "page",
+                            }
+                        )
+
+                        res_ajax = await self.client.post(
+                            f"{self.base_url}/{cat['endpoint']}",
+                            data=page_payload,
+                            headers={
+                                "Faces-Request": "partial/ajax",
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                        )
+
+                        if res_ajax.status_code == 200:
+                            vs_match = re.search(
+                                r'<update id="[^"]*javax\.faces\.ViewState[^"]*"><!\[CDATA\[(.*?)\]\]></update>',
+                                res_ajax.text,
+                            )
+                            if vs_match:
+                                current_vs = vs_match.group(1)
+
+                            update_match = re.search(
+                                r'<update id="form:aplicacao"><!\[CDATA\[(.*?)\]\]></update>',
+                                res_ajax.text,
+                                re.DOTALL,
+                            )
+                            if update_match:
+                                xml_str = update_match.group(1)
+                                await parse_table_rows(xml_str, is_soup=False)
+
+            # Deduplicate
+            resultados_unicos = []
+            vistos = set()
+            for r in resultados:
+                chave = f"{r['veiculo']}|{r['modelo']}|{r.get('versao', '')}|{r['motor']}|{r.get('ano_inicio', '')}|{r.get('ano_fim', '')}|{r['configuracao_motor']}|{r.get('observacao', '')}"
+                if chave not in vistos:
+                    vistos.add(chave)
+                    resultados_unicos.append(r)
+
+            return resultados_unicos
+
+        except Exception as e:
+            print(f"[TECFIL LEGACY] Erro crítico no provider: {str(e)}")
+            return []
