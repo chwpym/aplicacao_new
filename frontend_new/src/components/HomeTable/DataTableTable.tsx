@@ -83,15 +83,27 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
     }
   }, [results.length]);
 
-  // Click outside para fechar os dropdowns
+  // Click outside e tecla Escape para fechar os dropdowns
   React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setExportOpen(false);
+        setCopyOpen(false);
+        setMlMenuOpen(false);
+        setSettingsOpen(false);
+      }
+    };
     const handleClickOutside = (event: MouseEvent) => {
       if (exportRef.current && !exportRef.current.contains(event.target as Node)) setExportOpen(false);
       if (copyRef.current && !copyRef.current.contains(event.target as Node)) setCopyOpen(false);
       if (mlMenuRef.current && !mlMenuRef.current.contains(event.target as Node)) setMlMenuOpen(false);
     };
+    document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleOpenFicha = (res: any) => {
@@ -430,6 +442,8 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 <div className="relative w-full sm:w-auto" ref={exportRef}>
                   <button 
                     onClick={() => { setExportOpen(!exportOpen); setCopyOpen(false); setMlMenuOpen(false); }}
+                    aria-expanded={exportOpen}
+                    aria-haspopup="true"
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -460,6 +474,8 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 <div className="relative w-full sm:w-auto" ref={copyRef}>
                   <button 
                     onClick={() => { setCopyOpen(!copyOpen); setExportOpen(false); setMlMenuOpen(false); }}
+                    aria-expanded={copyOpen}
+                    aria-haspopup="true"
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -517,6 +533,8 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
                 <div className="relative flex-1" ref={mlMenuRef}>
                   <button
                     onClick={() => { setMlMenuOpen(!mlMenuOpen); setExportOpen(false); setCopyOpen(false); }}
+                    aria-expanded={mlMenuOpen}
+                    aria-haspopup="true"
                     className="flex w-full items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 whitespace-nowrap"
                   >
                     <div className="flex items-center gap-2">

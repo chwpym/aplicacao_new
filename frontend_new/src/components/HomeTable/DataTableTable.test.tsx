@@ -157,4 +157,44 @@ describe('DataTableTable Component', () => {
     expect(screen.getByText('PDF')).toBeInTheDocument();
     expect(screen.getByText('Layout Certtus')).toBeInTheDocument();
   });
+
+  it('closes dropdowns when pressing Escape key', () => {
+    const setFilterText = vi.fn();
+    const setCurrentPage = vi.fn();
+    const copyToClipboard = vi.fn();
+    const downloadAllImages = vi.fn();
+
+    render(
+      <DataTableTable
+        results={sampleResults}
+        displayResults={sampleResults}
+        paginatedResults={sampleResults}
+        filterText=""
+        setFilterText={setFilterText}
+        currentPage={1}
+        setCurrentPage={setCurrentPage}
+        totalPages={1}
+        visibleFields={defaultVisibleFields}
+        loading={false}
+        uniqueReferences={{}}
+        getFieldLabel={mockGetFieldLabel}
+        copyToClipboard={copyToClipboard}
+        downloadAllImages={downloadAllImages}
+        partId="0986BF0501"
+      />
+    );
+
+    const exportButton = screen.getByRole('button', { name: /Exportar \/ Salvar/i });
+    expect(exportButton).toHaveAttribute('aria-expanded', 'false');
+
+    // Abre o menu
+    fireEvent.click(exportButton);
+    expect(exportButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Excel')).toBeInTheDocument();
+
+    // Pressiona Escape
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
+    expect(exportButton).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('Excel')).not.toBeInTheDocument();
+  });
 });
