@@ -197,4 +197,43 @@ describe('DataTableTable Component', () => {
     expect(exportButton).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('Excel')).not.toBeInTheDocument();
   });
+
+  it('renders images with lazy loading and async decoding when image field is visible', () => {
+    const setFilterText = vi.fn();
+    const setCurrentPage = vi.fn();
+    const copyToClipboard = vi.fn();
+    const downloadAllImages = vi.fn();
+
+    const resultsWithImage = [
+      {
+        ...sampleResults[0],
+        imagem: 'https://exemplo.com/foto-filtro.jpg',
+      },
+    ];
+
+    render(
+      <DataTableTable
+        results={resultsWithImage}
+        displayResults={resultsWithImage}
+        paginatedResults={resultsWithImage}
+        filterText=""
+        setFilterText={setFilterText}
+        currentPage={1}
+        setCurrentPage={setCurrentPage}
+        totalPages={1}
+        visibleFields={{ ...defaultVisibleFields, imagem: true }}
+        loading={false}
+        uniqueReferences={{}}
+        getFieldLabel={mockGetFieldLabel}
+        copyToClipboard={copyToClipboard}
+        downloadAllImages={downloadAllImages}
+        partId="0986BF0501"
+      />
+    );
+
+    const img = screen.getAllByRole('img', { name: /0986BF0501/i })[0];
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('loading', 'lazy');
+    expect(img).toHaveAttribute('decoding', 'async');
+  });
 });

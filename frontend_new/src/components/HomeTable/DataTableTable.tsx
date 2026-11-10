@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 import { Copy, FileDown, Loader2, FileSpreadsheet, FileText, SearchX, ShoppingBag, ChevronDown, Settings, Printer } from "lucide-react";
 import { FichaTecnicaModal } from "../Home/FichaTecnicaModal";
-import { ImageGalleryModal } from "../Home/ImageGalleryModal";
+import { ImageGalleryModalTable } from "./ImageGalleryModalTable";
 import { MercadoLivreModal } from "../Home/MercadoLivreModal";
 import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
 import { exportToCerttus } from "../../utils/certtusExport";
 import { Image, Zap, ExternalLink } from "lucide-react";
+
+// Helper para URL de proxy de imagem (evita bloqueio de CORS / hotlink)
+const proxyImageUrl = (url: string): string => {
+  if (!url || !url.startsWith("http")) return url;
+  return `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
+};
 
 interface DataTableTableProps {
   results: any[];
@@ -210,6 +216,33 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
           )}
         </td>
       ),
+    },
+    {
+      id: "imagem",
+      getHeader: () => getFieldLabel("imagem"),
+      render: (res: any) => {
+        const imgUrl = res.imagens && res.imagens.length > 0 ? res.imagens[0] : res.imagem;
+        if (!imgUrl) return <td className="px-4 py-2 text-center text-slate-300">---</td>;
+        return (
+          <td className="px-4 py-2 text-center">
+            <button
+              onClick={() => handleOpenGallery(res)}
+              className="inline-flex w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white items-center justify-center hover:scale-105 transition-transform aspect-square"
+              title="Ver imagem na galeria"
+            >
+              <img
+                src={proxyImageUrl(imgUrl)}
+                alt={res.codigo || "Peça"}
+                loading="lazy"
+                decoding="async"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+              />
+            </button>
+          </td>
+        );
+      },
     },
     {
       id: "observacao",
@@ -760,23 +793,42 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
               key={idx}
               className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
             >
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
-                      {res.marca}
-                    </span>
-                    {visibleFields.codigo && res.codigo && (
-                      <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded">
-                        {res.codigo}
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex items-start gap-3">
+                  {visibleFields.imagem && (res.imagem || (res.imagens && res.imagens.length > 0)) && (
+                    <button
+                      onClick={() => handleOpenGallery(res)}
+                      className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white shrink-0 aspect-square flex items-center justify-center"
+                      title="Ver imagem na galeria"
+                    >
+                      <img
+                        src={proxyImageUrl(res.imagens && res.imagens.length > 0 ? res.imagens[0] : res.imagem)}
+                        alt={res.codigo || "Peça"}
+                        loading="lazy"
+                        decoding="async"
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  )}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
+                        {res.marca}
                       </span>
-                    )}
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
-                      {res.veiculo}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                     {res.modelo} • {res.motor}
+                      {visibleFields.codigo && res.codigo && (
+                        <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded">
+                          {res.codigo}
+                        </span>
+                      )}
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">
+                        {res.veiculo}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                       {res.modelo} • {res.motor}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -968,7 +1020,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
         partId={partId}
       />
 
-      <ImageGalleryModal
+      <ImageGalleryModalTable
         isOpen={galleryOpen}
         onClose={() => setGalleryOpen(false)}
         images={galleryImages}
