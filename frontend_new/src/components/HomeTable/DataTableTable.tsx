@@ -57,7 +57,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
   const [fontOption, setFontOption] = useState<string>("monospace");
   const [customFont, setCustomFont] = useState<string>("");
   const [erpFontSize, setErpFontSize] = useState<number>(9);
-  const [hideDashesRow, setHideDashesRow] = useState<boolean>(true);
+  const [hideDashesRow] = useState<boolean>(true);
   const [mlModalOpen, setMlModalOpen] = useState(false);
   const [mlCleanMode, setMlCleanMode] = useState(false);
   const [mlMenuOpen, setMlMenuOpen] = useState(false);
@@ -379,12 +379,22 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
     exportToPdf(displayResults, results, visibleFields, uniqueReferences, partId, COLUMN_CONFIG);
   };
 
+  const changePageWithTransition = (newPage: number) => {
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
+      (document as any).startViewTransition(() => {
+        setCurrentPage(newPage);
+      });
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
+
   const handleExportCerttus = () => {
     exportToCerttus(displayResults, partId);
   };
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6 transition-all">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6">
       <div className="border-b border-slate-100 dark:border-slate-800">
         {/* Linha 1: Título + Filtro + Botões */}
         <div className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -897,7 +907,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             <button
-              onClick={() => setCurrentPage(1)}
+              onClick={() => changePageWithTransition(1)}
               disabled={currentPage === 1}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               title="Primeira Página"
@@ -905,7 +915,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
               &lt;&lt;
             </button>
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => changePageWithTransition(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
@@ -915,14 +925,14 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
               Pág <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() => changePageWithTransition(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               Próx &gt;
             </button>
             <button
-              onClick={() => setCurrentPage(totalPages)}
+              onClick={() => changePageWithTransition(totalPages)}
               disabled={currentPage === totalPages}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               title="Última Página"

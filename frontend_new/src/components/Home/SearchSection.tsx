@@ -1,4 +1,4 @@
-import React, { RefObject } from "react";
+import React, { type RefObject } from "react";
 import { Search, Loader2 } from "lucide-react";
 
 interface SearchSectionProps {
@@ -10,7 +10,7 @@ interface SearchSectionProps {
   loading: boolean;
   handleSearch: (e: React.FormEvent) => void;
   cancelSearch: () => void;
-  inputRef?: RefObject<HTMLInputElement>;
+  inputRef?: RefObject<HTMLInputElement | null>;
 }
 
 export const SearchSection: React.FC<SearchSectionProps> = ({
