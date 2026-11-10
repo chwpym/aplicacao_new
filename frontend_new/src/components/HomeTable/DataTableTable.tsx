@@ -394,7 +394,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
   };
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6 transition-all @container">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6">
       <div className="border-b border-slate-100 dark:border-slate-800">
         {/* Linha 1: Título + Filtro + Botões */}
         <div className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -635,7 +635,7 @@ export const DataTableTable: React.FC<DataTableTableProps> = ({
       </div>
 
       {/* Desktop Table View */}
-      <div className="md:block hidden overflow-x-auto custom-scrollbar overscroll-contain">
+      <div className="md:block hidden overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse table-auto relative">
           <thead className="bg-slate-50/95 dark:bg-slate-800/95 text-slate-500 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10 backdrop-blur-md shadow-sm">
             <tr>
