@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download, FileDown, Loader2 } from 'lucide-react';
 import JSZip from 'jszip';
 import AlertModal from '../AlertModal';
+import { toast } from '../../utils/toast';
 
 interface ImageGalleryModalProps {
   isOpen: boolean;
@@ -121,6 +122,17 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
       }
 
       const hasSslWarning = response.headers.get("X-SSL-Warning") === "true";
+      const totalRequested = response.headers.get("X-Images-Total");
+      const totalDownloaded = response.headers.get("X-Images-Downloaded");
+      
+      if (totalRequested && totalDownloaded && totalRequested !== totalDownloaded) {
+        toast.warning(`Apenas ${totalDownloaded} de ${totalRequested} imagens foram baixadas com sucesso.`);
+      } else if (hasSslWarning) {
+        toast.warning("Algumas fotos foram baixadas de um provedor com aviso no certificado SSL.");
+      } else {
+        toast.success("Imagens salvas com sucesso!");
+      }
+
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -129,24 +141,9 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
       link.click();
       URL.revokeObjectURL(blobUrl);
 
-      if (hasSslWarning) {
-        setAlertConfig({
-          isOpen: true,
-          title: "Imagens Salvas no ZIP",
-          message: "Todas as imagens foram salvas com sucesso no seu arquivo ZIP!\n\nNota: Algumas fotos foram baixadas de um provedor com aviso no certificado SSL do servidor original.",
-          type: 'warning',
-          buttonText: 'Entendi'
-        });
-      }
     } catch (err: any) {
       console.error("Erro ao gerar ZIP na galeria:", err);
-      setAlertConfig({
-        isOpen: true,
-        title: "Erro no Download",
-        message: err.message || "Erro ao gerar o arquivo ZIP com as imagens.",
-        type: 'danger',
-        buttonText: 'Entendi'
-      });
+      toast.error(err.message || "Erro ao gerar o arquivo ZIP com as imagens.");
     } finally {
       setDownloading(false);
     }

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { searchApi, configApi } from "../services/api";
 import { useAutomakerCache } from "./useAutomakerCache";
-import { generateUniqueReferences, copyToClipboard as performCopy } from "../utils/clipboard";
+import { toast } from "../utils/toast";
+import { generateUniqueReferences, copyToClipboard as performCopy, copySimilaresOnly } from "../utils/clipboard";
 import { copyToClipboardTable } from "../utils/clipboardTable";
 import { copyToClipboardEtiqueta } from "../utils/clipboardEtiqueta";
 import JSZip from "jszip";
@@ -133,6 +134,7 @@ export const useCatalogTable = () => {
   const compareResults = (a: any, b: any) => {
     const priority = [
       "marca",
+      "codigo",
       "veiculo",
       "modelo",
       "versao",
@@ -266,18 +268,23 @@ export const useCatalogTable = () => {
   }, [results]);
 
   const copyToClipboard = (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta",
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta" | "excel" | "similares",
     erpFont: string = "monospace",
-    erpFontSize: number = 9
+    erpFontSize: number = 9,
+    hideDashesRow: boolean = false
   ) => {
     if (mode === "etiqueta") {
       copyToClipboardEtiqueta(results);
     } else if (mode === "tabela") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow, false);
     } else if (mode === "tabela_limpa") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow, false);
     } else if (mode === "tabela_tabulada") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow, false);
+    } else if (mode === "excel") {
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow, true);
+    } else if (mode === "similares") {
+      copySimilaresOnly(results, automakers, uniqueReferences, partId);
     } else {
       performCopy(mode, results, visibleFields, automakers, uniqueReferences);
     }
@@ -336,33 +343,33 @@ export const useCatalogTable = () => {
 
     const processed: any[] = [];
     Object.values(groups).forEach((g: any) => {
-      const uniqueRanges = new Set<string>();
-      g.anos.forEach((a: any) => {
-        uniqueRanges.add(`${a.start}...${a.end}`);
-      });
+      if (g.anos.length > 0) {
+        const starts = g.anos
+          .map((a: any) => a.start)
+          .filter((s: any) => s !== null && s !== undefined && String(s).trim() !== "");
+        const ends = g.anos
+          .map((a: any) => a.end)
+          .filter((e: any) => e !== null && e !== undefined && String(e).trim() !== "");
 
-      Array.from(uniqueRanges)
-        .sort()
-        .forEach((range) => {
-          const [start, end] = range.split("...");
-          processed.push({
-            ...g,
-            ano_inicio:
-              start !== "undefined" && start !== "null" && start !== ""
-                ? isNaN(Number(start))
-                  ? start
-                  : Number(start)
-                : null,
-            ano_fim:
-              end !== "undefined" && end !== "null" && end !== ""
-                ? isNaN(Number(end))
-                  ? end
-                  : Number(end)
-                : null,
-          });
+        const minStart =
+          starts.length > 0
+            ? starts.every((s: any) => !isNaN(Number(s)))
+              ? Math.min(...starts.map(Number))
+              : starts[0]
+            : null;
+        const maxEnd =
+          ends.length > 0
+            ? ends.every((e: any) => !isNaN(Number(e)))
+              ? Math.max(...ends.map(Number))
+              : ends[ends.length - 1]
+            : null;
+
+        processed.push({
+          ...g,
+          ano_inicio: minStart,
+          ano_fim: maxEnd,
         });
-
-      if (g.anos.length === 0) {
+      } else {
         processed.push(g);
       }
     });
@@ -412,12 +419,12 @@ export const useCatalogTable = () => {
     });
 
     if (imagesToDownload.length === 0) {
-      alert("Nenhuma imagem encontrada para baixar.");
+      toast.warning("Nenhuma imagem encontrada para baixar.");
       return;
     }
 
     if (imagesToDownload.length > 50) {
-      alert("⚠️ Limite de Segurança excedido: É permitido baixar no máximo 50 imagens por lote para não sobrecarregar a memória. Por favor, utilize filtros para reduzir a quantidade.");
+      toast.warning("Limite excedido: É permitido baixar no máximo 50 imagens por lote para não sobrecarregar a memória. Por favor, utilize filtros.");
       return;
     }
 
@@ -438,6 +445,17 @@ export const useCatalogTable = () => {
         throw new Error(errorData.detail || `Erro na API de conversão (Status: ${response.status})`);
       }
 
+      // Lê o header de warning (SSL e falha parcial)
+      const sslWarning = response.headers.get("X-SSL-Warning") === "true";
+      const totalRequested = response.headers.get("X-Images-Total");
+      const totalDownloaded = response.headers.get("X-Images-Downloaded");
+      
+      if (totalRequested && totalDownloaded && totalRequested !== totalDownloaded) {
+        toast.warning(`Apenas ${totalDownloaded} de ${totalRequested} imagens foram baixadas com sucesso.`);
+      } else if (sslWarning) {
+        toast.warning("Algumas imagens foram baixadas de servidores com certificado de segurança (SSL) inválido.");
+      }
+
       const blob = await response.blob();
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
@@ -447,7 +465,7 @@ export const useCatalogTable = () => {
       document.body.removeChild(link);
     } catch (error: any) {
       console.error("Erro ao gerar ZIP no servidor:", error);
-      alert(error.message || "Erro ao gerar o arquivo ZIP com as imagens.");
+      toast.error(error.message || "Erro ao gerar o arquivo ZIP com as imagens.");
     } finally {
       setLoading(false);
     }

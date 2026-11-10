@@ -55,13 +55,16 @@ class GraphQLProvider(BaseProvider):
             if response.status_code == 200:
                 data = response.json()
                 if "errors" in data and str(data["errors"]).find("UAN-402") != -1:
-                    print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) no discovery! Verifique se o provedor exige credenciais ou se o token expirou.")
+                    print(f"[{self.config['nome']}] ALERTA CRÍTICO: Token expirado (UAN-402) no discovery! Invalidando cache para renovar.")
+                    auth_service.invalidate_cache(self.config.get("id", -1))
+                    return None
                 
                 nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
                 if nodes:
                     return nodes[0]["product"]["id"]
             elif response.status_code in [401, 403]:
-                print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou HTTP {response.status_code} no discovery! Verifique as credenciais.")
+                print(f"[{self.config['nome']}] ALERTA CRÍTICO: HTTP {response.status_code} no discovery! Invalidando cache para renovar.")
+                auth_service.invalidate_cache(self.config.get("id", -1))
                 
             return None
         except Exception as e:
@@ -94,7 +97,9 @@ class GraphQLProvider(BaseProvider):
             if response.status_code == 200:
                 data = response.json()
                 if "errors" in data and str(data["errors"]).find("UAN-402") != -1:
-                    print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) no discovery! Verifique se o provedor exige credenciais ou se o token expirou.")
+                    print(f"[{self.config['nome']}] ALERTA CRÍTICO: Token expirado (UAN-402) no discovery múltiplo! Invalidando cache para renovar.")
+                    auth_service.invalidate_cache(self.config.get("id", -1))
+                    return []
                 
                 nodes = data.get("data", {}).get("catalogSearch", {}).get("nodes", [])
                 uuids = []
@@ -104,7 +109,8 @@ class GraphQLProvider(BaseProvider):
                         uuids.append(prod_id)
                 return uuids
             elif response.status_code in [401, 403]:
-                print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou HTTP {response.status_code} no discovery! Verifique as credenciais.")
+                print(f"[{self.config['nome']}] ALERTA CRÍTICO: HTTP {response.status_code} no discovery múltiplo! Invalidando cache para renovar.")
+                auth_service.invalidate_cache(self.config.get("id", -1))
                 
             return []
         except Exception as e:
@@ -145,11 +151,12 @@ class GraphQLProvider(BaseProvider):
             # Etapa 1: Discovery (Se o id_peca não for um UUID, tentamos descobrir)
             uuids_alvo = []
             if len(id_peca) < 20 or "-" not in id_peca:
-                # Default 5 para Whaler (que usa código similar p/ múltiplos produtos).
-                # Para todos os outros provedores GraphQL o default continua 1 (sem regressão).
-                # Se no futuro "take_limit" for adicionado ao banco, ele sobrescreve este default.
-                nome_provedor = self.config.get("nome", "").upper()
-                take_limit = self.config.get("take_limit", 5 if "WHALER" in nome_provedor else 1)
+                # Default 10 para todos os provedores GraphQL Fraga.
+                # Buscas por cross-reference retornam naturalmente múltiplos produtos
+                # (ex: Bosch retorna 3 bombas para FH10032). O valor pode ser sobrescrito
+                # pelo campo "take_limit" no mapeamento do provedor no banco de dados.
+                # Se a API retornar menos que 10, o sistema processa apenas os recebidos.
+                take_limit = self.config.get("take_limit", 10)
                 if take_limit > 1:
                     print(
                         f"[{self.config['nome']}] Tentando descobrir múltiplos UUIDs (limite {take_limit}) para: {id_peca}"
@@ -191,7 +198,9 @@ class GraphQLProvider(BaseProvider):
                         if "errors" in data:
                             error_str = str(data["errors"])
                             if "UAN-402" in error_str or "Unauthorized" in error_str:
-                                print(f"[{self.config['nome']}] ALERTA CRÍTICO: API retornou Não Autorizado (UAN-402) na busca! O provedor pode ter alterado para acesso restrito.")
+                                print(f"[{self.config['nome']}] ALERTA CRÍTICO: Token expirado (UAN-402) na busca! Invalidando cache para renovar na próxima chamada.")
+                                auth_service.invalidate_cache(self.config.get("id", -1))
+                                return None
                             
                             if (
                                 "EnumValueNode" in error_str
@@ -309,7 +318,7 @@ class GraphQLProvider(BaseProvider):
             product_group = product_data.get("productGroup")
             group_name = (product_group.get("name") or "") if isinstance(product_group, dict) else ""
             app_desc = product_data.get("applicationDescription") or ""
-            raw_data["observacao"] = group_name if group_name else app_desc
+            raw_data["descricao_produto"] = group_name if group_name else app_desc
 
             # Ficha Técnica
             parsed_specs = self.parse_specifications(product_data.get("specifications"))

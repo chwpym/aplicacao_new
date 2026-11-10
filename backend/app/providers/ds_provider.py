@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import json
 from app.providers.base_provider import BaseProvider
@@ -15,7 +16,7 @@ class DSProvider(BaseProvider):
         )
 
     async def buscar(self, id_peca: str):
-        """Fase 1 (Discovery): Busca o código e filtra os resultados exatos."""
+        """Fase 1 (Discovery): Busca o código (próprio ou similar/OEM) e hidrata os produtos retornados."""
         codigos_busca = self.normalizar_codigo(id_peca)
         resultados_finais = []
         links_processados = set()
@@ -36,52 +37,50 @@ class DSProvider(BaseProvider):
                         full_url = str(response.url)
                         if full_url not in links_processados:
                             print(f"[DS] Redirecionamento direto: {full_url}")
+                            links_processados.add(full_url)
                             detalhes = await self._extrair_detalhes_produto(client, full_url)
                             resultados_finais.extend(detalhes)
-                            links_processados.add(full_url)
                         continue
 
-                    # Caso 2: Listagem de resultados
+                    # Caso 2: Listagem de resultados (suporta código DS e códigos similares/OEM)
                     itens_busca = soup.select(".resultado-itens li.index")
-                    links_para_hidratar = []
+                    tarefas_hidratacao = []
                     
                     for item in itens_busca:
                         img_el = item.select_one("img")
                         link_el = item.select_one('a[href*="/produtos/"]')
                         
-                        if not img_el or not link_el:
+                        if not link_el:
                             continue
 
-                        # FILTRO MIRA LASER (padrão sugerido pelo usuário)
-                        alt_text = img_el.get("alt", "").strip().upper()
-                        link_text = link_el.get_text(strip=True).upper()
+                        alt_text = img_el.get("alt", "").strip().upper() if img_el else ""
+                        href = link_el["href"]
+                        full_url = href if href.startswith("http") else f"https://www.ds.ind.br{href}"
                         
-                        # Verifica se o código de busca bate exatamente com o ALT ou está no título
-                        if cod.upper() == alt_text or f"- {cod.upper()}" in link_text:
-                            href = link_el["href"]
-                            full_url = href if href.startswith("http") else f"https://www.ds.ind.br{href}"
-                            if full_url not in links_processados:
-                                print(f"[DS] Item validado: {alt_text} -> {full_url}")
-                                links_para_hidratar.append(full_url)
-                        else:
-                            print(f"[DS] Ignorado: Buscado {cod.upper()} | Encontrado {alt_text}")
+                        if full_url not in links_processados:
+                            print(f"[DS] Item encontrado ({cod.upper()} -> {alt_text}): {full_url}")
+                            links_processados.add(full_url)
+                            tarefas_hidratacao.append(
+                                self._extrair_detalhes_produto(client, full_url, codigo_sugerido=alt_text)
+                            )
 
-                    # Fase 2 (Hydration): Entra em cada produto validado
-                    for url_prod in links_para_hidratar:
-                        detalhes = await self._extrair_detalhes_produto(client, url_prod)
-                        resultados_finais.extend(detalhes)
-                        links_processados.add(url_prod)
+                    # Fase 2 (Hydration em paralelo): Entra em cada produto encontrado simultaneamente
+                    if tarefas_hidratacao:
+                        listas_detalhes = await asyncio.gather(*tarefas_hidratacao, return_exceptions=True)
+                        for det in listas_detalhes:
+                            if isinstance(det, list):
+                                resultados_finais.extend(det)
 
                 except Exception as e:
                     print(f"[DS] Erro na busca por {cod}: {e}")
 
-        # Injeta o código da peça em todos os resultados antes de formatar
+        # Injeta o código da peça caso algum resultado não tenha extraído o próprio código DS
         for r in resultados_finais:
             if not r.get("codigo"):
                 r["codigo"] = id_peca.strip().upper()
         return [self.formatar_resultado(r) for r in resultados_finais]
 
-    async def _extrair_detalhes_produto(self, client, url):
+    async def _extrair_detalhes_produto(self, client, url, codigo_sugerido: str = ""):
         """Extrai dados técnicos profundos da página do produto."""
         try:
             print(f"[DS] Extraindo detalhes: {url}")
@@ -95,6 +94,15 @@ class DSProvider(BaseProvider):
             titulo_produto = soup.select_one("h1").get_text(strip=True) if soup.select_one("h1") else ""
             categoria_produto = soup.select_one(".breadcrumbs").get_text(strip=True) if soup.select_one(".breadcrumbs") else ""
             
+            # Extrai o código real da peça DS (pelo alt_text da busca, pelo final da URL ou pelo título)
+            codigo_real = codigo_sugerido.strip().upper() if codigo_sugerido else ""
+            if not codigo_real:
+                partes_url = [p for p in url.rstrip("/").split("/") if p]
+                if partes_url:
+                    codigo_real = partes_url[-1].strip().upper()
+            if not codigo_real and "-" in titulo_produto:
+                codigo_real = titulo_produto.split("-")[-1].strip().upper()
+
             # Referências OEM / Similares (Ajustado para o padrão de coluna única da DS)
             referencias = []
             for row in soup.select(".jq-codes tr, .tabela-referencias tr, .jq-refs tr"):
@@ -129,6 +137,16 @@ class DSProvider(BaseProvider):
                     full_src = src if src.startswith("http") else f"https://www.ds.ind.br{src}"
                     if full_src not in imagens:
                         imagens.append(full_src)
+                        
+            # Ficha Técnica
+            ficha_tecnica = {}
+            span_contrast = soup.select_one("span.contrast")
+            if span_contrast:
+                info_text = span_contrast.get_text(strip=True)
+                for item in info_text.split('|'):
+                    if ':' in item:
+                        k, v = item.split(':', 1)
+                        ficha_tecnica[k.strip()] = v.strip()
 
             # Aplicações
             resultados = []
@@ -167,7 +185,11 @@ class DSProvider(BaseProvider):
                 else:
                     start_yr = ano_raw
 
+                descricao_peca = titulo_produto.strip()
+                note_peca = cols[5].get_text(strip=True) if len(cols) > 5 else ""
+
                 res = {
+                    "codigo": codigo_real,
                     "brand": cols[0].get_text(strip=True),
                     "name": cols[1].get_text(strip=True),
                     "model": cols[1].get_text(strip=True),
@@ -176,11 +198,13 @@ class DSProvider(BaseProvider):
                     "configuracao_motor": config_motor,
                     "startYear": start_yr,
                     "endYear": end_yr,
-                    "note": cols[5].get_text(strip=True) if len(cols) > 5 else "",
-                    "description": f"{titulo_produto} {categoria_produto}", 
+                    "observacao": note_peca,
+                    "descricao_produto": descricao_peca,
+                    "imagem": imagens[0] if imagens else "",
                     "images": imagens,
                     "originalNumbers": ref_str,
-                    "provedor": "DS"
+                    "provedor": "DS",
+                    "ficha_tecnica": ficha_tecnica if ficha_tecnica else None
                 }
                 
                 if res["brand"] and res["brand"].upper() != "MONTADORA":

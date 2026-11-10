@@ -208,7 +208,8 @@ class MultiqualitaProvider(BaseProvider):
                             "imagem": image_url,
                             "referencias": referencias,
                             "ficha_tecnica": caracteristicas,
-                            "observacao": descricao
+                            "descricao_produto": descricao,
+                            "observacao": ""
                         }
                         items.append(self.formatar_resultado(res))
             
@@ -216,10 +217,11 @@ class MultiqualitaProvider(BaseProvider):
                 items.append(self.formatar_resultado({
                     "marca_peca": "MULTIQUALITÀ",
                     "codigo": codigo,
-                    "veiculo": descricao,
+                    "veiculo": "",
                     "imagem": image_url,
                     "referencias": referencias,
-                    "ficha_tecnica": caracteristicas
+                    "ficha_tecnica": caracteristicas,
+                    "descricao_produto": descricao,
                 }))
 
         return items

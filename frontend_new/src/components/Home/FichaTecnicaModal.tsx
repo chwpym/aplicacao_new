@@ -119,7 +119,7 @@ export const FichaTecnicaModal: React.FC<FichaTecnicaModalProps> = ({ isOpen, on
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
-                Ficha Técnica: <span className="text-primary">{item.codigo || partId || ""}</span>
+                Ficha Técnica: <span className="text-primary">{item.codigo || partId || ""} {item.descricao_produto ? `- ${item.descricao_produto}` : ""}</span>
               </h2>
               <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
                 {item.marca} • {item.veiculo}

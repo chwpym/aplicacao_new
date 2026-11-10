@@ -1,9 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { searchApi, configApi } from "../services/api";
 import { useAutomakerCache } from "./useAutomakerCache";
-import { generateUniqueReferences, copyToClipboard as performCopy } from "../utils/clipboard";
+import { generateUniqueReferences, copyToClipboard as performCopy, copySimilaresOnly } from "../utils/clipboard";
 import { copyToClipboardTable } from "../utils/clipboardTable";
-import JSZip from "jszip";
+import { copyToClipboardEtiqueta } from "../utils/clipboardEtiqueta";
+import { toast } from "../utils/toast";
+
+
+// Cache em memória de sessão: impede que fetchProvedores e loadUserPreferences
+// sejam chamados mais de uma vez, mesmo que o componente Home seja remontado.
+let _initDone = false;
+let _cachedProvedores: any[] = [];
+
 export const useCatalog = () => {
   const { automakers } = useAutomakerCache();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +60,12 @@ export const useCatalog = () => {
   };
 
   useEffect(() => {
+    // Se já inicializou nesta sessão, restaura os provedores do cache e não refaz as chamadas
+    if (_initDone) {
+      if (_cachedProvedores.length > 0) setProvedores(_cachedProvedores);
+      return;
+    }
+    _initDone = true;
     fetchProvedores();
     loadUserPreferences(); // Carregar preferências do banco ao iniciar
   }, []);
@@ -81,6 +95,7 @@ export const useCatalog = () => {
         .sort((a: any, b: any) => a.nome.localeCompare(b.nome));
 
       setProvedores(ativos);
+      _cachedProvedores = ativos; // Salva no cache de sessão
     } catch (error) {
       console.error("Erro ao buscar provedores:", error);
     }
@@ -136,6 +151,7 @@ export const useCatalog = () => {
   const compareResults = (a: any, b: any) => {
     const priority = [
       "marca",
+      "codigo",
       "veiculo",
       "modelo",
       "versao",
@@ -302,7 +318,7 @@ export const useCatalog = () => {
   }, [filteredResults]);
 
   const copyToClipboard = (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta",
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta" | "excel" | "similares",
     erpFont: string = "monospace",
     erpFontSize: number = 9,
     hideDashesRow: boolean = false
@@ -312,11 +328,15 @@ export const useCatalog = () => {
         copyToClipboardEtiqueta(filteredResults);
       });
     } else if (mode === "tabela") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow, false);
     } else if (mode === "tabela_limpa") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "limpa", agrupar, erpFont, erpFontSize, hideDashesRow, false);
     } else if (mode === "tabela_tabulada") {
-      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow);
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "tabulado", agrupar, erpFont, erpFontSize, hideDashesRow, false);
+    } else if (mode === "excel") {
+      copyToClipboardTable(displayResults, visibleFields, automakers, uniqueReferences, "grade", agrupar, erpFont, erpFontSize, hideDashesRow, true);
+    } else if (mode === "similares") {
+      copySimilaresOnly(filteredResults, automakers, uniqueReferences, partId);
     } else {
       performCopy(mode, filteredResults, visibleFields, automakers, uniqueReferences);
     }
@@ -370,36 +390,33 @@ export const useCatalog = () => {
     // Transforma os grupos em linhas de exibição
     const processed: any[] = [];
     Object.values(groups).forEach((g: any) => {
-      // No modo de exibição, vamos manter os ranges de anos organizados (similar ao INTERM)
-      const uniqueRanges = new Set<string>();
-      g.anos.forEach((a: any) => {
-        uniqueRanges.add(`${a.start}...${a.end}`);
-      });
+      if (g.anos.length > 0) {
+        const starts = g.anos
+          .map((a: any) => a.start)
+          .filter((s: any) => s !== null && s !== undefined && String(s).trim() !== "");
+        const ends = g.anos
+          .map((a: any) => a.end)
+          .filter((e: any) => e !== null && e !== undefined && String(e).trim() !== "");
 
-      Array.from(uniqueRanges)
-        .sort()
-        .forEach((range) => {
-          const [start, end] = range.split("...");
-          processed.push({
-            ...g,
-            // Garante que start/end sejam tratados corretamente para ordenação posterior
-            ano_inicio:
-              start !== "undefined" && start !== "null" && start !== ""
-                ? isNaN(Number(start))
-                  ? start
-                  : Number(start)
-                : null,
-            ano_fim:
-              end !== "undefined" && end !== "null" && end !== ""
-                ? isNaN(Number(end))
-                  ? end
-                  : Number(end)
-                : null,
-          });
+        const minStart =
+          starts.length > 0
+            ? starts.every((s: any) => !isNaN(Number(s)))
+              ? Math.min(...starts.map(Number))
+              : starts[0]
+            : null;
+        const maxEnd =
+          ends.length > 0
+            ? ends.every((e: any) => !isNaN(Number(e)))
+              ? Math.max(...ends.map(Number))
+              : ends[ends.length - 1]
+            : null;
+
+        processed.push({
+          ...g,
+          ano_inicio: minStart,
+          ano_fim: maxEnd,
         });
-
-      // Se não tiver anos, adiciona a linha base
-      if (g.anos.length === 0) {
+      } else {
         processed.push(g);
       }
     });
@@ -453,40 +470,53 @@ export const useCatalog = () => {
     });
 
     if (imagesToDownload.length === 0) {
-      alert("Nenhuma imagem encontrada para baixar.");
+      toast.warning("Nenhuma imagem encontrada para baixar.");
+      return;
+    }
+    if (imagesToDownload.length > 50) {
+      toast.warning("Limite excedido: É permitido baixar no máximo 50 imagens por lote para não sobrecarregar a memória. Por favor, utilize filtros.");
       return;
     }
 
     setLoading(true);
-    const zip = new JSZip();
 
     try {
-      const downloadPromises = imagesToDownload.map(async (img) => {
-        try {
-          // Usa o proxy do backend para evitar CORS
-          const proxyUrl = `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(img.url)}`;
-          const response = await fetch(proxyUrl);
-          if (!response.ok)
-            throw new Error(`HTTP error! status: ${response.status}`);
-          const blob = await response.blob();
-          zip.file(img.name, blob);
-        } catch (err) {
-          console.error(`Falha ao baixar imagem via proxy: ${img.url}`, err);
-        }
+      const urlsToDownload = imagesToDownload.map(img => img.url);
+      const response = await fetch("http://localhost:8000/search/download/zip", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(urlsToDownload),
       });
 
-      await Promise.all(downloadPromises);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Erro na API de conversão (Status: ${response.status})`);
+      }
 
-      const content = await zip.generateAsync({ type: "blob" });
+      // Lê o header de warning (SSL)
+      const sslWarning = response.headers.get("X-SSL-Warning") === "true";
+      const totalRequested = response.headers.get("X-Images-Total");
+      const totalDownloaded = response.headers.get("X-Images-Downloaded");
+      
+      if (totalRequested && totalDownloaded && totalRequested !== totalDownloaded) {
+        toast.warning(`Apenas ${totalDownloaded} de ${totalRequested} imagens foram baixadas com sucesso.`);
+      } else if (sslWarning) {
+        toast.warning("Algumas imagens foram baixadas de servidores com certificado de segurança (SSL) inválido.");
+      }
+
+      const blob = await response.blob();
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(content);
-      link.download = `imagens_${partId || "busca"}.zip`;
+      link.href = URL.createObjectURL(blob);
+      link.download = `imagens_convertidas_${partId || "busca"}.zip`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error("Erro ao gerar ZIP:", error);
-     } finally {
+    } catch (error: any) {
+      console.error("Erro ao gerar ZIP no servidor:", error);
+      toast.error(error.message || "Erro ao gerar o arquivo ZIP com as imagens.");
+    } finally {
       setLoading(false);
     }
   };

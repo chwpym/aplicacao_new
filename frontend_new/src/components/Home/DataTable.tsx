@@ -21,9 +21,10 @@ interface DataTableProps {
   uniqueReferences: any;
   getFieldLabel: (field: string) => string;
   copyToClipboard: (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta" | "excel" | "similares",
     erpFont?: string,
-    erpFontSize?: number
+    erpFontSize?: number,
+    hideDashesRow?: boolean
   ) => void;
   downloadAllImages: () => void;
   partId: string;
@@ -106,7 +107,7 @@ export const DataTable: React.FC<DataTableProps> = ({
     if (imgs.length === 0) return;
 
     setGalleryImages(imgs);
-    setGalleryTitle(`${res.marca} - ${res.veiculo} ${res.modelo}`);
+    setGalleryTitle(`${res.marca || res.provedor || "N/A"} - ${res.codigo}`);
     setGalleryOpen(true);
   };
 
@@ -468,6 +469,14 @@ export const DataTable: React.FC<DataTableProps> = ({
                       <button onClick={() => { copyToClipboard("tabela_tabulada", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
                         <Copy size={14} className="text-amber-600" /> Tabulado ERP
                       </button>
+                      <div className="h-px bg-slate-200 dark:bg-slate-700/50 my-1"></div>
+                      <button onClick={() => { copyToClipboard("excel", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <FileSpreadsheet size={14} className="text-green-600" /> Excel / Word (HTML)
+                      </button>
+                      <button onClick={() => { copyToClipboard("similares"); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Copy size={14} className="text-blue-600" /> Apenas Similares
+                      </button>
+                      <div className="h-px bg-slate-200 dark:bg-slate-700/50 my-1"></div>
                       <button onClick={() => { copyToClipboard("etiqueta"); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
                         <Printer size={14} className="text-purple-600" /> Etiqueta (ZPL)
                       </button>

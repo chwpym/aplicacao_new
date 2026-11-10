@@ -1,10 +1,48 @@
 import asyncio
 import json
+import threading
+import time
 from sqlalchemy.orm import Session
 from app.models import models
 from app.providers import provider_factory
 from app.services import text_service
 from app.services.cache_service import cache_service
+
+# Cache em memória para Siglas e Palavras a Remover (evita 50 queries SQLite por busca global)
+_rules_lock = threading.Lock()
+_cached_siglas_map: dict = {}
+_cached_remover_map: dict = {}
+_rules_last_load: float = 0.0
+
+
+def _get_text_rules_cached(db: Session) -> tuple[dict, dict]:
+    """Retorna (siglas_map, remover_map) usando cache em memória de 60 segundos."""
+    global _cached_siglas_map, _cached_remover_map, _rules_last_load
+    now = time.time()
+    if now - _rules_last_load < 60 and (_cached_siglas_map or _cached_remover_map):
+        return _cached_siglas_map, _cached_remover_map
+
+    with _rules_lock:
+        if time.time() - _rules_last_load < 60 and (_cached_siglas_map or _cached_remover_map):
+            return _cached_siglas_map, _cached_remover_map
+
+        siglas_map = {}
+        for s in db.query(models.Sigla).all():
+            campo = s.campo or "marca"
+            if campo not in siglas_map:
+                siglas_map[campo] = {}
+            siglas_map[campo][s.nome_completo.upper().strip()] = s.abreviacao
+
+        remover_map = {}
+        for p in db.query(models.PalavraRemover).all():
+            if p.campo not in remover_map:
+                remover_map[p.campo] = []
+            remover_map[p.campo].append(p.palavra)
+
+        _cached_siglas_map = siglas_map
+        _cached_remover_map = remover_map
+        _rules_last_load = time.time()
+        return _cached_siglas_map, _cached_remover_map
 
 
 async def buscar_em_todos(
@@ -13,7 +51,6 @@ async def buscar_em_todos(
     """
     Orquestra a busca em múltiplos provedores com suporte a cache.
     """
-    import time
     start_time = time.time()
     
     # [PLACEHOLDER] Registro de Auditoria SaaS: Logar quem buscou o quê
@@ -56,23 +93,12 @@ async def buscar_em_todos(
                 for app in resp:
                     app["provedor"] = p_nome
 
-        # Salva dados brutos no cache
-        cache_service.set(cache_key, raw_respostas)
+        # Salva dados brutos no cache (apenas se houver ao menos 1 resultado válido)
+        if any(raw_respostas):
+            cache_service.set(cache_key, raw_respostas)
 
-    # 4. Carrega Siglas e Palavras para remover (Sempre atualizado)
-    siglas_map = {}
-    for s in db.query(models.Sigla).all():
-        campo = s.campo or "marca"
-        if campo not in siglas_map:
-            siglas_map[campo] = {}
-        siglas_map[campo][s.nome_completo.upper().strip()] = s.abreviacao
-
-    palavras_remover = db.query(models.PalavraRemover).all()
-    remover_map = {}
-    for p in palavras_remover:
-        if p.campo not in remover_map:
-            remover_map[p.campo] = []
-        remover_map[p.campo].append(p.palavra)
+    # 4. Carrega Siglas e Palavras para remover (Com cache em memória de 60s)
+    siglas_map, remover_map = _get_text_rules_cached(db)
 
     # 5. Processamento e Normalização Dinâmica
     todas_aplicacoes = []
@@ -131,7 +157,6 @@ async def buscar_em_todos(
             todas_aplicacoes.append(app)
 
     # 6. Agrupamento por modelo/motor (Dinâmico)
-    # [PLACEHOLDER] Analytics: Tempo de resposta total
     duration = time.time() - start_time
     print(f"[METRICS] Busca por {id_peca} concluída em {duration:.2f}s com {len(todas_aplicacoes)} resultados.")
 
@@ -156,7 +181,8 @@ async def buscar_detalhes(db: Session, provedor_id: int, codigo_peca: str):
 
 def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
     """
-    Lógica interna para agrupar aplicações idênticas e mesclar ranges de anos.
+    Lógica interna para agrupar aplicações idênticas e mesclar ranges de anos,
+    preservando a ordem original dos termos técnicos.
     """
     extra_fields = ["observacao", "posicao", "lado", "direcao", "sistema_freio", "restricao", "apenas", "referencias", "combustivel"]
     agrupados = {}
@@ -165,6 +191,7 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
         # Agrupamento Relaxado (ignorando configuracao_motor para a chave primária)
         key = (
             str(app.get("marca", "")),
+            str(app.get("codigo", "")),
             str(app.get("veiculo", "")),
             str(app.get("modelo", "")),
             str(app.get("versao", "")),
@@ -173,26 +200,30 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
         )
 
         if key not in agrupados:
-            agrupados[key] = {**app, "anos": [], "configs": set()}
+            agrupados[key] = {**app, "anos": [], "configs": []}
             for f in extra_fields:
-                agrupados[key][f + "_set"] = set()
+                agrupados[key][f + "_list"] = []
                 
-        # Popula os campos extras no set para não perder info no agrupamento
+        # Popula os campos extras preservando a ordem original (sem duplicatas)
         for f in extra_fields:
             val = app.get(f)
             if val:
+                target_list = agrupados[key][f + "_list"]
                 if f == "referencias":
                     for ref_part in str(val).split(" | "):
-                        if ref_part.strip():
-                            agrupados[key][f + "_set"].add(ref_part.strip())
+                        ref_clean = ref_part.strip()
+                        if ref_clean and ref_clean not in target_list:
+                            target_list.append(ref_clean)
                 else:
-                    agrupados[key][f + "_set"].add(val)
+                    if val not in target_list:
+                        target_list.append(val)
 
         if app.get("ano_inicio") or app.get("ano_fim"):
             agrupados[key]["anos"].append((app.get("ano_inicio"), app.get("ano_fim")))
             
-        if app.get("configuracao_motor"):
-            agrupados[key]["configs"].add(app.get("configuracao_motor"))
+        cfg = app.get("configuracao_motor")
+        if cfg and cfg not in agrupados[key]["configs"]:
+            agrupados[key]["configs"].append(cfg)
 
     resultados_finais = []
     for key, data in agrupados.items():
@@ -201,22 +232,22 @@ def _agrupar_por_veiculo(todas_aplicacoes: list[dict]) -> list[dict]:
         data["ano_fim"] = str(ano_fim) if ano_fim is not None else None
         del data["anos"]
         
-        # Mescla as configurações divergentes
+        # Mescla as configurações divergentes mantendo a ordem original
         configs = [c for c in data["configs"] if c]
-        data["configuracao_motor"] = " / ".join(sorted(configs)) if configs else ""
+        data["configuracao_motor"] = " / ".join(configs) if configs else ""
         del data["configs"]
         
-        # Mescla extra_fields
+        # Mescla extra_fields mantendo a ordem original
         for f in extra_fields:
-            if f + "_set" in data:
-                f_items = [v for v in data[f + "_set"] if v]
+            if f + "_list" in data:
+                f_items = [v for v in data[f + "_list"] if v]
                 if f_items:
                     # Referências usa pipe padrão, o resto usa barra
                     joiner = " | " if f == "referencias" else " / "
-                    data[f] = joiner.join(sorted(f_items))
+                    data[f] = joiner.join(f_items)
                 else:
                     data[f] = ""
-                del data[f + "_set"]
+                del data[f + "_list"]
             
         resultados_finais.append(data)
 

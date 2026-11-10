@@ -21,6 +21,12 @@ Muitas marcas (como Tuba Cabos) carregam referências em abas separadas via AJAX
     - `/oem` (Números originais da montadora)
 - **Implementação:** Usar `asyncio.gather` para disparar as requisições para esses endpoints em paralelo e enriquecer o objeto `referencias`.
 
+### 2.1 Abas DESCRIÇÃO e ADICIONAIS (genérico no provedor base)
+- **Endpoints:** `{url_produto}/descrition` (sic) e `{url_produto}/additional`, expostos como `<a data-remote=...>`.
+- **Regra:** O `BaseBuscaNaRedeProvider._fetch_extra_tabs` só faz a requisição se o link da aba existir na página. Marcas sem a aba (ex: Tuba hoje) não têm custo extra e passam a funcionar sozinhas se a aba surgir.
+- **Parse:** DESCRIÇÃO = texto de `.card-detalhes` → `ficha_tecnica["DESCRIÇÃO"]`. ADICIONAIS = `.adicionais li` (rótulo + `<strong>` valor) → uma chave por rótulo (PESO LÍQUIDO, NCM, CÓDIGO DE BARRAS...).
+- **Não duplicar** essa lógica nas subclasses.
+
 ## 3. Limpeza de SEO e Repetições
 A plataforma frequentemente repete a montadora e o modelo (ex: "FIAT FIAT FIAT PALIO PALIO").
 - **Técnica:** Implementar deduplicação de palavras adjacentes idênticas no `_parse_application_block`.

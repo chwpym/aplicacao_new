@@ -46,22 +46,47 @@ const GRAPHQL_TEMPLATE = `query getProduct($id: String!, $market: MarketType!) {
   }
 }`;
 
+const FRAGA_DEFAULT_HEADERS = JSON.stringify(
+  {
+    Origin: "https://[BRAND].catalogofraga.com.br",
+    Referer: "https://[BRAND].catalogofraga.com.br/",
+  },
+  null,
+  2,
+);
+
+const FRAGA_DEFAULT_MAPPING = JSON.stringify(
+  {
+    marca: "brand",
+    veiculo: "name",
+    motor: "engineName",
+    ano_inicio: "startYear",
+    imagem: "images",
+  },
+  null,
+  2,
+);
+
 const ProvedorForm: React.FC<ProvedorFormProps> = ({
   provedor,
   onSave,
   onCancel,
 }) => {
+  const isNovo = !provedor;
+
   const [formData, setFormData] = useState({
     nome: provedor?.nome || "",
-    url: provedor?.url || "",
+    url:
+      provedor?.url ||
+      (isNovo ? "https://bff.catalogofraga.com.br/gateway/graphql" : ""),
     tipo: provedor?.tipo || "graphql",
     ativo: provedor?.ativo ?? true,
-    headers: provedor?.headers || "{}",
-    query: provedor?.query || "",
+    headers: provedor?.headers || (isNovo ? FRAGA_DEFAULT_HEADERS : "{}"),
+    query: provedor?.query || (isNovo ? GRAPHQL_TEMPLATE : ""),
     login_required: provedor?.login_required ?? false,
     username: provedor?.username || "",
     password: provedor?.password || "",
-    mapeamento: provedor?.mapeamento || "{}",
+    mapeamento: provedor?.mapeamento || (isNovo ? FRAGA_DEFAULT_MAPPING : "{}"),
   });
 
   const [showHelp, setShowHelp] = useState(false);
@@ -241,14 +266,15 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
           }
         }
 
-        // Auto-preenchimento e atualização em tempo real de headers Fraga (Origin e Referer) a partir do nome digitado
-        if (currentTipo === "graphql" || currentTipo === "cofap") {
+        // Auto-preenchimento no NOVO provedor a partir do nome digitado
+        // Na edição (provedor existente), o nome é livre e NUNCA altera os headers
+        if (isNovo && (currentTipo === "graphql" || currentTipo === "cofap")) {
           const brandSlug = currentNome.toLowerCase().trim().replace(/\s+/g, "");
           const cleanHeaders = (next.headers || "").trim();
           if (
             !cleanHeaders ||
             cleanHeaders === "{}" ||
-            cleanHeaders.includes("catalogofraga.com.br")
+            cleanHeaders.includes("[BRAND]")
           ) {
             next.headers = JSON.stringify(
               {
@@ -292,6 +318,22 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
     }
   };
 
+  const handleInsertFragaHeaders = () => {
+    const brandSlug =
+      (formData.nome || "").toLowerCase().trim().replace(/\s+/g, "") || "[BRAND]";
+    setFormData((prev: any) => ({
+      ...prev,
+      headers: JSON.stringify(
+        {
+          Origin: `https://${brandSlug}.catalogofraga.com.br`,
+          Referer: `https://${brandSlug}.catalogofraga.com.br/`,
+        },
+        null,
+        2,
+      ),
+    }));
+  };
+
   const handleSave = () => {
     const trimmedNome = formData.nome.trim();
     const trimmedUrl = formData.url.trim();
@@ -308,27 +350,31 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
       return;
     }
 
-    // Validações rigorosas de espaços
-    if (formData.nome !== trimmedNome) {
-      setError("O nome do provedor possui espaços extras em branco no início ou no fim. Remova-os.");
-      return;
-    }
-
-    if (formData.url !== trimmedUrl) {
-      setError("A URL do endpoint possui espaços extras em branco no início ou no fim. Remova-os.");
-      return;
-    }
+    let finalHeaders = trimmedHeaders;
 
     if (formData.tipo === "graphql" || formData.tipo === "cofap") {
       try {
         const parsed = JSON.parse(trimmedHeaders);
-        const keys = Object.keys(parsed).map(k => k.toLowerCase());
+        // Higieniza chaves e valores removendo espaços acidentais nas pontas
+        const cleanedHeaders: Record<string, any> = {};
+        for (const [k, v] of Object.entries(parsed)) {
+          const cleanKey = k.trim();
+          const cleanVal = typeof v === "string" ? v.trim() : v;
+          cleanedHeaders[cleanKey] = cleanVal;
+        }
+
+        const keys = Object.keys(cleanedHeaders).map((k) => k.toLowerCase());
         if (!keys.includes("origin") || !keys.includes("referer")) {
-          setError("Para provedores GraphQL Fraga, os cabeçalhos (headers) devem conter 'Origin' e 'Referer'.");
+          setError(
+            "Para provedores GraphQL Fraga, os cabeçalhos (headers) devem conter 'Origin' e 'Referer'.",
+          );
           return;
         }
+        finalHeaders = JSON.stringify(cleanedHeaders, null, 2);
       } catch (err) {
-        setError("Os cabeçalhos (headers) não são um JSON válido. Verifique aspas, chaves e vírgulas.");
+        setError(
+          "Os cabeçalhos (headers) não são um JSON válido. Verifique aspas, chaves e vírgulas.",
+        );
         return;
       }
     }
@@ -338,7 +384,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
       ...formData,
       nome: trimmedNome,
       url: trimmedUrl,
-      headers: trimmedHeaders,
+      headers: finalHeaders,
       query: trimmedQuery,
     });
   };
@@ -443,9 +489,21 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               <label className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
                 Cabeçalhos JSON (Headers)
               </label>
-              <span className="text-[10px] text-primary italic font-medium">
-                Obrigatório para Fraga (Origin/Referer)
-              </span>
+              <div className="flex items-center gap-2">
+                {(formData.tipo === "graphql" || formData.tipo === "cofap") && (
+                  <button
+                    type="button"
+                    onClick={handleInsertFragaHeaders}
+                    className="text-[10px] text-primary hover:underline font-medium"
+                    title="Preenche o modelo de Origin/Referer com base no nome"
+                  >
+                    Preencher Exemplo Fraga
+                  </button>
+                )}
+                <span className="text-[10px] text-primary italic font-medium">
+                  Obrigatório para Fraga (Origin/Referer)
+                </span>
+              </div>
             </div>
             <textarea
               name="headers"

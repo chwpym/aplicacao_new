@@ -119,26 +119,51 @@ class IguacuProvider(BaseProvider):
                         "referencias": referencia
                     }
 
-                    # Parse ano (ex: 16->, 12-17)
+                    # Parse ano (ex: "03 03", "02 06", "15 >", "16->", "12-17", "16")
                     if ano and ano != "&nbsp;":
-                        if "->" in ano or "-" in ano and ">" in ano:
-                            start_str = ano.replace("->", "").replace(">", "").replace("-", "").strip()
-                            if len(start_str) == 2 and start_str.isdigit():
-                                app_data["ano_inicio"] = f"20{start_str}" if int(start_str) < 50 else f"19{start_str}"
-                        elif "-" in ano:
-                            parts = ano.split("-")
+                        ano_clean = ano.replace("&gt;", ">").strip()
+                        
+                        def _format_year(val_str):
+                            val_str = val_str.strip()
+                            if val_str.isdigit():
+                                if len(val_str) == 2:
+                                    num = int(val_str)
+                                    return f"20{val_str}" if num < 50 else f"19{val_str}"
+                                elif len(val_str) == 4:
+                                    return val_str
+                            return None
+
+                        if ">" in ano_clean:
+                            # Ano inicio em diante (ex: "15 >", "16->", "2015 >")
+                            start_part = ano_clean.split(">")[0].replace("->", "").replace("-", "").strip()
+                            parsed_start = _format_year(start_part)
+                            if parsed_start:
+                                app_data["ano_inicio"] = parsed_start
+                        elif "-" in ano_clean:
+                            # Intervalo com hífen (ex: "12-17", "2012-2017")
+                            parts = ano_clean.split("-")
                             if len(parts) == 2:
-                                start_str = parts[0].strip()
-                                end_str = parts[1].strip()
-                                if len(start_str) == 2 and start_str.isdigit():
-                                    app_data["ano_inicio"] = f"20{start_str}" if int(start_str) < 50 else f"19{start_str}"
-                                if len(end_str) == 2 and end_str.isdigit():
-                                    app_data["ano_fim"] = f"20{end_str}" if int(end_str) < 50 else f"19{end_str}"
+                                s_year = _format_year(parts[0])
+                                e_year = _format_year(parts[1])
+                                if s_year:
+                                    app_data["ano_inicio"] = s_year
+                                if e_year:
+                                    app_data["ano_fim"] = e_year
                         else:
-                            # Ano unico ex: "16"
-                            if len(ano) == 2 and ano.isdigit():
-                                app_data["ano_inicio"] = f"20{ano}" if int(ano) < 50 else f"19{ano}"
-                                app_data["ano_fim"] = app_data["ano_inicio"]
+                            # Separado por espaço (ex: "03 03", "02 06", "2003 2006") ou ano único ("16")
+                            parts = ano_clean.split()
+                            if len(parts) == 2:
+                                s_year = _format_year(parts[0])
+                                e_year = _format_year(parts[1])
+                                if s_year:
+                                    app_data["ano_inicio"] = s_year
+                                if e_year:
+                                    app_data["ano_fim"] = e_year
+                            elif len(parts) == 1:
+                                s_year = _format_year(parts[0])
+                                if s_year:
+                                    app_data["ano_inicio"] = s_year
+                                    app_data["ano_fim"] = s_year
 
                     results.append(self.formatar_resultado(app_data))
 

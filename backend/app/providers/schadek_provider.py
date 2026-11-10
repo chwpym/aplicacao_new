@@ -74,8 +74,8 @@ class SchadekProvider(BaseProvider):
                     norm_cache = {}
 
                     for app in apps_list:
-                        montadora_raw = app.get("automaker", "").upper().strip()
-                        modelo_raw = app.get("model", "").upper().strip()
+                        montadora_raw = str(app.get("automaker") or "").upper().strip()
+                        modelo_raw = str(app.get("model") or "").upper().strip()
                         
                         if not montadora_raw or not modelo_raw:
                             continue
@@ -89,11 +89,11 @@ class SchadekProvider(BaseProvider):
                             "montadora": montadora_raw,
                             "modelo": modelo_raw,
                             "versao": "",
-                            "motor": app.get("engineType", "").upper().strip(),
-                            "configuracao_motor": app.get("comments", "").upper().strip(),
+                            "motor": str(app.get("engineType") or "").upper().strip(),
+                            "configuracao_motor": str(app.get("comments") or "").upper().strip(),
                             "combustivel": "",
-                            "ano_inicio": app.get("initialDate", "").strip(),
-                            "ano_fim": app.get("endDate", "").strip(),
+                            "ano_inicio": str(app.get("initialDate") or "").strip(),
+                            "ano_fim": str(app.get("endDate") or "").strip(),
                             "observacao": f"{name} | {observation}".strip(" |"),
                             "imagem": imagem_url,
                             "referencias": referencias_originais,

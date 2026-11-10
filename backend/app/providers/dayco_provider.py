@@ -192,6 +192,7 @@ class DaycoProvider(BaseProvider):
             "motor": motor_completo,
             "ano_inicio": ano_inicio,
             "ano_fim": ano_fim,
+            "descricao_produto": produto.get("DescrizioneProdotto", "").strip(),
             "observacao": " | ".join(observacao_final),
             "imagem": imagem,
             "referencias": refs_str,

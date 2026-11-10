@@ -56,6 +56,11 @@ def get_provider(config_model):
 
         return TecfilProvider(config)
 
+    elif config["tipo"] == "tecfil_lab":
+        from app.providers.tecfil_lab_provider import TecfilLabProvider
+
+        return TecfilLabProvider(config)
+
     elif config["tipo"] == "vox":
         from app.providers.vox_provider import VoxProvider
 
@@ -95,6 +100,10 @@ def get_provider(config_model):
     elif config["tipo"] == "tcchicotes":
         from app.providers.tcchicotes_provider import TcChicotesProvider
         return TcChicotesProvider(config)
+
+    elif config["tipo"] == "wasco":
+        from app.providers.wasco_provider import WascoProvider
+        return WascoProvider(config)
 
     elif config["tipo"] == "multiqualita":
         from app.providers.multiqualita_provider import MultiqualitaProvider

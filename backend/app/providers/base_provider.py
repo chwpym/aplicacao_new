@@ -75,10 +75,14 @@ class BaseProvider(ABC):
         
         # Split by range delimiters, avoiding splitting date slashes
         parts = []
-        if ">" in text_upper:
+        if "-->" in text_upper:
+            parts = text_upper.split("-->")
+        elif ">" in text_upper:
             parts = text_upper.split(">")
         elif "..." in text_upper:
             parts = text_upper.split("...")
+        elif " -- " in text_upper or "--" in text_upper:
+            parts = text_upper.split(" -- ") if " -- " in text_upper else text_upper.split("--")
         elif " - " in text_upper:
             parts = text_upper.split(" - ")
         elif " A " in text_upper:
@@ -368,6 +372,7 @@ class BaseProvider(ABC):
             imagem_val = "https://placehold.co/600x400/e0e0e0/737373/png?text=Imagem+Indisponivel"
 
         res_dict.update({
+            "descricao_produto": str(raw_data.get("descricao_produto", "")).upper() if raw_data.get("descricao_produto") else None,
             "imagem": imagem_val,
             "imagens": raw_data.get("imagens", raw_data.get("images", [])),
             "referencias": referencias_limpas,

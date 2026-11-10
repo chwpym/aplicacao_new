@@ -147,7 +147,12 @@ class AutomakerService:
 
         if mod_clean in self._model_to_brand:
             return self.padronizar(self._model_to_brand[mod_clean]), mod_clean
-            
+
+        # Tenta variação sem hífen/espaço para modelos compostos (ex: F-1000 -> F1000, HR-V -> HRV)
+        mod_no_hyphen = mod_clean.replace("-", "").replace(" ", "")
+        if mod_no_hyphen in self._model_to_brand:
+            return self.padronizar(self._model_to_brand[mod_no_hyphen]), mod_clean
+
         if m_clean in self._model_to_brand:
             brand = self._model_to_brand[m_clean]
             return self.padronizar(brand), (mod_clean if mod_clean and mod_clean != m_clean else m_clean)
@@ -189,9 +194,12 @@ class AutomakerService:
                 pass
 
         # --- CAMADA 3: SINÔNIMOS E FALLBACKS ---
+        import re
         for brand in self._brands:
-            if mod_clean.startswith(f"{brand} "):
-                return self.padronizar(brand), mod_clean.replace(f"{brand} ", "").strip()
+            # Trava de Segurança: Marcas com 2 ou menos letras (ex: 'F') nunca cortam modelos legítimos (ex: 'F-1000', 'HR-V')
+            if len(brand) > 2 and mod_clean.startswith(f"{brand} "):
+                modelo_sem_marca = re.sub(r'^' + re.escape(brand) + r'\s+', '', mod_clean)
+                return self.padronizar(brand), modelo_sem_marca.strip()
 
         # Fallback de emergência (Importado de synonyms.py - editável sem deploy)
         if mod_clean in KNOWN_MODELS_FALLBACK:
