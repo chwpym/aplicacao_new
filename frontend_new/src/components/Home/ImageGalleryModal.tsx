@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download, FileDown, Loader2 } from 'lucide-react';
-import JSZip from 'jszip';
+
 import AlertModal from '../AlertModal';
 import { toast } from '../../utils/toast';
 

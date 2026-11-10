@@ -3,7 +3,7 @@ import { searchApi, configApi } from "../services/api";
 import { useAutomakerCache } from "./useAutomakerCache";
 import { generateUniqueReferences, copyToClipboard as performCopy, copySimilaresOnly } from "../utils/clipboard";
 import { copyToClipboardTable } from "../utils/clipboardTable";
-import { copyToClipboardEtiqueta } from "../utils/clipboardEtiqueta";
+
 import { toast } from "../utils/toast";
 
 
@@ -239,7 +239,7 @@ export const useCatalog = () => {
                 marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p.nome || "---").toUpperCase()
               }));
               // Intercepta aviso especial do provedor Wega (código incompleto sem '/')
-              const avisos = cleanedData.filter((r: any) => r.metadados?._aviso_wega);
+              // const avisos = cleanedData.filter((r: any) => r.metadados?._aviso_wega);
               const reais = cleanedData.filter((r: any) => !r.metadados?._aviso_wega);
               // Não exibimos o modal de aviso quando buscamos em TODOS os provedores
               // para não interromper a busca global com alertas específicos de um catálogo.
