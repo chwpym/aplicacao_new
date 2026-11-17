@@ -208,6 +208,8 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
             <img 
               src={proxyImageUrl(currentImage)} 
               alt={`${title} - ${currentIndex + 1}`}
+              decoding="async"
+              fetchPriority="high"
               className="max-h-[65vh] w-auto object-contain transition-transform duration-300"
             />
 
@@ -248,11 +250,19 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
                   className={`
-                    relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all shrink-0
+                    relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all shrink-0 aspect-square
                     ${currentIndex === idx ? 'border-primary ring-2 ring-primary/20' : 'border-transparent opacity-60 hover:opacity-100'}
                   `}
                 >
-                  <img src={proxyImageUrl(img)} alt={`thumb ${idx}`} className="w-full h-full object-cover" />
+                  <img 
+                    src={proxyImageUrl(img)} 
+                    alt={`thumb ${idx}`} 
+                    loading="lazy"
+                    decoding="async"
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover" 
+                  />
                 </button>
               ))}
             </div>
