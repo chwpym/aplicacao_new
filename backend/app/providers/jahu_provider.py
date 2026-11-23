@@ -79,18 +79,22 @@ class JahuProvider(BaseProvider):
                 if not session_id:
                     logger.error("[Jahu] ID de sessão não retornado pela API de login")
                     return []
+
+                cd_empresa = str(login_data.get("empresa", {}).get("cdEmpresa") or login_data.get("cliente", {}).get("cdEmpresa") or "1")
+                cd_cliente = str(login_data.get("cliente", {}).get("cdCliente") or "700000")
+                cd_grupo = str(login_data.get("cliente", {}).get("cdGrupoCliente") or "101")
                 
-                logger.info(f"[Jahu] Handshake bem-sucedido! SessionId obtido: {session_id}")
+                logger.info(f"[Jahu] Handshake bem-sucedido! SessionId={session_id}, emp={cd_empresa}, grp={cd_grupo}")
 
                 # ----------------------------------------------------
                 # PASSO 2: Busca por Código (para cada variação de código)
                 # ----------------------------------------------------
                 for cod in codigos_busca:
                     payload_search = {
-                        "cdEmpresa": "2",
-                        "cdClienteFilter": "700000",
+                        "cdEmpresa": cd_empresa,
+                        "cdClienteFilter": cd_cliente,
                         "clienteEmpresa": {"vlIndiceCliente": 1},
-                        "cdGrupoClienteFilter": "201",
+                        "cdGrupoClienteFilter": cd_grupo,
                         "dsPalavraChave": cod,
                         "opcaoFiltro": "1",
                         "pageLines": 16,
@@ -120,23 +124,34 @@ class JahuProvider(BaseProvider):
                     products = collections[0]
                     logger.info(f"[Jahu] Encontrado(s) {len(products)} correspondente(s) para o termo '{cod}'")
 
-                    # Processamos o primeiro produto correspondente (geralmente o mais exato)
-                    # Caso queira processar todos, basta transformar em loop, mas
-                    # a regra geral de provedores foca no primeiro match exato.
-                    prod = products[0]
+                    # O OpenSearch da Jahu faz busca aproximada (fuzzy). Seleciona apenas item com correspondência real.
+                    cod_clean = re.sub(r'[^A-Z0-9]', '', cod.upper())
+                    prod = None
+                    for candidate in products:
+                        cand_cd = re.sub(r'[^A-Z0-9]', '', str(candidate.get("cdProduto", "")).upper())
+                        cand_info = re.sub(r'[^A-Z0-9]', '', str(candidate.get("infoBusca", "")).upper())
+                        if cand_cd == cod_clean or (cod_clean and (cod_clean in cand_cd or cod_clean in cand_info)):
+                            prod = candidate
+                            break
+
+                    if not prod:
+                        logger.info(f"[Jahu] Nenhum match exato encontrado para '{cod}' entre os {len(products)} retornados")
+                        continue
+
                     cd_prod = prod.get("cdProduto")
                     ds_prod = prod.get("dsProduto")
                     brand_search = prod.get("marca", {}).get("dsMarca", "JAHU")
-                    cd_dept = prod.get("cdDepartamento", "DEPARTAMENTO")
-                    cd_cat = prod.get("cdCategoria", "")
+                    cat_list = prod.get("produtoCategoriaList") or []
+                    cd_dept = (cat_list[0].get("cdDepartamento") if cat_list else None) or prod.get("cdDepartamento") or "DEPARTAMENTO"
+                    cd_cat = (cat_list[0].get("cdCategoria") if cat_list else None) or prod.get("cdCategoria") or ""
 
                     # ----------------------------------------------------
                     # PASSO 3: Consulta de Detalhes ricos (PrimaryKey)
                     # ----------------------------------------------------
                     payload_details = {
-                        "cdEmpresa": "2",
-                        "cdClienteFilter": "700000",
-                        "cdGrupoClienteFilter": "201",
+                        "cdEmpresa": cd_empresa,
+                        "cdClienteFilter": cd_cliente,
+                        "cdGrupoClienteFilter": cd_grupo,
                         "cdProduto": cd_prod,
                         "cdDepartamento": cd_dept,
                         "cdCategoria": cd_cat,
@@ -151,8 +166,8 @@ class JahuProvider(BaseProvider):
                     }
 
                     resp_det = await client.post(self.details_url, json=payload_details, headers=self.headers)
-                    if resp_det.status_code != 200:
-                        logger.warning(f"[Jahu] Falha ao recuperar detalhes ricos do produto {cd_prod}")
+                    if resp_det.status_code != 200 or not resp_det.text.strip():
+                        logger.warning(f"[Jahu] Falha ao recuperar detalhes ricos do produto {cd_prod} (status={resp_det.status_code}, len={len(resp_det.text)})")
                         continue
 
                     det_data = resp_det.json()
@@ -165,6 +180,7 @@ class JahuProvider(BaseProvider):
                     ncm = campos.get("AD_NCM", "") # NCM fiscal
                     info_ad = campos.get("AD_INFOAD", "") # Informações de fitment livre
                     applications_html = campos.get("AD_DSAPLICACAO", "") # Tabela HTML com veículos
+                    conversao_html = campos.get("AD_CONVERSAO", "") # Tabela HTML de conversão/equivalências
 
                     # ----------------------------------------------------
                     # PASSO 4: Múltiplas Imagens (Galeria) via HEAD Concorrente
@@ -181,7 +197,7 @@ class JahuProvider(BaseProvider):
                             # Dispara requisições GET leves concorrentes para os 6 possíveis slots
                             tasks = []
                             for i in range(1, 7):
-                                url_foto = f"https://b2b.jahu.com.br/server/public/service/images/get/produtoFoto/[2,{cd_prod},L,{i}]/false/false"
+                                url_foto = f"https://b2b.jahu.com.br/server/public/service/images/get/produtoFoto/[{cd_empresa},{cd_prod},L,{i}]/false/false"
                                 tasks.append(client.get(url_foto, headers=self.headers, timeout=5.0))
                             
                             # asyncio.gather executa tudo em paralelo de forma ultra ágil
@@ -192,7 +208,7 @@ class JahuProvider(BaseProvider):
                                     content_type = resp.headers.get("Content-Type", "")
                                     # Se a imagem for real do produto, ela é jpeg. Se for placeholder, é png.
                                     if "image/jpeg" in content_type:
-                                        img_valida = f"https://b2b.jahu.com.br/server/public/service/images/get/produtoFoto/[2,{cd_prod},L,{idx+1}]/false/false"
+                                        img_valida = f"https://b2b.jahu.com.br/server/public/service/images/get/produtoFoto/[{cd_empresa},{cd_prod},L,{idx+1}]/false/false"
                                         images_list.append(img_valida)
                             
                             if images_list:
@@ -211,16 +227,23 @@ class JahuProvider(BaseProvider):
                     # ----------------------------------------------------
                     # Buscamos em segundo plano todos os produtos da própria Jahu que compartilham
                     # o mesmo código original (equivalência direta do catálogo Jahu).
+                    is_outra_marca = bool(brand_name and brand_name.strip().upper() != "JAHU" and ref_forn)
+                    codigo_principal = ref_forn.strip().upper() if is_outra_marca else cd_prod
+
                     similares_encontrados = set()
+                    similares_fabricantes = set()
+                    if is_outra_marca and cd_prod:
+                        similares_encontrados.add(cd_prod)
                     if original_code:
                         try:
                             codigos_originais_lista = [c.strip() for c in original_code.split('\n') if c.strip()]
                             for cd_orig in codigos_originais_lista:
+                                cd_orig_clean = re.sub(r'[^A-Z0-9]', '', cd_orig.upper())
                                 payload_similares = {
-                                    "cdEmpresa": "2",
-                                    "cdClienteFilter": "700000",
+                                    "cdEmpresa": cd_empresa,
+                                    "cdClienteFilter": cd_cliente,
                                     "clienteEmpresa": {"vlIndiceCliente": 1},
-                                    "cdGrupoClienteFilter": "201",
+                                    "cdGrupoClienteFilter": cd_grupo,
                                     "dsPalavraChave": cd_orig,
                                     "opcaoFiltro": "1",
                                     "pageLines": 10,
@@ -242,9 +265,16 @@ class JahuProvider(BaseProvider):
                                     if sim_collections and sim_collections[0]:
                                         for p_sim in sim_collections[0]:
                                             cd_sim = p_sim.get("cdProduto")
-                                            # Evita adicionar o próprio produto na lista de similares
-                                            if cd_sim and cd_sim != cd_prod:
+                                            info_raw = str(p_sim.get("infoBusca", ""))
+                                            info_sim = re.sub(r'[^A-Z0-9]', '', info_raw.upper())
+                                            # Evita adicionar o próprio produto e filtra falsos positivos do OpenSearch
+                                            if cd_sim and cd_sim != cd_prod and cd_orig_clean and cd_orig_clean in info_sim:
                                                 similares_encontrados.add(cd_sim)
+                                                info_parts = [x.strip() for x in info_raw.split("|")]
+                                                marca_sim = (p_sim.get("marca", {}).get("dsMarca") or (info_parts[6] if len(info_parts) > 6 else "") or "JAHU").strip().upper()
+                                                ref_forn_sim = (info_parts[3] if len(info_parts) > 3 else "").strip().upper()
+                                                if ref_forn_sim and (marca_sim != "JAHU" or re.sub(r'[^A-Z0-9]', '', ref_forn_sim) != re.sub(r'[^A-Z0-9]', '', str(cd_sim).upper())):
+                                                    similares_fabricantes.add(f"{marca_sim}: {ref_forn_sim}")
                         except Exception as sim_err:
                             logger.warning(f"[Jahu] Falha ao recuperar produtos similares por crossover: {sim_err}")
 
@@ -261,10 +291,27 @@ class JahuProvider(BaseProvider):
                                 ref_str_parts.append(f"{ds_marca_ref.strip().upper()}: {ds_ref.strip()}")
                             else:
                                 ref_str_parts.append(f"ORIGINAL: {ds_ref.strip()}")
+
+                    # Se o próprio produto buscado for de outra marca distribuída pela Jahu (ex: AXIOS: LT70139)
+                    if ref_forn and brand_name and re.sub(r'[^A-Z0-9]', '', ref_forn.upper()) != re.sub(r'[^A-Z0-9]', '', str(cd_prod or "").upper()):
+                        ref_str_parts.append(f"{brand_name.strip().upper()}: {ref_forn.strip().upper()}")
+
+                    # Extrai referências cruzadas da tabela HTML AD_CONVERSAO (aba CONVERSÃO)
+                    if conversao_html:
+                        conv_trs = re.findall(r'<tr.*?>(.*?)</tr>', conversao_html, re.DOTALL | re.IGNORECASE)
+                        for conv_tr in conv_trs:
+                            conv_tds = re.findall(r'<td.*?>(.*?)</td>', conv_tr, re.DOTALL | re.IGNORECASE)
+                            if len(conv_tds) >= 2:
+                                forn_conv = re.sub(r'<[^>]+>', '', conv_tds[0]).strip().upper()
+                                cod_conv = re.sub(r'<[^>]+>', '', conv_tds[1]).strip()
+                                if forn_conv and cod_conv:
+                                    ref_str_parts.append(f"{forn_conv}: {cod_conv}")
                     
-                    # Injeta os similares da própria Jahu nas referências para o frontend renderizar o 'raio'
+                    # Injeta os similares da própria Jahu e fabricantes distribuídos nas referências para o frontend renderizar o 'raio'
                     for sku_sim in sorted(list(similares_encontrados)):
                         ref_str_parts.append(f"JAHU: {sku_sim}")
+                    for fab_ref in sorted(list(similares_fabricantes)):
+                        ref_str_parts.append(fab_ref)
 
                     original_lines = []
                     if original_code:
@@ -282,6 +329,14 @@ class JahuProvider(BaseProvider):
                         "REF_FORNECEDOR": ref_forn,
                         "INFO_ADICIONAL": info_ad
                     }
+                    unidade_list = det_data.get("produtoUnidadeList") or prod.get("produtoUnidadeList") or []
+                    if unidade_list and isinstance(unidade_list, list):
+                        multiplo = unidade_list[0].get("nuMultiploEspecial")
+                        if multiplo is not None:
+                            ficha_tecnica["MULTIPLO"] = str(multiplo)
+                    nu_cd_barras = det_data.get("nuCdBarras")
+                    if nu_cd_barras:
+                        ficha_tecnica["CODIGO_BARRAS"] = str(nu_cd_barras).strip()
 
                     # ----------------------------------------------------
                     # PASSO 7: Parser e Pré-separação de Motorização/Aplicações
@@ -306,7 +361,7 @@ class JahuProvider(BaseProvider):
                     if not apps_list:
                         app_data = {
                             "marca": brand_name,
-                            "codigo": cd_prod,
+                            "codigo": codigo_principal,
                             "montadora": "",
                             "modelo": ds_prod,
                             "versao": "",
@@ -354,7 +409,7 @@ class JahuProvider(BaseProvider):
 
                             app_data = {
                                 "marca": brand_name,
-                                "codigo": cd_prod,
+                                "codigo": codigo_principal,
                                 "montadora": montadora_raw,
                                 "modelo": veiculo_raw,
                                 "versao": versao_limpa,

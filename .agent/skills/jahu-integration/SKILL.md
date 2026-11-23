@@ -35,7 +35,8 @@ Para evitar bloqueios de segurança e requisições recusadas, a classe de busca
     }
   }
   ```
-* **Resposta:** Retorna um JSON contendo `sessionId`. O cookie `JSESSIONID` é atribuído automaticamente na resposta HTTP e deve ser persistido no cliente HTTP (`httpx.AsyncClient`).
+* **Resposta:** Retorna um JSON contendo `sessionId`, `empresa.cdEmpresa`, `cliente.cdCliente` e `cliente.cdGrupoCliente`. O cookie `JSESSIONID` é atribuído automaticamente na resposta HTTP e deve ser persistido no cliente HTTP (`httpx.AsyncClient`).
+* **Regra Crítica (Parâmetros Dinâmicos):** Nunca deixe `cdEmpresa`, `cdClienteFilter` ou `cdGrupoClienteFilter` hardcoded (fixos) nas requisições subsequentes (`findAllByExampleByPages`, `findProdutoByPrimaryKey`, URLs de fotos). A Jahu pode alterar a empresa/grupo padrão do acesso público (ex: de `2`/`201` para `1`/`101`); se os valores divergirem da sessão, `findProdutoByPrimaryKey` retorna `200 OK` com corpo vazio (`0 bytes`). Extraia sempre do retorno do `loginAcessoPublico` e passe `cdDepartamento` e `cdCategoria` a partir de `produtoCategoriaList[0]` do item encontrado.
 
 ---
 
@@ -47,11 +48,13 @@ Para evitar bloqueios de segurança e requisições recusadas, a classe de busca
 
 ---
 
-### C. Busca de Similares por Crossover (Ícone de Raio)
-* **O Desafio:** Os similares da própria marca no catálogo Jahu não são listados no payload do produto detalhado.
-* **A Solução:** Extrair o código original do fabricante (`AD_CODORIG`) do detalhe do produto e, em segundo plano, disparar uma nova requisição de busca paginada (`findAllByExampleByPages`) usando o código original como palavra-chave.
-  * Capturar todos os SKUs da própria Jahu que compartilham desse mesmo código original de montadora.
-  * Injetar os SKUs retornados na lista de referências cruzadas com o prefixo `JAHU: SKU_SIMILAR`.
+### C. Busca de Similares por Crossover (Ícone de Raio) e Aba Conversão (`AD_CONVERSAO`)
+* **O Desafio:** Os similares da própria marca no catálogo Jahu não são listados no payload do produto detalhado, e o OpenSearch da busca faz correspondência aproximada (fuzzy). Além disso, conversões de concorrentes ficam em HTML no campo dinâmico `AD_CONVERSAO`.
+* **A Solução:**
+  * Na busca inicial e no crossover, validar que o termo normalizado (`re.sub(r'[^A-Z0-9]', '', ...)`) realmente consta em `cdProduto` ou `infoBusca` para evitar falsos positivos do OpenSearch.
+  * Extrair o código original do fabricante (`AD_CODORIG`) do detalhe do produto e, em segundo plano, disparar uma nova requisição de busca paginada (`findAllByExampleByPages`) usando o código original como palavra-chave, injetando os SKUs válidos com o prefixo `JAHU: SKU_SIMILAR`.
+  * **Marcas distribuídas pelo B2B Jahu (ex: AXIOS, WEGA):** quando um produto distribuído possui `marca.dsMarca` diferente de `JAHU` e código do fabricante na 4ª coluna do `infoBusca` (separado por `|`) ou em `AD_REFFORN`, injetar também `MARCA_REAL: COD_FABRICANTE` (ex: `AXIOS: LT70139`), tanto nos similares do crossover quanto no próprio item buscado. Além disso, no item principal de marca terceira, definir `"codigo"` com `AD_REFFORN` (`LT70139`) e incluir o `cdProduto` interno (`464409`) na lista `JAHU:`.
+  * Parsear a tabela HTML `camposDinamicos.AD_CONVERSAO` (`<TR><TD>FORNECEDOR</TD><TD>COD.FORN</TD></TR>`) e injetar cada linha como `FORNECEDOR: COD.FORN` nas referências cruzadas.
   * Isso faz com que o frontend identifique as equivalências e ative a funcionalidade nativa do **raio de similares**.
 
 ---
