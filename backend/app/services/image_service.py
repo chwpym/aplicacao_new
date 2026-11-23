@@ -117,31 +117,63 @@ class ImageProcessor:
             return image_bytes, "application/octet-stream"
 
     @staticmethod
-    async def download_image(url: str, timeout: float = 10.0) -> Tuple[Optional[bytes], bool]:
+    async def download_image(url: str, timeout: float = 10.0) -> Tuple[Optional[bytes], bool, Optional[str]]:
         """
         Faz o download utilitário de uma imagem.
-        Retorna (content_bytes, teve_aviso_ssl).
+        Retorna (content_bytes, teve_aviso_ssl, content_type).
+        
+        Envia automaticamente Referer/Origin baseado no domínio da URL para
+        evitar bloqueio por hotlinking (ex: catalogonakata.com.br retorna 403 sem Referer).
         """
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"}
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+            "Referer": f"{origin}/",
+            "Origin": origin,
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+            "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+        }
+        
         # 1. Tenta com verificação SSL estrita
         try:
             async with httpx.AsyncClient(timeout=timeout, verify=True) as client:
                 resp = await client.get(url, headers=headers, follow_redirects=True)
+                content_type = resp.headers.get("content-type", "").lower()
+                
                 if resp.status_code == 200:
-                    return resp.content, False
-        except Exception:
-            pass
+                    # Aceita se for image/* ou octet-stream/ausente (trata no fallback)
+                    if content_type.startswith("image/") or not content_type or "octet-stream" in content_type:
+                        return resp.content, False, content_type
+                
+                print(f"[ImageProcessor] Resposta não-imagem ({resp.status_code}, {content_type}): {url}")
+                return None, False, None
+        except Exception as e:
+            # Se for erro de SSL/Certificado, aciona o fallback seguro com verify=False
+            if "SSL" in str(e).upper() or "CERTIFICATE" in str(e).upper():
+                pass # Continua para o bloco de fallback
+            else:
+                # Erro comum (ex: timeout, DNS), não é culpa do SSL, aborta
+                print(f"[ImageProcessor] Erro ao baixar {url} (verify=True): {e}")
+                return None, False, None
 
         # 2. Fallback com verify=False se o servidor do fabricante tiver SSL inválido/incompleto
         try:
             async with httpx.AsyncClient(timeout=timeout, verify=False) as client:
                 resp = await client.get(url, headers=headers, follow_redirects=True)
+                content_type = resp.headers.get("content-type", "").lower()
+                
                 if resp.status_code == 200:
-                    print(f"[ImageProcessor] Download concluído via fallback SSL ignorado para: {url}")
-                    return resp.content, True
-                return None, False
+                    if content_type.startswith("image/") or not content_type or "octet-stream" in content_type:
+                        print(f"[ImageProcessor] Download concluído via fallback SSL ignorado para: {url}")
+                        return resp.content, True, content_type
+                
+                print(f"[ImageProcessor] Falha no download ou resposta não-imagem ({resp.status_code}, {content_type}) para: {url}")
+                return None, False, None
         except Exception as e:
-            print(f"[ImageProcessor] Erro ao baixar {url}: {e}")
-            return None, False
+            print(f"[ImageProcessor] Erro ao baixar {url} (verify=False): {e}")
+            return None, False, None
 
 image_service = ImageProcessor()

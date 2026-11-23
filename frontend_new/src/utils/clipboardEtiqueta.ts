@@ -74,38 +74,9 @@ export const generateEtiquetaString = (results: any[]): string => {
 
   let stringCompleta = partes.join(MUITAS_MARCAS ? " / " : " - ");
 
-  const maxLineLength = 28;
-  const maxLines = 4;
-  const lines: string[] = [];
-
-  let currentLine = "";
-  const words = stringCompleta.split(/([ /-])/); 
-
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    
-    if (currentLine.length + word.length <= maxLineLength) {
-      currentLine += word;
-    } else {
-      if (currentLine.length > 0) {
-        lines.push(currentLine.trim());
-      }
-      currentLine = word.trim() === "/" || word.trim() === "-" ? "" : word; 
-      
-      while (currentLine.length > maxLineLength) {
-        lines.push(currentLine.substring(0, maxLineLength));
-        currentLine = currentLine.substring(maxLineLength);
-      }
-    }
-
-    if (lines.length >= maxLines) break; 
-  }
-
-  if (currentLine.length > 0 && lines.length < maxLines) {
-    lines.push(currentLine.trim());
-  }
-
-  return lines.join("\n");
+  // O usuário solicitou que o texto fique por extenso (em uma única linha),
+  // deixando o ERP ou a impressora decidirem a quebra de linha sozinhos.
+  return stringCompleta;
 };
 
 export const copyToClipboardEtiqueta = (results: any[]) => {

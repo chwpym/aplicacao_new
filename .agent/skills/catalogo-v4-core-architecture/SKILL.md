@@ -1,3 +1,8 @@
+---
+name: catalogo-v4-core-architecture
+description: Arquitetura central do Catalogo V4 (Gerenciador de Peças), padrões de arquivos core, normalização, busca e UI.
+---
+
 # Catalogo V4 - Core Architecture & Standards
 
 Esta skill documenta a arquitetura central do **Catalogo V4 (Gerenciador de Peças)**. Qualquer alteração nos arquivos listados aqui deve seguir critérios rigorosos de impacto global, garantindo que melhorias para um provedor não quebrem a lógica de outros.

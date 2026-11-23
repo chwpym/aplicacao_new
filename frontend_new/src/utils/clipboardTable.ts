@@ -57,7 +57,8 @@ const getProportionalWidth = (text: string, fontName: string, fontSize: number):
   const ctx = canvas.getContext("2d");
   if (!ctx) return text.length * 8; // Aproximação de fallback
   ctx.font = `${fontSize}pt "${fontName}"`;
-  return ctx.measureText(text).width;
+  const width = ctx.measureText(text).width;
+  return width > 0 ? width : text.length * 8;
 };
 
 const padProportional = (
@@ -69,7 +70,7 @@ const padProportional = (
   const cleanVal = text.trim();
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  if (!ctx) return cleanVal.padEnd(Math.ceil(targetPhysicalWidth / 8)); // Fallback
+  if (!ctx) return cleanVal.padEnd(Math.max(0, Math.ceil(targetPhysicalWidth / 8))); // Fallback
   
   ctx.font = `${fontSize}pt "${fontName}"`;
   const valWidth = ctx.measureText(cleanVal).width;
@@ -85,8 +86,9 @@ const padProportional = (
   
   // Calcula o número de espaços necessários para preencher a largura física alvo
   const spaceWidth = ctx.measureText(" ").width;
+  const safeSpaceWidth = spaceWidth > 0 ? spaceWidth : 8;
   const missingWidth = targetPhysicalWidth - valWidth;
-  const numSpaces = Math.round(missingWidth / spaceWidth);
+  const numSpaces = Math.max(0, Math.round(missingWidth / safeSpaceWidth));
   
   return cleanVal + " ".repeat(numSpaces);
 };
@@ -102,13 +104,14 @@ export const copyToClipboardTable = (
   agrupar: boolean = true,
   erpFont: string = "monospace",
   erpFontSize: number = 9,
-  hideDashesRow: boolean = false
+  hideDashesRow: boolean = false,
+  exportHtml: boolean = false
 ) => {
   if (results.length === 0) return;
 
   const compareResults = (a: any, b: any) => {
     const priority = [
-      "marca", "veiculo", "modelo", "versao", "motor",
+      "marca", "codigo", "veiculo", "modelo", "versao", "motor",
       "configuracao_motor", "combustivel", "posicao", "lado", "ano_inicio",
     ];
 
@@ -263,7 +266,7 @@ export const copyToClipboardTable = (
       const separatorRow = "|-" + activeKeys.map(key => {
         const colWidth = columnWidths[key];
         const dashWidth = getProportionalWidth("-", erpFont, erpFontSize);
-        const numDashes = Math.round(colWidth / dashWidth);
+        const numDashes = Math.max(1, Math.round(colWidth / (dashWidth > 0 ? dashWidth : 8)));
         return "-".repeat(numDashes);
       }).join("-|-") + "-|";
 
@@ -505,6 +508,7 @@ export const copyToClipboardTable = (
   appendFichaTecnica(r => r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA", "IMA");
   // Intermec
   appendFichaTecnica(r => r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC", "INTERMEC");
+  appendFichaTecnica(r => r.provedor?.toUpperCase() === "VIEMAR" || r.marca?.toUpperCase() === "VIEMAR", "VIEMAR");
 
 
   // ==========================================
@@ -569,17 +573,23 @@ export const copyToClipboardTable = (
         if (u === 'D20') arr.push('D-20');
         if (u === 'A10') arr.push('A-10');
         if (u === 'C10') arr.push('C-10');
+        const genMap: Record<string, string> = {
+          'GI': 'G1', 'GII': 'G2', 'GIII': 'G3', 'GIV': 'G4', 'GV': 'G5', 'GVI': 'G6', 'GVII': 'G7', 'GVIII': 'G8', 'GIX': 'G9', 'GX': 'G10',
+          'G1': 'GI', 'G2': 'GII', 'G3': 'GIII', 'G4': 'GIV', 'G5': 'GV', 'G6': 'GVI', 'G7': 'GVII', 'G8': 'GVIII', 'G9': 'GIX', 'G10': 'GX'
+        };
+        if (genMap[u]) arr.push(genMap[u]);
       });
       return arr;
     };
 
     // 0. Descrição do Produto (primeira linha do IDX, antes dos carros)
-    // Extrai a primeira parte do observacao (antes do primeiro '|') — que é sempre o nome do produto.
+    // Extrai a descricao_produto
     // Filtra qualificadores técnicos (Label: Valor) e textos muito curtos ou longos.
     const descricaoProduto = (() => {
       const freq: Record<string, number> = {};
-      for (const r of resultsData) {
-        const primeiraParte = (r.observacao || "").split("|")[0].trim().toUpperCase();
+      for (const r of results) {
+        // Pega do campo descricao_produto
+        const primeiraParte = (r.descricao_produto || "").trim().toUpperCase();
         if (!primeiraParte || primeiraParte.length < 3 || primeiraParte.length > 80) continue;
         if (primeiraParte.includes(":")) continue;
         freq[primeiraParte] = (freq[primeiraParte] || 0) + 1;
@@ -640,20 +650,25 @@ export const copyToClipboardTable = (
   htmlText += `<br><pre style="font-family: Calibri, sans-serif; font-size: 11pt; color: #334155; margin-top: 15px; white-space: pre-wrap; line-height: 1.4;">${extraText.trim()}</pre>`;
 
   // ==========================================
-  // 5. SALVAR NA ÁREA DE TRANSFERÊNCIA (MULTIPLOS FORMATOS)
+  // 5. SALVAR NA ÁREA DE TRANSFERÊNCIA
   // ==========================================
-  const blobPlain = new Blob([plainTextText.trim()], { type: "text/plain" });
-  const blobHtml = new Blob([htmlText.trim()], { type: "text/html" });
+  if (exportHtml) {
+    const blobPlain = new Blob([plainTextText.trim()], { type: "text/plain" });
+    const blobHtml = new Blob([htmlText.trim()], { type: "text/html" });
 
-  try {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        "text/plain": blobPlain,
-        "text/html": blobHtml
-      })
-    ]);
-  } catch (err) {
-    console.error("Falha ao salvar múltiplos formatos usando ClipboardItem, tentando fallback para text/plain", err);
+    try {
+      navigator.clipboard.write([
+        new ClipboardItem({
+          "text/plain": blobPlain,
+          "text/html": blobHtml
+        })
+      ]);
+    } catch (err) {
+      console.error("Falha ao salvar múltiplos formatos usando ClipboardItem, tentando fallback para text/plain", err);
+      navigator.clipboard.writeText(plainTextText.trim());
+    }
+  } else {
+    // Força gravação estrita em texto plano (necessário para colar corretamente em WhatsApp/ERPs que não aceitam tabelas HTML)
     navigator.clipboard.writeText(plainTextText.trim());
   }
 };

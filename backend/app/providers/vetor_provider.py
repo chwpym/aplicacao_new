@@ -9,18 +9,20 @@ from app.services.logging_service import logger
 
 def _parse_json_latin1(resp: httpx.Response) -> dict:
     """
-    Decodifica a resposta JSON forçando Windows-1252 (cp1252).
-    A API da Vetor devolve textos em cp1252 mas sem declarar no Content-Type,
-    causando caracteres quebrados se decodificado como UTF-8.
-    cp1252 é preferido ao latin-1 pois cobre bytes 0x80-0x9F (ex: ˜, €, etc.)
-    que latin-1 trata como caracteres de controle inválidos.
+    Decodifica a resposta JSON.
+    Tenta UTF-8 primeiro para evitar corromper caracteres caso a API
+    envie corretamente em UTF-8 (evitando o duplo encoding como MOTORAÃ‡O).
+    Se falhar (caracteres inválidos em UTF-8), faz o fallback para cp1252.
     """
-    for enc in ("cp1252", "latin-1"):
+    for enc in ("utf-8", "cp1252", "latin-1"):
         try:
             return json.loads(resp.content.decode(enc))
         except Exception:
             continue
-    return resp.json()
+    try:
+        return resp.json()
+    except Exception:
+        return {}
 
 
 def _limpar_motor(valor: str) -> str:

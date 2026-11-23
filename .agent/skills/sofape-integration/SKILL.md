@@ -1,6 +1,6 @@
 ---
 name: sofape-integration
-description: Diretrizes técnicas e padrões para integração de catálogos do Grupo Sofape (Tecfil e Vox), abrangendo portais JSF/PrimeFaces legados e os novos portais Next.js SSR.
+description: Diretrizes técnicas e padrões para integração de catálogos do Grupo Sofape (Tecfil e Vox), abrangendo portais JSF/PrimeFaces legados e os novos portais Next.js SSR com suporte a RSC JSON.
 ---
 
 # Sofape Integration (Tecfil & Vox)
@@ -13,30 +13,38 @@ Esta skill documenta o conhecimento arquitetural necessário para dar manutenç�
 
 Os portais modernos do grupo utilizam Next.js com renderização no servidor (SSR).
 
+### Modos de Extração e Tags de Marca (Dual-Engine)
+
+1. **Modo Preferencial (RSC JSON - Header `rsc: 1`):**
+   - **Tag Visual no Sistema:** `TECFIL (JSON)`
+   - **Endpoint:** GET `https://catalogo.tecfil.com.br/search/{codigo_encoded}` enviando o cabeçalho `"rsc": "1"`.
+   - **Payload:** Stream serializado de componentes React (RSC).
+   - **Processamento:** Extrai a lista inteira de `aplicacoes` devolvida no JSON pelo servidor do Next.js. Isso garante que todos os veículos exibidos no catálogo oficial da Tecfil (Audi, GM, Volkswagen, etc.) sejam capturados com 100% de integridade.
+   
+2. **Modo Fallback (HTML Table Parsing):**
+   - **Tag Visual no Sistema:** `TECFIL (HTML)`
+   - **Endpoint:** GET simples `https://catalogo.tecfil.com.br/search/{codigo_encoded}` sem o header `rsc`.
+   - **Processamento:** Parseia a estrutura de tabelas com a classe `MuiTable-root`.
+
 ### Fluxo de Busca e Enriquecimento
-1. **Busca Inicial (GET):** Fazer uma chamada GET para `https://<dominio>/search/{codigo_encoded}`.
-   - **IMPORTANTE:** O código buscado deve ser URL-encoded (ex: `urllib.parse.quote(codigo, safe="")`). Códigos como `GI50/7` contêm uma barra `/` que, se não for encodada como `%2F` (`GI50%2F7`), quebra o roteamento do Next.js dividindo-o em múltiplos segmentos na URL, resultando em falha ou 404.
-   - O Next.js envia o HTML pré-renderizado. A tabela de aplicações está localizada na estrutura do DOM usando as classes de tabela clássicas do Material UI (`MuiTable-root`).
-2. **Identificação do Fabricante:** Linhas com o atributo `data-fabricante="MARCA"` marcam a montadora ativa na tabela.
-3. **Extração de Aplicações:** As colunas contêm as informações do veículo estruturadas em spans específicos (`DescricaoAplicacao`, `ComplementoAplicacao3_1` para versão, `ComplementoAplicacao3_2` para motor, `ComplementoAplicacao3_5` para combustível, `ComplementoAplicacao3_3` e `3_4` para os anos).
-4. **Resgate do ID do Produto:** O produto buscado é destacado com o atributo `data-rh-produto-destaque="true"`. A partir dele, extraímos o ID do produto contido no link `/produto/{id_produto}`.
-5. **Enriquecimento de Detalhes (GET):** Fazer um GET para `https://<dominio>/search/{codigo_encoded}/produto/{id_produto}` (utilizando o código também encodado e sem parâmetros de query para agilizar) para obter a ficha técnica e a lista de conversões.
-
-### Parsing de Conversões (Referências Cruzadas)
-O Next.js armazena a cache de dados serializada em blocos de script `self.__next_f.push`. 
-- **Extração com Brackets Matching:** Localizar a chave `"ReferenciasCruzada"` e caminhar coletando os caracteres até obter um bloco de colchetes `[...]` balanceado.
-- **Deserialização:** Substituir os escapes (`\"` por `"`, `\\` por `\`) e carregar com `json.loads`. Filtrar a lista para pegar a marca alvo e obter os códigos concorrentes formatados em `MARCA: CODIGO`.
-
-### Parsing de Ficha Técnica (Dimensões)
-Para evitar conflito com os labels de filtros do cabeçalho da página, o parsing da ficha técnica (Altura, Largura, Comprimento) deve:
-1. Localizar o container que contém o cabeçalho `"Especificações técnicas"`.
-2. Subir no DOM até o container pai comum que contenha as strings `"Função"` e `"Elemento Filtrante"`.
-3. Executar a busca de labels (`Altura (mm)`, etc.) estritamente **dentro** desse container isolado.
+1. **URL Encoding Obrigatório:** O código buscado deve ser URL-encoded (ex: `urllib.parse.quote(codigo, safe="")`). Códigos com barra como `GI50/7` se tornam `GI50%2F7`.
+2. **Extração de Aplicações:** 
+   - `DescricaoFabricante`: Montadora (ex: AUDI, GENERAL MOTORS, VOLKSWAGEN)
+   - `DescricaoAplicacao`: Modelo (ex: A3, Passat, Jetta, Vectra)
+   - `ComplementoAplicacao3_1`: Versão
+   - `ComplementoAplicacao3_2`: Motor
+   - `ComplementoAplicacao3_5`: Combustível
+   - `ComplementoAplicacao3_3` e `3_4`: Anos início e fim
+3. **ID do Produto e Ficha Técnica:**
+   - Link de detalhe: `/produto/{id_produto}`.
+   - GET em `https://catalogo.tecfil.com.br/search/{codigo_encoded}/produto/{id_produto}`.
+   - **Ficha Técnica (Dimensões/Mecânica):** Extrai campos como `FUNÇÃO`, `ELEMENTO`, `ALTURA`, `Ø INT. LARG.`, `Ø EXT. COMP.`, `VÁLVULA ANTI-RETORNO`, `VÁLVULA ALÍVIO`, `PESO BRUTO`, `PESO LÍQUIDO`, `OBSERVAÇÃO`.
+   - **Conversões (ReferenciasCruzadas):** Extrai o bloco de array balanceado `"ReferenciasCruzada"` e converte em string formatada `MARCA: CODIGO`.
 
 ### Imagens do Produto
-As fotos dos produtos são centralizadas no servidor expresso da C123.
+As fotos dos produtos são hospedadas no servidor expresso da C123.
 - **Padrão de URL:** `https://www.c123.com.br/CatalogoExpresso/133/FotoProdWeb/{ArquivoFotoProduto}`
-- O nome do arquivo (ex: `ACP303_A.jpg`, `ACP303_B.jpg`) é obtido via regex da chave `"ArquivoFotoProduto"` no payload serializado.
+- **Fallback de URL:** `https://www.c123.com.br/CatalogoExpresso/133/FotoProdWeb/{CODIGO}_A.jpg`
 
 ---
 
@@ -46,9 +54,9 @@ Os portais clássicos utilizam a tecnologia JavaServer Faces (JSF) com o framewo
 
 ### Estado e Sessão (ViewState)
 As requisições dependem de um estado persistente no servidor (`javax.faces.ViewState`).
-1. **Iniciar Sessão (GET):** Acessar a página inicial do catálogo (ex: `/catalogo.xhtml`) para gerar cookies de sessão e capturar o input hidden contendo o `ViewState`.
-2. **Disparar Busca (POST):** Fazer um POST para `/catalogo.xhtml` enviando o payload correspondente ao formulário de busca da marca.
-   - **Vox ID:** O formulário de busca da Vox utiliza o ID `j_idt67`.
+1. **Iniciar Sessão (GET):** Acessar a página inicial do catálogo (`/catalogo.xhtml`) para capturar o `ViewState`.
+2. **Disparar Busca (POST):** POST para `/catalogo.xhtml` com o payload de busca.
+   - **Vox ID:** Formulário `j_idt67`.
    - **Payload de Busca:**
      ```python
      payload = {
@@ -59,8 +67,5 @@ As requisições dependem de um estado persistente no servidor (`javax.faces.Vie
      }
      ```
 
-### Navegação de Categorias e Resultados
-1. O resultado do POST de busca retorna os botões com as categorias que possuem registros (ex: `Total de Resultados [ 39 ]`).
-2. Fazer um GET na página da categoria correspondente (ex: `/resultadoAutomoveis.xhtml?search-term={codigo}`) para extrair as linhas.
-3. **Imagens Vox (Atenção):** Embora o catálogo seja da Vox, as imagens estão hospedadas no site corporativo da Tecfil.
-   - **Padrão de URL da Imagem:** `https://www.tecfil.com.br/imagens/vox/{CODIGO}A.jpg` (retorna 404 se tentado no domínio da Vox).
+### Navegação e Imagens Vox
+- **Imagens Vox:** Hospedadas no site corporativo da Tecfil: `https://www.tecfil.com.br/imagens/vox/{CODIGO}A.jpg`.

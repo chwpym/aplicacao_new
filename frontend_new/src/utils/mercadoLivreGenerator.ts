@@ -235,7 +235,7 @@ function generateAplicacoesDetalhes(results: any[], cleanMode: boolean = false):
       });
 
     // Remove aplicações que são subconjuntos de outras do mesmo ano
-    const filteredLines = modelLines.filter((lineA, index, arr) => {
+    const filteredLines = modelLines.filter((lineA, _, arr) => {
       // Verifica se existe alguma outra linhaB que contém todas as palavras da linhaA
       return !arr.some(lineB => {
         if (lineA.spec === lineB.spec) return false;

@@ -1,4 +1,4 @@
-type ToastType = 'success' | 'error';
+type ToastType = 'success' | 'error' | 'warning';
 
 export interface ToastEventDetail {
     message: string;
@@ -13,5 +13,6 @@ export const toast = {
         window.dispatchEvent(event);
     },
     success: (message: string) => toast.show(message, 'success'),
-    error: (message: string) => toast.show(message, 'error')
+    error: (message: string) => toast.show(message, 'error'),
+    warning: (message: string) => toast.show(message, 'warning')
 };

@@ -1,3 +1,8 @@
+---
+name: system-management
+description: Procedimentos de monitoramento via logs, rotinas de backup e recuperação do sistema de catálogos.
+---
+
 # System Management & Monitoring
 
 Esta skill detalha os procedimentos de monitoramento, backup e recuperação do sistema de catálogos.

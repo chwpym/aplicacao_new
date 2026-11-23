@@ -14,30 +14,24 @@ async def proxy_image(url: str):
     Proxy para download de imagens para evitar bloqueios de CORS no frontend.
     """
     try:
-        import httpx
         from fastapi.responses import Response
+        from app.services.image_service import image_service
 
-        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
-            # Algumas URLs podem vir com ponto final por erro de digitação/parsing, removemos
-            clean_url = url.strip().rstrip(".")
+        clean_url = url.strip().rstrip(".")
+        content, _, original_content_type = await image_service.download_image(clean_url)
 
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            }
-            response = await client.get(
-                clean_url, headers=headers, follow_redirects=True
+        if not content:
+            raise HTTPException(
+                status_code=404,
+                detail="Falha ao buscar imagem externa",
             )
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail="Falha ao buscar imagem externa",
-                )
+        # Preserva o Content-Type original do fabricante se for válido
+        media_type = original_content_type if (original_content_type and original_content_type.startswith("image/")) else "image/jpeg"
 
-            return Response(
-                content=response.content,
-                media_type=response.headers.get("Content-Type", "image/jpeg"),
-            )
+        return Response(content=content, media_type=media_type)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Erro no proxy de imagem: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -51,7 +45,7 @@ async def download_image(url: str, db: Session = Depends(get_db)):
     try:
         from app.services.image_service import image_service
         # Baixa original
-        content, _ = await image_service.download_image(url)
+        content, _, _ = await image_service.download_image(url)
         if not content:
             raise HTTPException(status_code=404, detail="Falha ao baixar imagem do fornecedor")
         
@@ -98,6 +92,7 @@ async def download_images_zip(
     try:
         import io
         import zipfile
+        import asyncio
         from app.services.image_service import image_service
         from app.models import models
         from fastapi.responses import StreamingResponse
@@ -108,41 +103,61 @@ async def download_images_zip(
 
         zip_buffer = io.BytesIO()
         ssl_warning_occurred = False
+        images_added = 0
+        semaphore = asyncio.Semaphore(5)
+        results_lock = asyncio.Lock()
+        
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED, False) as zip_file:
-            for idx, url in enumerate(urls):
-                content, ssl_warn = await image_service.download_image(url)
-                if ssl_warn:
-                    ssl_warning_occurred = True
-                if content:
-                    processed_bytes, media_type = image_service.process_image(
-                        image_bytes=content,
-                        formato_saida=config.formato_saida,
-                        qualidade=config.qualidade,
-                        max_width=config.max_width,
-                        max_height=config.max_height,
-                        min_width=config.min_width,
-                        min_height=config.min_height,
-                        manter_proporcao=config.manter_proporcao,
-                        cor_fundo_jpg=config.cor_fundo_jpg
-                    )
-                    ext = "jpg"
-                    if config.formato_saida != "ORIGINAL":
-                        ext = config.formato_saida.lower()
-                    else:
-                        if "png" in media_type: ext = "png"
-                        elif "webp" in media_type: ext = "webp"
-                        
-                    filename = f"imagem_{idx+1}.{ext}"
-                    zip_file.writestr(filename, processed_bytes)
+            async def download_one(idx: int, url: str):
+                nonlocal ssl_warning_occurred, images_added
+                async with semaphore:
+                    content, ssl_warn, _ = await image_service.download_image(url)
+                    if ssl_warn:
+                        ssl_warning_occurred = True
+                    if content:
+                        processed_bytes, media_type = image_service.process_image(
+                            image_bytes=content,
+                            formato_saida=config.formato_saida,
+                            qualidade=config.qualidade,
+                            max_width=config.max_width,
+                            max_height=config.max_height,
+                            min_width=config.min_width,
+                            min_height=config.min_height,
+                            manter_proporcao=config.manter_proporcao,
+                            cor_fundo_jpg=config.cor_fundo_jpg
+                        )
+                        ext = "jpg"
+                        if config.formato_saida != "ORIGINAL":
+                            ext = config.formato_saida.lower()
+                        else:
+                            if "png" in media_type: ext = "png"
+                            elif "webp" in media_type: ext = "webp"
+                            
+                        filename = f"imagem_{idx+1}.{ext}"
+                        async with results_lock:
+                            zip_file.writestr(filename, processed_bytes)
+                            images_added += 1
+
+            await asyncio.gather(*[download_one(idx, url) for idx, url in enumerate(urls)])
+            
+        if images_added == 0:
+            raise HTTPException(
+                status_code=422,
+                detail="Nenhuma imagem pôde ser baixada. O servidor do fabricante pode estar temporariamente fora do ar ou bloqueando conexões externas."
+            )
         
         zip_buffer.seek(0)
         
         headers = {
             "Content-Disposition": "attachment; filename=imagens.zip",
-            "Access-Control-Expose-Headers": "X-SSL-Warning",
-            "X-SSL-Warning": "true" if ssl_warning_occurred else "false"
+            "Access-Control-Expose-Headers": "X-SSL-Warning, X-Images-Total, X-Images-Downloaded",
+            "X-SSL-Warning": "true" if ssl_warning_occurred else "false",
+            "X-Images-Total": str(len(urls)),
+            "X-Images-Downloaded": str(images_added)
         }
         return StreamingResponse(zip_buffer, media_type="application/zip", headers=headers)
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Erro no download zip: {e}")
         raise HTTPException(status_code=500, detail=str(e))

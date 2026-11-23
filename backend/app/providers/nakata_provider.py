@@ -289,7 +289,6 @@ class NakataProvider(BaseProvider):
 
                 # Montar observação combinada
                 obs_parts = []
-                if linha: obs_parts.append(linha)
                 if transmissao: obs_parts.append(f"Transmissão: {transmissao}")
                 if direcao: obs_parts.append(f"Direção: {direcao}")
                 if observacao_extra: obs_parts.append(observacao_extra)
@@ -307,6 +306,7 @@ class NakataProvider(BaseProvider):
                     "posicao": posicao,
                     "lado": lado,
                     "direcao": direcao,
+                    "descricao_produto": linha,
                     "observacao": " | ".join(obs_parts),
                     "imagem": imagem,
                     "imagens": imagens,
@@ -330,7 +330,8 @@ class NakataProvider(BaseProvider):
                 "imagem": imagem,
                 "imagens": imagens,
                 "referencias": refs_str,
-                "observacao": linha,
+                "descricao_produto": linha,
+                "observacao": "",
                 "ficha_tecnica": ficha if ficha else None,
             }
             results.append(self.formatar_resultado(app))

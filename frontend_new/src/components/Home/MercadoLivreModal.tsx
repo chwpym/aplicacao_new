@@ -28,17 +28,17 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
     palavrasChave: "",
   };
 
-  const [content, setContent] = useState<MercadoLivreContent>(emptyState);
+
   const [editableContent, setEditableContent] = useState<MercadoLivreContent>(emptyState);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && displayResults.length > 0) {
       const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences, cleanMode);
-      setContent(generated);
+
       setEditableContent(generated);
     } else if (displayResults.length === 0) {
-      setContent(emptyState);
+
       setEditableContent(emptyState);
     }
   }, [isOpen, displayResults, partId, uniqueReferences, cleanMode]);
@@ -77,7 +77,7 @@ export const MercadoLivreModal: React.FC<MercadoLivreModalProps> = ({
 
   const handleRegenerate = () => {
     const generated = generateMercadoLivreContent(displayResults, partId, uniqueReferences, cleanMode);
-    setContent(generated);
+
     setEditableContent(generated);
   };
 

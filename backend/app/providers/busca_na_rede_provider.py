@@ -225,7 +225,8 @@ class BaseBuscaNaRedeProvider(BaseProvider):
                             "motor": "",
                             "ano_inicio": anos_text,
                             "ano_fim": "",
-                            "observacao": product_title,
+                            "descricao_produto": product_title,
+                            "observacao": "",
                             "imagem": image_url,
                             "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
                         })
@@ -301,6 +302,7 @@ class BaseBuscaNaRedeProvider(BaseProvider):
                             "motor": parsed["motor"],
                             "ano_inicio": parsed["ano_inicio"],
                             "ano_fim": parsed["ano_fim"],
+                            "descricao_produto": product_title,
                             "observacao": " | ".join(obs_parts),
                             "imagem": image_url,
                             "ficha_tecnica": {"PRODUTO": product_title} if product_title else {},
@@ -336,6 +338,15 @@ class BaseBuscaNaRedeProvider(BaseProvider):
                     for item in items:
                         item["referencias"] = ref_str
 
+            # Abas DESCRIÇÃO / ADICIONAIS (só busca se a aba existir na página)
+            if items:
+                extra = await self._fetch_extra_tabs(client, soup, url)
+                if extra:
+                    for item in items:
+                        ficha = dict(item.get("ficha_tecnica") or {})
+                        ficha.update(extra)
+                        item["ficha_tecnica"] = ficha
+
             # Deduplica aplicações iguais (o site repete blocos)
             seen = set()
             unique_items = []
@@ -350,6 +361,56 @@ class BaseBuscaNaRedeProvider(BaseProvider):
         except Exception as e:
             logger.error("BUSCA_NA_REDE", f"Erro no hydration ({url}): {str(e)}")
             return []
+
+    async def _fetch_extra_tabs(self, client: httpx.AsyncClient, soup: BeautifulSoup, url: str) -> Dict[str, str]:
+        """
+        Busca as abas AJAX DESCRIÇÃO (/descrition) e ADICIONAIS (/additional).
+        Só dispara a requisição se o link da aba existir na página do produto,
+        então marcas sem essas abas não sofrem nenhuma chamada extra.
+        """
+        extra: Dict[str, str] = {}
+        desc_link = soup.select_one("a[data-remote$='/descrition']")
+        add_link = soup.select_one("a[data-remote$='/additional']")
+        if not desc_link and not add_link:
+            return extra
+
+        async def _get(link):
+            if not link:
+                return None
+            try:
+                r = await client.get(link.get("data-remote"), headers=self.headers)
+                return r.text if r.status_code == 200 and r.text.strip() else None
+            except Exception as e:
+                logger.error("BUSCA_NA_REDE", f"Erro ao buscar aba extra em {url}: {str(e)}")
+                return None
+
+        desc_html, add_html = await asyncio.gather(_get(desc_link), _get(add_link))
+
+        if desc_html:
+            ds = BeautifulSoup(desc_html, "html.parser")
+            for br in ds.find_all("br"):
+                br.replace_with("\n")
+            partes = []
+            for card in ds.select(".card-detalhes") or [ds]:
+                txt = re.sub(r"\n{2,}", "\n", card.get_text("\n", strip=True)).strip()
+                if txt:
+                    partes.append(txt)
+            if partes:
+                extra["DESCRIÇÃO"] = "\n".join(partes).upper()
+
+        if add_html:
+            ads = BeautifulSoup(add_html, "html.parser")
+            for li in ads.select(".adicionais li"):
+                strong = li.find("strong")
+                if not strong:
+                    continue
+                valor = strong.get_text(strip=True)
+                strong.extract()
+                rotulo = li.get_text(" ", strip=True).upper()
+                if rotulo and valor:
+                    extra[rotulo] = valor.upper()
+
+        return extra
 
     def _parse_application_block(self, block: str) -> dict | None:
         """

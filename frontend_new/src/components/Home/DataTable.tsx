@@ -7,6 +7,12 @@ import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
 import { exportToCerttus } from "../../utils/certtusExport";
 import { Image, Zap, ExternalLink } from "lucide-react";
 
+// Helper para URL de proxy de imagem (evita bloqueio de CORS / hotlink)
+const proxyImageUrl = (url: string): string => {
+  if (!url || !url.startsWith("http")) return url;
+  return `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
+};
+
 interface DataTableProps {
   results: any[];
   displayResults: any[];
@@ -21,9 +27,10 @@ interface DataTableProps {
   uniqueReferences: any;
   getFieldLabel: (field: string) => string;
   copyToClipboard: (
-    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada",
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta" | "excel" | "similares",
     erpFont?: string,
-    erpFontSize?: number
+    erpFontSize?: number,
+    hideDashesRow?: boolean
   ) => void;
   downloadAllImages: () => void;
   partId: string;
@@ -56,7 +63,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [fontOption, setFontOption] = useState<string>("monospace");
   const [customFont, setCustomFont] = useState<string>("");
   const [erpFontSize, setErpFontSize] = useState<number>(9);
-  const [hideDashesRow, setHideDashesRow] = useState<boolean>(true);
+  const [hideDashesRow] = useState<boolean>(true);
   const [mlModalOpen, setMlModalOpen] = useState(false);
   const [mlCleanMode, setMlCleanMode] = useState(false);
   const [mlMenuOpen, setMlMenuOpen] = useState(false);
@@ -82,15 +89,27 @@ export const DataTable: React.FC<DataTableProps> = ({
     }
   }, [results.length]);
 
-  // Click outside para fechar os dropdowns
+  // Click outside e tecla Escape para fechar os dropdowns
   React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setExportOpen(false);
+        setCopyOpen(false);
+        setMlMenuOpen(false);
+        setSettingsOpen(false);
+      }
+    };
     const handleClickOutside = (event: MouseEvent) => {
       if (exportRef.current && !exportRef.current.contains(event.target as Node)) setExportOpen(false);
       if (copyRef.current && !copyRef.current.contains(event.target as Node)) setCopyOpen(false);
       if (mlMenuRef.current && !mlMenuRef.current.contains(event.target as Node)) setMlMenuOpen(false);
     };
+    document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleOpenFicha = (res: any) => {
@@ -106,7 +125,7 @@ export const DataTable: React.FC<DataTableProps> = ({
     if (imgs.length === 0) return;
 
     setGalleryImages(imgs);
-    setGalleryTitle(`${res.marca} - ${res.veiculo} ${res.modelo}`);
+    setGalleryTitle(`${res.marca || res.provedor || "N/A"} - ${res.codigo}`);
     setGalleryOpen(true);
   };
 
@@ -197,6 +216,33 @@ export const DataTable: React.FC<DataTableProps> = ({
           )}
         </td>
       ),
+    },
+    {
+      id: "imagem",
+      getHeader: () => getFieldLabel("imagem"),
+      render: (res: any) => {
+        const imgUrl = res.imagens && res.imagens.length > 0 ? res.imagens[0] : res.imagem;
+        if (!imgUrl) return <td className="px-4 py-2 text-center text-slate-300">---</td>;
+        return (
+          <td className="px-4 py-2 text-center">
+            <button
+              onClick={() => handleOpenGallery(res)}
+              className="inline-flex w-10 h-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white items-center justify-center hover:scale-105 transition-transform aspect-square"
+              title="Ver imagem na galeria"
+            >
+              <img
+                src={proxyImageUrl(imgUrl)}
+                alt={res.codigo || "Peça"}
+                loading="lazy"
+                decoding="async"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+              />
+            </button>
+          </td>
+        );
+      },
     },
     {
       id: "observacao",
@@ -382,8 +428,18 @@ export const DataTable: React.FC<DataTableProps> = ({
     exportToCerttus(displayResults, partId);
   };
 
+  const changePageWithTransition = (newPage: number) => {
+    if (typeof document !== "undefined" && "startViewTransition" in document) {
+      (document as any).startViewTransition(() => {
+        setCurrentPage(newPage);
+      });
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
+
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6 transition-all">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-xl shadow-slate-100/50 dark:shadow-none overflow-hidden mt-6">
       <div className="border-b border-slate-100 dark:border-slate-800">
         {/* Linha 1: Título + Filtro + Botões */}
         <div className="p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -419,6 +475,8 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <div className="relative w-full sm:w-auto" ref={exportRef}>
                   <button 
                     onClick={() => { setExportOpen(!exportOpen); setCopyOpen(false); setMlMenuOpen(false); }}
+                    aria-expanded={exportOpen}
+                    aria-haspopup="true"
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -449,6 +507,8 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <div className="relative w-full sm:w-auto" ref={copyRef}>
                   <button 
                     onClick={() => { setCopyOpen(!copyOpen); setExportOpen(false); setMlMenuOpen(false); }}
+                    aria-expanded={copyOpen}
+                    aria-haspopup="true"
                     className="flex items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-slate-500/10 text-slate-600 hover:bg-slate-500/20 transition-all border border-slate-500/20 dark:text-slate-400 w-full sm:w-auto"
                   >
                     <div className="flex items-center gap-2">
@@ -468,6 +528,14 @@ export const DataTable: React.FC<DataTableProps> = ({
                       <button onClick={() => { copyToClipboard("tabela_tabulada", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
                         <Copy size={14} className="text-amber-600" /> Tabulado ERP
                       </button>
+                      <div className="h-px bg-slate-200 dark:bg-slate-700/50 my-1"></div>
+                      <button onClick={() => { copyToClipboard("excel", actualErpFont, erpFontSize, hideDashesRow); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <FileSpreadsheet size={14} className="text-green-600" /> Excel / Word (HTML)
+                      </button>
+                      <button onClick={() => { copyToClipboard("similares"); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
+                        <Copy size={14} className="text-blue-600" /> Apenas Similares
+                      </button>
+                      <div className="h-px bg-slate-200 dark:bg-slate-700/50 my-1"></div>
                       <button onClick={() => { copyToClipboard("etiqueta"); setCopyOpen(false); }} className="flex items-center gap-2 px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg text-left text-slate-700 dark:text-slate-300 transition-colors">
                         <Printer size={14} className="text-purple-600" /> Etiqueta (ZPL)
                       </button>
@@ -498,6 +566,8 @@ export const DataTable: React.FC<DataTableProps> = ({
                 <div className="relative flex-1" ref={mlMenuRef}>
                   <button
                     onClick={() => { setMlMenuOpen(!mlMenuOpen); setExportOpen(false); setCopyOpen(false); }}
+                    aria-expanded={mlMenuOpen}
+                    aria-haspopup="true"
                     className="flex w-full items-center justify-between gap-2 text-xs font-semibold px-4 py-2.5 rounded-xl bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 transition-all border border-yellow-500/20 whitespace-nowrap"
                   >
                     <div className="flex items-center gap-2">
@@ -723,23 +793,42 @@ export const DataTable: React.FC<DataTableProps> = ({
               key={idx}
               className="p-4 space-y-3 hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
             >
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
-                      {res.marca}
-                    </span>
-                    {visibleFields.codigo && res.codigo && (
-                      <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded">
-                        {res.codigo}
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex items-start gap-3">
+                  {visibleFields.imagem && (res.imagem || (res.imagens && res.imagens.length > 0)) && (
+                    <button
+                      onClick={() => handleOpenGallery(res)}
+                      className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-white shrink-0 aspect-square flex items-center justify-center"
+                      title="Ver imagem na galeria"
+                    >
+                      <img
+                        src={proxyImageUrl(res.imagens && res.imagens.length > 0 ? res.imagens[0] : res.imagem)}
+                        alt={res.codigo || "Peça"}
+                        loading="lazy"
+                        decoding="async"
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-contain"
+                      />
+                    </button>
+                  )}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase">
+                        {res.marca}
                       </span>
-                    )}
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
-                      {res.veiculo}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-                     {res.modelo} • {res.motor}
+                      {visibleFields.codigo && res.codigo && (
+                        <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-1.5 py-0.5 rounded">
+                          {res.codigo}
+                        </span>
+                      )}
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">
+                        {res.veiculo}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                       {res.modelo} • {res.motor}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -888,7 +977,7 @@ export const DataTable: React.FC<DataTableProps> = ({
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             <button
-              onClick={() => setCurrentPage(1)}
+              onClick={() => changePageWithTransition(1)}
               disabled={currentPage === 1}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               title="Primeira Página"
@@ -896,7 +985,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               &lt;&lt;
             </button>
             <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => changePageWithTransition(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
@@ -906,14 +995,14 @@ export const DataTable: React.FC<DataTableProps> = ({
               Pág <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> de {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() => changePageWithTransition(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               Próx &gt;
             </button>
             <button
-              onClick={() => setCurrentPage(totalPages)}
+              onClick={() => changePageWithTransition(totalPages)}
               disabled={currentPage === totalPages}
               className="px-2 md:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               title="Última Página"

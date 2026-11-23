@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Save, Image as ImageIcon, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Save, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { configApi } from '../services/api';
 import { toast } from '../utils/toast';
 

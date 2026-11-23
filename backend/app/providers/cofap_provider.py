@@ -163,9 +163,13 @@ class CofapProvider(GraphQLProvider):
         if product_data:
             # Injetamos o que for necessário para o motor universal da BaseProvider
             raw_data["specifications"] = product_data.get("specifications")
+            app_desc = product_data.get("applicationDescription", "").strip()
+            cat_name = product_data.get("productGroup", {}).get("name", "").strip() if product_data.get("productGroup") else ""
+            raw_data["descricao_produto"] = cat_name if cat_name else app_desc
+            
             raw_data["ficha_tecnica"] = {
-                "Descrição Comercial": product_data.get("applicationDescription"),
-                "Categoria": product_data.get("productGroup", {}).get("name")
+                "Descrição Comercial": app_desc,
+                "Categoria": cat_name
             }
             # Unifica especificações estruturadas
             parsed_specs = self.parse_specifications(product_data.get("specifications"))
@@ -176,7 +180,6 @@ class CofapProvider(GraphQLProvider):
 
         # Combinar observações (only, restriction, note) com an an segurança da Cofap
         obs_parts = [
-            product_data.get("applicationDescription", "").strip() if product_data else "",
             safe_label(vehicle.get("only")),
             safe_label(vehicle.get("restriction")),
             safe_label(vehicle.get("note")),

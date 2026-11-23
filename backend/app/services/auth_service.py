@@ -3,6 +3,8 @@ import asyncio
 from typing import Dict, Optional
 import re
 import json
+import time
+import base64
 from app.models import models
 
 
@@ -10,13 +12,62 @@ class AuthService:
     def __init__(self):
         self.cache = {}  # Dict[provedor_id, token_data]
 
+    def _get_jwt_exp(self, token: str) -> Optional[int]:
+        """
+        Extrai o campo 'exp' (Unix timestamp) do payload do JWT.
+        Não verifica assinatura — apenas lê o payload para saber quando expira.
+        """
+        try:
+            parts = token.split(".")
+            if len(parts) < 2:
+                return None
+            # JWT usa base64url — adicionar padding se necessário
+            payload_b64 = parts[1]
+            padding = 4 - len(payload_b64) % 4
+            if padding != 4:
+                payload_b64 += "=" * padding
+            payload = json.loads(base64.b64decode(payload_b64).decode("utf-8"))
+            return payload.get("exp")
+        except Exception:
+            return None
+
+    def _is_token_expired(self, token_data: dict) -> bool:
+        """
+        Verifica se o token cacheado está expirado.
+        Usa o campo 'exp' do JWT com margem de segurança de 60 segundos.
+        Fallback: se não houver 'exp', usa o tempo de criação (5 min de validade assumida).
+        """
+        exp = token_data.get("exp")
+        if exp is not None:
+            # Considera expirado 60s antes do prazo real (margem de segurança)
+            return time.time() >= (exp - 60)
+        # Fallback: sem informação de expiração, assume 5 minutos (300s)
+        created_at = token_data.get("created_at", 0)
+        return (time.time() - created_at) >= 300
+
+    def invalidate_cache(self, provedor_id: int):
+        """
+        Remove o token do cache forçando re-login na próxima chamada.
+        Usado quando a API retorna 401/403 ou erro UAN-402.
+        """
+        if provedor_id in self.cache:
+            del self.cache[provedor_id]
+            print(f"[AuthService] Cache invalidado para provedor_id={provedor_id}. Novo login será feito.")
+
     async def get_token(self, provedor: models.Provedor) -> Optional[str]:
         """
         Retorna um token válido para o provedor. Tenta carregar do cache primeiro.
+        Se o token estiver expirado, remove do cache e refaz o login automaticamente.
         """
         if provedor.id in self.cache:
-            # TODO: Validar expiração
-            return self.cache[provedor.id].get("token")
+            token_data = self.cache[provedor.id]
+            if not self._is_token_expired(token_data):
+                # Token ainda válido — retorna do cache
+                return token_data.get("token")
+            else:
+                # Token expirado — remove cache e refaz login
+                print(f"[AuthService] Token expirado para provedor_id={provedor.id}. Renovando...")
+                del self.cache[provedor.id]
 
         # Detectar se é um catálogo gerido pela Fraga (Authomix, Perfect, Indisa, etc.)
         headers_dict = {}
@@ -157,9 +208,16 @@ class AuthService:
                     )
 
                     if resp_token.status_code == 200:
-                        access_token = resp_token.json().get("access_token")
-                        print(f"[{provedor.nome}] Sucesso! Token obtido (cat_{brand}).")
-                        self.cache[provedor.id] = {"token": access_token}
+                        token_json = resp_token.json()
+                        access_token = token_json.get("access_token")
+                        exp = self._get_jwt_exp(access_token) if access_token else None
+                        self.cache[provedor.id] = {
+                            "token": access_token,
+                            "exp": exp,
+                            "created_at": time.time(),
+                        }
+                        exp_info = f", expira em {int(exp - time.time())}s" if exp else ""
+                        print(f"[{provedor.nome}] Sucesso! Token obtido (cat_{brand}){exp_info}.")
                         return access_token
 
                 print(

@@ -24,6 +24,44 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
+// Componente isolado para o indicador de status da API.
+// Mantém seu próprio estado para que o health check a cada 10 minutos
+// re-renderize APENAS a bolinha, e não o Layout inteiro.
+const StatusIndicator: React.FC = () => {
+  const [status, setStatus] = useState<'healthy' | 'warning' | 'critical' | 'offline'>('offline');
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const resp = await configApi.getHealth();
+        setStatus(resp.data.overall);
+      } catch {
+        setStatus('offline');
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 600000); // 10 minutos
+    return () => clearInterval(interval);
+  }, []);
+
+  const colorClass = (() => {
+    switch (status) {
+      case 'healthy':  return 'bg-emerald-500 shadow-emerald-500/50';
+      case 'warning':  return 'bg-amber-500 shadow-amber-500/50';
+      case 'critical': return 'bg-rose-500 shadow-rose-500/50';
+      default:         return 'bg-slate-400';
+    }
+  })();
+
+  return (
+    <div
+      className={`w-2 h-2 rounded-full ${colorClass} shadow-[0_0_8px] transition-all duration-500`}
+      title={`Status da API: ${status.toUpperCase()}`}
+    />
+  );
+};
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -37,7 +75,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const [isBackingUp, setIsBackingUp] = useState(false);
-  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' | 'warning' } | null>(null);
 
   const handleBackup = async () => {
     if (isBackingUp) return;
@@ -89,23 +127,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setIsDark(!isDark);
   };
 
-  const [systemStatus, setSystemStatus] = useState<'healthy' | 'warning' | 'critical' | 'offline'>('offline');
-
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const resp = await configApi.getHealth();
-        setSystemStatus(resp.data.overall);
-      } catch (error) {
-        setSystemStatus('offline');
-      }
-    };
-
-    checkHealth();
-    const interval = setInterval(checkHealth, 600000); // 10 minutos
-    return () => clearInterval(interval);
-  }, []);
-
   // Listener para Toasts Globais
   useEffect(() => {
     const handleToast = (e: any) => {
@@ -118,15 +139,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     window.addEventListener('app-toast', handleToast);
     return () => window.removeEventListener('app-toast', handleToast);
   }, []);
-
-  const getStatusColor = () => {
-    switch (systemStatus) {
-      case 'healthy': return 'bg-emerald-500 shadow-emerald-500/50';
-      case 'warning': return 'bg-amber-500 shadow-amber-500/50';
-      case 'critical': return 'bg-rose-500 shadow-rose-500/50';
-      default: return 'bg-slate-400';
-    }
-  };
 
   const navItems = [
     { name: 'Workspace', path: '/', icon: <Search size={20} /> },
@@ -161,19 +173,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className={`min-h-screen bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 flex flex-col md:flex-row transition-colors duration-200`}>
       {/* Notificação Customizada */}
       {notification && (
-        <div className="fixed top-6 right-6 z-[100] animate-in fade-in slide-in-from-right-8 duration-300">
+        <div className="fixed bottom-6 right-6 z-[1000] animate-in fade-in slide-in-from-right-8 duration-300">
           <div className={`
             px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-md border flex items-center gap-4 min-w-[320px] max-w-[500px]
             ${notification.type === 'success' 
               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' 
+              : notification.type === 'warning'
+              ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
               : 'bg-rose-500/10 border-rose-500/20 text-rose-500'}
           `}>
-            <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
-              {notification.type === 'success' ? <Download size={20} /> : <X size={20} />}
+            <div className={`p-2 rounded-xl ${notification.type === 'success' ? 'bg-emerald-500/20' : notification.type === 'warning' ? 'bg-amber-500/20' : 'bg-rose-500/20'}`}>
+              {notification.type === 'success' ? <Download size={20} /> : notification.type === 'warning' ? <HelpCircle size={20} /> : <X size={20} />}
             </div>
             <div className="flex-1 flex flex-col gap-0.5">
               <span className="font-black text-xs uppercase tracking-wider">
-                {notification.type === 'success' ? 'Backup Concluído' : 'Erro no Sistema'}
+                {notification.type === 'success' ? 'Sucesso' : notification.type === 'warning' ? 'Aviso' : 'Erro no Sistema'}
               </span>
               <p className="text-[11px] font-bold opacity-90 break-all leading-relaxed">
                 {notification.message}
@@ -274,10 +288,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-black tracking-tight leading-none">Catalogo V4</h1>
-                <div 
-                  className={`w-2 h-2 rounded-full ${getStatusColor()} shadow-[0_0_8px] transition-all duration-500`}
-                  title={`Status da API FIPE: ${systemStatus.toUpperCase()}`}
-                />
+                <StatusIndicator />
               </div>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Gerenciador de Peças</span>
               <span className="text-[9px] text-slate-400/80 font-bold uppercase mt-1">Hoje: {new Date().toLocaleDateString('pt-BR')}</span>

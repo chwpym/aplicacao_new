@@ -76,6 +76,7 @@ class SearchResult(BaseModel):
     combustivel: Optional[str] = None
     ano_inicio: Optional[str] = None
     ano_fim: Optional[str] = None
+    descricao_produto: Optional[str] = None
     observacao: Optional[str] = None
     apenas: Optional[str] = None
     restricao: Optional[str] = None

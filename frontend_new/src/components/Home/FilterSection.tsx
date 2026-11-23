@@ -96,7 +96,15 @@ export const FilterSection: React.FC<FilterSectionProps> = ({
         <div className="flex items-center gap-4 justify-end w-full flex-wrap">
           {uniqueCodigos.length > 1 && (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500 uppercase">Peça:</span>
+              <span className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
+                Peça:
+                <span
+                  className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                  title="Múltiplos códigos encontrados! Selecione um código ou desligue o botão AGRUPAR para ver todos detalhados."
+                >
+                  {uniqueCodigos.length} cód.
+                </span>
+              </span>
               <select
                 value={selectedCodigo}
                 onChange={(e) => setSelectedCodigo(e.target.value)}

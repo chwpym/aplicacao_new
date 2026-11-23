@@ -81,7 +81,7 @@ export const copyToClipboard = (
 
   const compareResults = (a: any, b: any) => {
     const priority = [
-      "marca", "veiculo", "modelo", "versao", "motor",
+      "marca", "codigo", "veiculo", "modelo", "versao", "motor",
       "configuracao_motor", "combustivel", "posicao", "lado", "ano_inicio",
     ];
 
@@ -336,6 +336,7 @@ export const copyToClipboard = (
     printFicha(r => r.provedor?.toUpperCase() === "BOSCH" || r.marca?.toUpperCase() === "BOSCH", "FICHA TÉCNICA (BOSCH)");
     printFicha(r => r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA", "FICHA TÉCNICA (IMA)");
     printFicha(r => r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC", "FICHA TÉCNICA (INTERMEC)");
+    printFicha(r => r.provedor?.toUpperCase() === "VIEMAR" || r.marca?.toUpperCase() === "VIEMAR", "FICHA TÉCNICA (VIEMAR)");
   };
 
   if (uniqueCodigos.length > 1) {
@@ -415,18 +416,23 @@ export const copyToClipboard = (
         if (u === 'D20') arr.push('D-20');
         if (u === 'A10') arr.push('A-10');
         if (u === 'C10') arr.push('C-10');
+        const genMap: Record<string, string> = {
+          'GI': 'G1', 'GII': 'G2', 'GIII': 'G3', 'GIV': 'G4', 'GV': 'G5', 'GVI': 'G6', 'GVII': 'G7', 'GVIII': 'G8', 'GIX': 'G9', 'GX': 'G10',
+          'G1': 'GI', 'G2': 'GII', 'G3': 'GIII', 'G4': 'GIV', 'G5': 'GV', 'G6': 'GVI', 'G7': 'GVII', 'G8': 'GVIII', 'G9': 'GIX', 'G10': 'GX'
+        };
+        if (genMap[u]) arr.push(genMap[u]);
       });
       return arr;
     };
 
     // 0. Descrição do Produto (primeira linha do IDX, antes dos carros)
-    // Extrai a primeira parte do observacao (antes do primeiro '|') — que é sempre o nome do produto.
+    // Extrai a descricao do produto da propriedade descricao_produto
     // Filtra qualificadores técnicos (Label: Valor) e textos muito curtos ou longos.
     const descricaoProduto = (() => {
       const freq: Record<string, number> = {};
       for (const r of resultsData) {
-        // Pega só a primeira parte antes do '|' (o nome da peça)
-        const primeiraParte = (r.observacao || "").split("|")[0].trim().toUpperCase();
+        // Pega a descricao do produto vinda do backend
+        const primeiraParte = (r.descricao_produto || "").trim().toUpperCase();
         if (!primeiraParte || primeiraParte.length < 3 || primeiraParte.length > 80) continue;
         // Filtra qualificadores técnicos (padrão "Label: Valor")
         if (primeiraParte.includes(":")) continue;
@@ -484,6 +490,83 @@ export const copyToClipboard = (
   };
 
   text += generateIdxString(results, uniqueReferences, text);
+
+  navigator.clipboard.writeText(text.trim());
+};
+
+export const copySimilaresOnly = (
+  results: any[],
+  automakers: string[],
+  uniqueReferences: Record<string, Set<string>>,
+  partId: string
+) => {
+  let text = partId ? `REFERÊNCIA DE SIMILARES (Busca: ${partId.toUpperCase()}):\n` : `REFERÊNCIA DE SIMILARES:\n`;
+
+  // Copia as referências originais geradas e garante que os códigos listados nos resultados também entrem
+  const allRefs: Record<string, Set<string>> = {};
+  
+  // Copia as referências já processadas
+  Object.entries(uniqueReferences).forEach(([brand, codes]) => {
+    allRefs[brand] = new Set(codes);
+  });
+
+  // Adiciona a "marca" e "código" principal de cada resultado, para não escapar nada
+  results.forEach(r => {
+    if (r.marca && r.codigo) {
+      const cleanBrand = r.marca.toUpperCase().replace(/\s+ORIGINAL$/g, "").replace(/^ORIGINAL\s+/g, "");
+      if (!allRefs[cleanBrand]) allRefs[cleanBrand] = new Set();
+      allRefs[cleanBrand].add(r.codigo.trim());
+    }
+  });
+
+  if (Object.keys(allRefs).length === 0) {
+    navigator.clipboard.writeText(text + "Nenhuma referência encontrada.");
+    return;
+  }
+
+  // Ordenação de Montadoras (mesma lógica usada no clipboard principal)
+  const visibleManufacturers = new Set(
+    results.map(r => r.veiculo?.toUpperCase().trim()).filter(v => !!v)
+  );
+
+  const knownAutomakers = new Set([
+    "VOLKSWAGEN", "VW", "CHEVROLET", "GM", "FIAT", "FORD", "TOYOTA",
+    "HONDA", "HYUNDAI", "RENAULT", "NISSAN", "JEEP", "PEUGEOT",
+    "CITROEN", "MITSUBISHI", "AUDI", "BMW", "MERCEDES-BENZ", "MERCEDES",
+    "KIA", "VOLVO", "PORSCHE", "LAND ROVER", "CHERY", "CAOA CHERY",
+    "SUZUKI", "SUBARU", "JAC", "DODGE", "CHRYSLER", "RAM", "ALFA ROMEO"
+  ]);
+
+  const sortedBrands = Object.entries(allRefs).sort(([brandA], [brandB]) => {
+    const isMkrA = automakers.includes(brandA) || visibleManufacturers.has(brandA) || knownAutomakers.has(brandA);
+    const isMkrB = automakers.includes(brandB) || visibleManufacturers.has(brandB) || knownAutomakers.has(brandB);
+
+    const isPriorityA = brandA === "ORIGINAL" || brandA === "OEM" || isMkrA;
+    const isPriorityB = brandB === "ORIGINAL" || brandB === "OEM" || isMkrB;
+
+    if (isPriorityA && !isPriorityB) return -1;
+    if (!isPriorityA && isPriorityB) return 1;
+    return brandA.localeCompare(brandB);
+  });
+
+  const normalizeCode = (c: string) => c.toUpperCase().replace(/[\s\-\.]/g, "");
+  const seenCodes = new Set<string>();
+
+  sortedBrands.forEach(([brand, codes]) => {
+    const filteredCodes = Array.from(codes)
+      .filter(code => {
+        const norm = normalizeCode(code);
+        if (seenCodes.has(norm)) return false;
+        seenCodes.add(norm);
+        return true;
+      })
+      .sort();
+
+    if (filteredCodes.length > 0) {
+      const codesList = filteredCodes.join(" - ");
+      text += `${brand}: ${codesList}\n`;
+    }
+  });
 
   navigator.clipboard.writeText(text.trim());
 };
