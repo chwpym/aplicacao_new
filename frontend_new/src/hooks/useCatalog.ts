@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { searchApi, configApi } from "../services/api";
+import { searchApi, configApi, API_BASE_URL } from "../services/api";
 import { useAutomakerCache } from "./useAutomakerCache";
 import { generateUniqueReferences, copyToClipboard as performCopy, copySimilaresOnly } from "../utils/clipboard";
 import { copyToClipboardTable } from "../utils/clipboardTable";
@@ -482,7 +482,7 @@ export const useCatalog = () => {
 
     try {
       const urlsToDownload = imagesToDownload.map(img => img.url);
-      const response = await fetch("http://localhost:8000/search/download/zip", {
+      const response = await fetch(`${API_BASE_URL}/search/download/zip`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

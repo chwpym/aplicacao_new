@@ -4,6 +4,7 @@ import { ImageGalleryModal } from "./ImageGalleryModal";
 import { MercadoLivreModal } from "./MercadoLivreModal";
 import { exportToExcel, exportToPdf } from "../../utils/exportUtils";
 import { exportToCerttus } from "../../utils/certtusExport";
+import { API_BASE_URL } from "../../services/api";
 import {
   TableToolbar,
   TableReferencesBar,
@@ -16,7 +17,7 @@ import {
 // Helper para URL de proxy de imagem (evita bloqueio de CORS / hotlink)
 const proxyImageUrl = (url: string): string => {
   if (!url || !url.startsWith("http")) return url;
-  return `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
+  return `${API_BASE_URL}/search/proxy/image?url=${encodeURIComponent(url)}`;
 };
 
 export interface DataTableProps {

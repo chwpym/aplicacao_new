@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { Printer, Download, RotateCcw, Box, FileText } from 'lucide-react';
 
 export const Etiquetas: React.FC = () => {
@@ -39,7 +40,7 @@ export const Etiquetas: React.FC = () => {
         rotacionar: activeTab === 'rotacionada'
       };
 
-      const response = await fetch('http://localhost:8000/zpl/generate', {
+      const response = await fetch(`${API_BASE_URL}/zpl/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

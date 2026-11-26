@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../services/api';
 import { openDB } from 'idb';
 
 const DB_NAME = 'CatalogDB';
@@ -39,7 +40,7 @@ export function useAutomakerCache() {
         }
 
         // 2. Se offline ou precisar atualizar, busca da API
-        const response = await fetch('http://localhost:8000/config/automakers');
+        const response = await fetch(`${API_BASE_URL}/config/automakers`);
         const data = await response.json();
         
         if (data.status === 'ok' && data.automakers) {
