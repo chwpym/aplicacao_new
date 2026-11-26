@@ -263,6 +263,21 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
               null,
               2,
             );
+          } else if (value === "reparadorvw") {
+            if (isUrlDefaultOrEmpty) {
+              next.url = "https://www.reparadorvw.com.br/api/catalogo/gql";
+            }
+            next.headers = JSON.stringify(
+              {
+                Origin: "https://www.reparadorvw.com.br",
+                Referer: "https://www.reparadorvw.com.br/catalogo",
+              },
+              null,
+              2,
+            );
+            next.query = "";
+            next.login_required = false;
+            next.mapeamento = "{}";
           }
         }
 
@@ -465,6 +480,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
                 <option value="japanparts">Japanparts (Nativo)</option>
                 <option value="nakata">Nakata (Nativo)</option>
                 <option value="notus">Notus (Nativo)</option>
+                <option value="reparadorvw">VW Reparador (Nativo)</option>
                 <option value="native">Outro Provedor de Sistema (Nativo)</option>
 
               </select>
@@ -550,6 +566,7 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
             formData.tipo === "hipper_freios" ||
             formData.tipo === "notus" ||
             formData.tipo === "nakata" ||
+            formData.tipo === "reparadorvw" ||
             formData.tipo === "native") && (
               <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-4">
                 <RefreshCcw className="text-primary mt-1 shrink-0" size={20} />

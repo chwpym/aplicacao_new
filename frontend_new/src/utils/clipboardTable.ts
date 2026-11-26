@@ -509,6 +509,15 @@ export const copyToClipboardTable = (
   // Intermec
   appendFichaTecnica(r => r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC", "INTERMEC");
   appendFichaTecnica(r => r.provedor?.toUpperCase() === "VIEMAR" || r.marca?.toUpperCase() === "VIEMAR", "VIEMAR");
+  // VW Reparador (Peças Genuínas Volkswagen)
+  appendFichaTecnica(
+    r =>
+      r.provedor?.toUpperCase() === "VW REPARADOR" ||
+      r.provedor?.toUpperCase() === "REPARADORVW" ||
+      r.marca?.toUpperCase() === "VOLKSWAGEN ORIGINAL" ||
+      r.marca?.toUpperCase() === "VW ORIGINAL",
+    "VW REPARADOR"
+  );
 
 
   // ==========================================

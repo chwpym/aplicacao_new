@@ -153,5 +153,9 @@ def get_provider(config_model):
         from app.providers.vetor_provider import VetorProvider
         return VetorProvider(config)
 
+    elif config["tipo"] == "reparadorvw":
+        from app.providers.reparadorvw_provider import ReparadorVwProvider
+        return ReparadorVwProvider(config)
+
     return None
 
