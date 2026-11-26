@@ -1,6 +1,6 @@
 import React from "react";
 import { SearchX } from "lucide-react";
-import { ColumnConfigItem } from "./columnConfig";
+import type { ColumnConfigItem } from "./columnConfig";
 
 interface TableDesktopViewProps {
   columns: ColumnConfigItem[];
