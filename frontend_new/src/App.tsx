@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
-import HomeTable from './pages/HomeTable';
 import Provedores from './pages/Provedores';
 import Siglas from './pages/Siglas';
 import Palavras from './pages/Palavras';
@@ -20,7 +19,6 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/table-test" element={<HomeTable />} />
           <Route path="/etiquetas" element={<Etiquetas />} />
           <Route path="/provedores" element={<Provedores />} />
           <Route path="/siglas" element={<Siglas />} />

@@ -67,6 +67,7 @@ const API_OPTIONS = [
     { id: 'autoexperts', label: 'AutoExperts' },
     { id: 'multiqualita', label: 'Multiqualità' },
     { id: 'autafastar', label: 'Autafastar' },
+    { id: 'reparadorvw', label: 'VW Reparador' },
     { id: 'native', label: 'Nativo' }
 ].sort((a, b) => a.label.localeCompare(b.label));
 
@@ -353,6 +354,15 @@ const DEFAULT_CONFIGS: Record<string, any> = {
             ano_inicio: 'startYear',
             imagem: 'images'
         }, null, 2)
+    },
+    reparadorvw: {
+        url: 'https://www.reparadorvw.com.br/api/catalogo/gql',
+        headers: JSON.stringify({
+            "Origin": "https://www.reparadorvw.com.br",
+            "Referer": "https://www.reparadorvw.com.br/catalogo"
+        }, null, 2),
+        query: '',
+        mapeamento: '{}'
     }
 };
 
@@ -401,7 +411,7 @@ export default function Playground() {
                                        prev.mapeamento.includes('crossReference.valueList');
 
                 const isViemar = newType === 'viemar';
-                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata', 'japanparts'].includes(newType);
+                const isNativeBrand = ['bosch', 'mte_thomson', 'tecfil', 'ima', 'tsa', 'dayco', 'hipper_freios', 'notus', 'nakata', 'japanparts', 'reparadorvw'].includes(newType);
 
                 return {
                     ...prev,

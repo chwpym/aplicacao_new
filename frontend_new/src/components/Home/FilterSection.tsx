@@ -7,7 +7,12 @@ interface FilterSectionProps {
   agrupar: boolean;
   setAgrupar: React.Dispatch<React.SetStateAction<boolean>>;
   getFieldLabel: (field: string) => string;
-  copyToClipboard: (mode: "completa" | "intermediaria" | "agrupada") => void;
+  copyToClipboard: (
+    mode: "completa" | "intermediaria" | "agrupada" | "tabela" | "tabela_limpa" | "tabela_tabulada" | "etiqueta" | "excel" | "similares",
+    erpFont?: string,
+    erpFontSize?: number,
+    hideDashesRow?: boolean
+  ) => void;
   clearResults: () => void;
   saveCurrentAsDefault: () => void;
   restoreDefault: () => void;

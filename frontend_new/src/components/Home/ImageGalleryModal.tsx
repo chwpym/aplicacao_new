@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight, Download, FileDown, Loader2 } from 'lucid
 
 import AlertModal from '../AlertModal';
 import { toast } from '../../utils/toast';
+import { API_BASE_URL } from '../../services/api';
 
 interface ImageGalleryModalProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface ImageGalleryModalProps {
 // Helper: converte URL de imagem para URL do proxy local (evita CORS/hotlinking)
 const proxyImageUrl = (url: string): string => {
   if (!url || !url.startsWith('http')) return url;
-  return `http://localhost:8000/search/proxy/image?url=${encodeURIComponent(url)}`;
+  return `${API_BASE_URL}/search/proxy/image?url=${encodeURIComponent(url)}`;
 };
 
 export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
@@ -63,7 +64,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
 
   const downloadFile = async (url: string, filename: string) => {
     try {
-      const downloadUrl = `http://localhost:8000/search/download/image?url=${encodeURIComponent(url)}`;
+      const downloadUrl = `${API_BASE_URL}/search/download/image?url=${encodeURIComponent(url)}`;
       const response = await fetch(downloadUrl);
       if (!response.ok) throw new Error("Erro ao baixar a imagem processada");
       
@@ -108,7 +109,7 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
     setDownloading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/search/download/zip", {
+      const response = await fetch(`${API_BASE_URL}/search/download/zip`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

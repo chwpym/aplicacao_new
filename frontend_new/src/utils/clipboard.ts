@@ -337,6 +337,14 @@ export const copyToClipboard = (
     printFicha(r => r.provedor?.toUpperCase() === "IMA" || r.marca?.toUpperCase() === "IMA", "FICHA TÉCNICA (IMA)");
     printFicha(r => r.provedor?.toUpperCase() === "INTERMEC" || r.marca?.toUpperCase() === "INTERMEC" || r.marca_peca?.toUpperCase() === "INTERMEC", "FICHA TÉCNICA (INTERMEC)");
     printFicha(r => r.provedor?.toUpperCase() === "VIEMAR" || r.marca?.toUpperCase() === "VIEMAR", "FICHA TÉCNICA (VIEMAR)");
+    printFicha(
+      r =>
+        r.provedor?.toUpperCase() === "VW REPARADOR" ||
+        r.provedor?.toUpperCase() === "REPARADORVW" ||
+        r.marca?.toUpperCase() === "VOLKSWAGEN ORIGINAL" ||
+        r.marca?.toUpperCase() === "VW ORIGINAL",
+      "FICHA TÉCNICA (VW REPARADOR)"
+    );
   };
 
   if (uniqueCodigos.length > 1) {
