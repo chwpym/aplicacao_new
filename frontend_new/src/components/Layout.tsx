@@ -104,7 +104,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/table-test': 'Tabela - Catálogo V4',
       '/provedores': 'Provedores - Catálogo V4',
       '/siglas': 'Siglas - Catálogo V4',
       '/palavras': 'Limpeza - Catálogo V4',
