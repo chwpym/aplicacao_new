@@ -548,17 +548,17 @@
       "id": 45,
       "nome": "NOTUS",
       "slug": "notus",
-      "url": "https://catalogo.notus.ind.br/",
+      "url": "https://notus.ind.br/Catalogo/index.html",
       "tipo": "notus",
       "ativo": 1,
-      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"}",
+      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\", \"Accept\": \"application/json, text/plain, */*\", \"Referer\": \"https://notus.ind.br/Catalogo/todosprodutos.html\"}",
       "query": null,
       "login_required": 0,
       "username": null,
       "password": null,
       "url_login": null,
       "pasta_pdf": null,
-      "mapeamento": "{\"description\": \"Busca via JSON est\\u00e1tico da Notus do Brasil\"}"
+      "mapeamento": "{\"description\": \"Cat\\u00e1logo oficial Notus - Sistemas T\\u00e9rmicos (API REST / JSON)\"}"
     },
     {
       "id": 46,

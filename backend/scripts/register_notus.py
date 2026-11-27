@@ -14,20 +14,32 @@ def register_notus():
         # Verifica se já existe
         existing = db.query(Provedor).filter(Provedor.slug == "notus").first()
         if existing:
-            print("Provedor Notus já cadastrado.")
+            existing.url = "https://notus.ind.br/Catalogo/index.html"
+            existing.headers = json.dumps({
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": "https://notus.ind.br/Catalogo/todosprodutos.html"
+            })
+            existing.mapeamento = json.dumps({
+                "description": "Catálogo oficial Notus - Sistemas Térmicos (API REST / JSON)"
+            })
+            db.commit()
+            print("Provedor Notus atualizado com sucesso no banco de dados!")
             return
 
         notus = Provedor(
             nome="NOTUS",
             slug="notus",
-            url="https://catalogo.notus.ind.br/",
+            url="https://notus.ind.br/Catalogo/index.html",
             tipo="notus",
             ativo=True,
             headers=json.dumps({
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": "https://notus.ind.br/Catalogo/todosprodutos.html"
             }),
             mapeamento=json.dumps({
-                "description": "Busca via JSON estático da Notus do Brasil"
+                "description": "Catálogo oficial Notus - Sistemas Térmicos (API REST / JSON)"
             })
         )
         
