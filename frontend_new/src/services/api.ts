@@ -50,6 +50,10 @@ export const configApi = {
 
     getConfiguracoesImagens: () => api.get('/config/imagens'),
     updateConfiguracoesImagens: (data: any) => api.put('/config/imagens', data),
+
+    getSystemLogs: (params?: { limit?: number; level?: string; search?: string }) => 
+        api.get('/config/logs', { params }),
+    clearSystemLogs: () => api.delete('/config/logs'),
 };
 
 

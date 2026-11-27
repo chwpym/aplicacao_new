@@ -8,6 +8,7 @@ interface SearchSectionProps {
   setSelectedProvedor: (val: number | "") => void;
   provedores: any[];
   loading: boolean;
+  searchProgress?: { total: number; current: number };
   handleSearch: (e: React.FormEvent) => void;
   cancelSearch: () => void;
   inputRef?: RefObject<HTMLInputElement | null>;
@@ -20,6 +21,7 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
   setSelectedProvedor,
   provedores,
   loading,
+  searchProgress,
   handleSearch,
   cancelSearch,
   inputRef,
@@ -68,7 +70,11 @@ export const SearchSection: React.FC<SearchSectionProps> = ({
               ) : (
                 <Search size={20} />
               )}
-              {loading ? "Buscando..." : "Pesquisar"}
+              {loading
+                ? searchProgress && searchProgress.total > 1
+                  ? `Buscando (${searchProgress.current}/${searchProgress.total})...`
+                  : "Buscando..."
+                : "Pesquisar"}
             </button>
 
             {loading && (

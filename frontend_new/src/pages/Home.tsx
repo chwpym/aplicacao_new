@@ -40,6 +40,7 @@ const Home = () => {
     cancelSearch,
     alertConfig,
     setAlertConfig,
+    searchProgress,
   } = useCatalog();
 
   useEffect(() => {
@@ -69,6 +70,7 @@ const Home = () => {
         setSelectedProvedor={setSelectedProvedor}
         provedores={provedores}
         loading={loading}
+        searchProgress={searchProgress}
         handleSearch={handleSearch}
         cancelSearch={cancelSearch}
         inputRef={searchInputRef}

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import models, schemas
 from typing import List
+import datetime
 
 router = APIRouter(prefix="/config", tags=["Configuração"])
 
@@ -155,6 +156,23 @@ def reload_seed_data(db: Session = Depends(get_db)):
         return auto_seed_db(db, force=True)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao recarregar seed padrão: {str(e)}")
+
+# --- Logs do Sistema ---
+@router.get("/logs")
+def get_system_logs(limit: int = 250, level: str = None, search: str = None):
+    from app.services.log_service import log_service
+    logs = log_service.get_logs(limit=limit, level=level, search=search)
+    return {
+        "logs": logs,
+        "count": len(logs),
+        "server_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+@router.delete("/logs")
+def clear_system_logs():
+    from app.services.log_service import log_service
+    log_service.clear()
+    return {"status": "success", "message": "Buffer de logs limpo com sucesso."}
 
 @router.post("/backup/export")
 def export_backup():

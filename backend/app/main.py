@@ -3,6 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base, SessionLocal
 from app.models import models
 from app.db_seed import auto_seed_db
+from app.services.log_service import log_service
+
+# Inicializa captura de logs em memória para a aba Configurações > Logs do Sistema
+log_service.install_handler()
 
 # Cria as tabelas no banco de dados
 models.Base.metadata.create_all(bind=engine)
