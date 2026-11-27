@@ -8,12 +8,12 @@ from app.services.logging_service import logger
 class NotusProvider(BaseProvider):
     def __init__(self, config):
         self.config = config
-        # URL do JSON estático da Notus
-        self.url_json = "https://catalogo.notus.ind.br/conversor/produtos.json"
+        # Nova URL da API REST da Notus (substituiu o antigo conversor/produtos.json do subdomínio catalogo)
+        self.url_json = "https://notus.ind.br/notus-backend/api/catalogo/produtos"
         # Local de cache segregado (backend/data/providers)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.cache_path = os.path.abspath(os.path.join(current_dir, "..", "..", "data", "providers", "notus_cache.json"))
-        self.base_url = "https://catalogo.notus.ind.br/"
+        self.base_url = "https://notus.ind.br/Catalogo/"
         
         # Garante que a pasta de dados existe
         os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
@@ -21,7 +21,7 @@ class NotusProvider(BaseProvider):
     async def _update_cache(self):
         """Baixa o JSON se não existir ou se for antigo (24h)"""
         should_update = False
-        if not os.path.exists(self.cache_path):
+        if not os.path.exists(self.cache_path) or os.path.getsize(self.cache_path) < 1000:
             should_update = True
         else:
             file_age = time.time() - os.path.getmtime(self.cache_path)
@@ -30,13 +30,18 @@ class NotusProvider(BaseProvider):
         
         if should_update:
             logger.info("NOTUS", "Atualizando cache do catálogo Notus (~8MB)...")
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": "https://notus.ind.br/Catalogo/todosprodutos.html"
+            }
             try:
                 async with httpx.AsyncClient(timeout=60.0) as client:
-                    resp = await client.get(self.url_json)
+                    resp = await client.get(self.url_json, headers=headers)
                     if resp.status_code == 200:
                         with open(self.cache_path, "w", encoding="utf-8") as f:
                             f.write(resp.text)
-                        logger.info("NOTUS", "Cache Notus atualizado com sucesso.")
+                        logger.info("NOTUS", f"Cache Notus atualizado com sucesso ({len(resp.text)} bytes).")
                     else:
                         logger.error("NOTUS", f"Erro ao baixar catálogo Notus (Status {resp.status_code}) da URL: {self.url_json}")
             except Exception as e:
@@ -49,16 +54,9 @@ class NotusProvider(BaseProvider):
         """
         await self._update_cache()
         
-        if not os.path.exists(self.cache_path):
+        if not os.path.exists(self.cache_path) or os.path.getsize(self.cache_path) < 1000:
             logger.warning("NOTUS", "Cache não disponível para busca.")
             return []
-
-        if not os.path.exists(self.cache_path):
-            logger.info("NOTUS", "Cache não encontrado. Iniciando download automático...")
-            await self._update_cache()
-            # Se mesmo após o download não existir, aí sim retornamos vazio
-            if not os.path.exists(self.cache_path):
-                return []
 
         try:
             with open(self.cache_path, "r", encoding="utf-8") as f:
@@ -67,9 +65,9 @@ class NotusProvider(BaseProvider):
             logger.error("NOTUS", f"Erro ao carregar cache Notus: {e}")
             return []
 
-        # Gera variações do termo e garante a versão limpa (sem hifens/pontos)
+        # Gera variações do termo e garante a versão limpa (sem hifens/pontos/espaços/underscores)
         codigos_busca = self.normalizar_codigo(termo)
-        termos_lower = [t.lower().replace("-", "").replace(".", "").replace(" ", "") for t in codigos_busca]
+        termos_lower = [t.lower().replace("-", "").replace(".", "").replace(" ", "").replace("_", "") for t in codigos_busca]
         # Remove duplicatas mantendo a ordem
         termos_lower = list(dict.fromkeys(termos_lower))
         
@@ -89,8 +87,8 @@ class NotusProvider(BaseProvider):
                 # Filtra lixo de dados (> 200 chars) para evitar falsos positivos
                 if len(val_str) > 200: continue
                 
-                # Limpa o valor do campo para comparação (remove hifens, pontos e espaços)
-                val_clean = val_str.lower().replace("-", "").replace(".", "").replace(" ", "")
+                # Limpa o valor do campo para comparação (remove hifens, pontos, espaços e underscores)
+                val_clean = val_str.lower().replace("-", "").replace(".", "").replace(" ", "").replace("_", "")
                 if any(t in val_clean for t in termos_lower):
                     match = True
                     break
@@ -115,16 +113,24 @@ class NotusProvider(BaseProvider):
                 }
                 trans_desc = trans_map.get(trans_raw, trans_raw)
 
+                prod_id = p.get("id")
+                link_produto = f"https://notus.ind.br/Catalogo/ficha-produto.html?id={prod_id}" if prod_id else f"https://notus.ind.br/Catalogo/todosprodutos.html?search={p.get('codigo', '')}"
+                
+                imagens = self._extract_images(p)
+
                 # Mapeamento para o formato esperado pelo BaseProvider.formatar_resultado
                 raw_item = {
                     "marca_peca": str(self.config.get("nome", "NOTUS")).upper(),
                     "codigo": p.get("codigo"),
+                    "descricao_produto": p.get("descricao") or p.get("nome"),
                     "montadora": p.get("montadora"),
                     "modelo": p.get("modelo"),
                     "motor": p.get("litragem"),
                     "configuracao_motor": f"{p.get('tecnologia', '')} {ac_raw} {trans_raw}".strip(),
                     "ano_inicio": p.get("ano"),
-                    "imagem": self._get_absolute_image_url(p.get("imagem")),
+                    "imagem": imagens[0] if imagens else "",
+                    "imagens": imagens,
+                    "link": link_produto,
                     "referencias": self._unificar_referencias(p),
                     # Observação enriquecida com dados técnicos conforme solicitado
                     "observacao": self._formatar_observacao(p, ac_desc, trans_desc),
@@ -137,7 +143,10 @@ class NotusProvider(BaseProvider):
                         "TRANSMISSÃO": trans_desc,
                         "NCM": p.get("ncm"),
                         "EAN": p.get("codigodebarras"),
-                        "LINHA": p.get("linha")
+                        "LINHA": p.get("linha"),
+                        "CATEGORIA": p.get("categoria"),
+                        "GRUPO": p.get("grupo"),
+                        "LINK CATÁLOGO": link_produto
                     }
                 }
                 
@@ -162,11 +171,26 @@ class NotusProvider(BaseProvider):
         
         return f"{obs[0]} | {' | '.join(tecnico)}"
 
+    def _extract_images(self, p: dict) -> list[str]:
+        """Extrai todas as imagens válidas do produto (imagem, imagem2..imagem12)."""
+        imagens = []
+        keys = ["imagem"] + [f"imagem{i}" for i in range(2, 13)]
+        for k in keys:
+            val = p.get(k)
+            if val:
+                abs_url = self._get_absolute_image_url(val)
+                if abs_url and abs_url not in imagens:
+                    imagens.append(abs_url)
+        return imagens
+
     def _get_absolute_image_url(self, path):
-        """Converte caminhos relativos do JSON em URLs absolutas."""
+        """Converte caminhos relativos ou protocol-relative em URLs absolutas HTTPS."""
         if not path:
             return ""
-        if path.startswith("http"):
+        path = str(path).strip()
+        if path.startswith("//"):
+            return f"https:{path}"
+        if path.startswith("http://") or path.startswith("https://"):
             return path
         clean_path = path[2:] if path.startswith("./") else path
         from urllib.parse import urljoin
@@ -198,3 +222,4 @@ class NotusProvider(BaseProvider):
                     refs.append(f"{label}: {val_clean}")
         
         return " | ".join(refs)
+
