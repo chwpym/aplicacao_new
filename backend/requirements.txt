@@ -9,3 +9,4 @@ pyjwt
 httpx
 duckdb
 thefuzz
+Pillow
