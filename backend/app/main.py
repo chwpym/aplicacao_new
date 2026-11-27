@@ -1,10 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
 from app.models import models
+from app.db_seed import auto_seed_db
 
 # Cria as tabelas no banco de dados
 models.Base.metadata.create_all(bind=engine)
+
+# Auto-seed caso o banco esteja vazio (garante dados em ambientes efêmeros como Render)
+try:
+    with SessionLocal() as db:
+        auto_seed_db(db)
+except Exception as e:
+    print(f"[SEED] Aviso: erro ao executar auto-seed: {e}")
 
 app = FastAPI(title="API Gerenciador de Peças", version="1.0.0")
 

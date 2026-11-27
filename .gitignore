@@ -54,7 +54,6 @@ debug_analysis/
 .env
 .flaskenv
 *.db
-!backend/catalogo.db
 *.sqlite
 *.duckdb
 backend/backups/

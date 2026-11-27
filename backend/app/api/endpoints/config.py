@@ -134,7 +134,28 @@ def remove_custom_model(brand: str, model: str):
         return {"status": "success", "message": f"Modelo {model} removido de {brand}"}
     raise HTTPException(status_code=500, detail="Erro ao remover modelo")
 
-# --- Backup ---
+# --- Backup & Seed Nuvem ---
+@router.get("/seed/export")
+def export_seed_data(db: Session = Depends(get_db)):
+    from app.db_seed import export_database_state
+    return export_database_state(db)
+
+@router.post("/seed/import")
+def import_seed_data(data: dict, db: Session = Depends(get_db)):
+    from app.db_seed import import_database_state
+    try:
+        return import_database_state(db, data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao importar dados de seed: {str(e)}")
+
+@router.post("/seed/reload")
+def reload_seed_data(db: Session = Depends(get_db)):
+    from app.db_seed import auto_seed_db
+    try:
+        return auto_seed_db(db, force=True)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao recarregar seed padrão: {str(e)}")
+
 @router.post("/backup/export")
 def export_backup():
     try:

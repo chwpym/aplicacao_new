@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Database, Trash2, Edit2, Shield, Globe, LayoutGrid, List, Search } from 'lucide-react';
+import { Plus, Database, Trash2, Edit2, Shield, Globe, LayoutGrid, List, Search, AlertTriangle, Download, Upload } from 'lucide-react';
 import { configApi } from '../services/api';
 import ProvedorForm from '../components/ProvedorForm';
 
@@ -12,6 +12,8 @@ const Provedores = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState<'nome' | 'tipo'>('nome');
     const [filterStatus, setFilterStatus] = useState<'todos' | 'ativos' | 'inativos'>('todos');
+    const [exporting, setExporting] = useState(false);
+    const [importing, setImporting] = useState(false);
 
     useEffect(() => {
         fetchProvedores();
@@ -82,6 +84,48 @@ const Provedores = () => {
             });
     }, [provedores, searchTerm, sortBy, filterStatus]);
 
+    const handleExportJson = async () => {
+        try {
+            setExporting(true);
+            const res = await configApi.exportSeedData();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `catalogo_seed_backup_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        } catch (err) {
+            console.error('Erro ao exportar backup JSON:', err);
+            alert("Erro ao exportar backup JSON dos provedores.");
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const handleImportJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!window.confirm("Deseja realmente restaurar os dados a partir deste arquivo JSON? O banco atual será sincronizado com o conteúdo do arquivo.")) {
+            e.target.value = '';
+            return;
+        }
+        try {
+            setImporting(true);
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            await configApi.importSeedData(parsed);
+            alert("Banco de dados restaurado com sucesso!");
+            fetchProvedores();
+        } catch (err) {
+            console.error('Erro ao importar JSON:', err);
+            alert("Erro ao importar arquivo JSON. Verifique o formato do arquivo.");
+        } finally {
+            setImporting(false);
+            e.target.value = '';
+        }
+    };
+
     return (
         <div className="space-y-6 pb-10">
             {/* Header e Ações */}
@@ -90,12 +134,42 @@ const Provedores = () => {
                     <h1 className="text-2xl font-bold">Configuração de Provedores</h1>
                     <p className="text-slate-500 text-sm">Gerencie as fontes de dados para suas pesquisas.</p>
                 </div>
-                <button
-                    onClick={() => { setEditingProvedor(null); setIsFormOpen(true); }}
-                    className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-primary/20 shrink-0"
-                >
-                    <Plus size={20} /> Novo Provedor
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => { setEditingProvedor(null); setIsFormOpen(true); }}
+                        className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 transition-all shadow-lg shadow-primary/20 shrink-0 text-sm"
+                    >
+                        <Plus size={18} /> Novo Provedor
+                    </button>
+                </div>
+            </div>
+
+            {/* Banner de Aviso de Nuvem / Armazenamento Efêmero */}
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 p-4 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-sm shadow-sm">
+                <div className="flex items-start gap-3">
+                    <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={20} />
+                    <div>
+                        <strong className="font-semibold text-amber-900 dark:text-amber-100">Atenção ao gerenciar provedores em produção (Render):</strong>
+                        <p className="text-xs text-amber-700 dark:text-amber-300/90 mt-0.5 leading-relaxed">
+                            O servidor em nuvem possui disco efêmero: alterações feitas diretamente aqui são restauradas a partir do seed nos reinícios do container.
+                            Ao cadastrar, editar ou remover provedores em produção, clique em <strong>Exportar Backup JSON</strong> para salvar as alterações e adicioná-las ao repositório via Git.
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                    <button
+                        onClick={handleExportJson}
+                        disabled={exporting}
+                        className="flex items-center gap-1.5 px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 font-semibold text-xs rounded-lg transition-colors border border-amber-500/30 disabled:opacity-50"
+                        title="Baixar cópia de segurança em formato JSON"
+                    >
+                        <Download size={15} /> {exporting ? 'Exportando...' : 'Exportar Backup JSON'}
+                    </button>
+                    <label className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs rounded-lg transition-colors border border-slate-300 dark:border-slate-700 cursor-pointer">
+                        <Upload size={15} /> {importing ? 'Importando...' : 'Restaurar JSON'}
+                        <input type="file" accept=".json" onChange={handleImportJson} disabled={importing} className="hidden" />
+                    </label>
+                </div>
             </div>
 
             {/* Barra de Busca e Filtros */}

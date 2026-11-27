@@ -1,0 +1,2364 @@
+{
+  "provedores": [
+    {
+      "id": 1,
+      "nome": "Authomix",
+      "slug": "authomix",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.authomix.com.br\", \"referer\": \"https://catalogo.authomix.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 1,
+      "username": " original.garantialins@gmail.com",
+      "password": " Or!ginal1080",
+      "url_login": "https://bff.catalogofraga.com.br/gateway/auth/login",
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 2,
+      "nome": "Sabó",
+      "slug": "sabo",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 0,
+      "headers": "{\"origin\": \"https://catalogo.sabo.com.br\", \"referer\": \"https://catalogo.sabo.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 3,
+      "nome": "Bastos Juntas",
+      "slug": "bastos",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://bastosjuntas.catalogofraga.com.br\", \"referer\": \"https://bastosjuntas.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 1,
+      "username": "original.garantialins@gmail.com",
+      "password": "Or!ginal1080",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 7,
+      "nome": "INDISA (FRAGA)",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://indisa.catalogofraga.com.br\", \"referer\": \"https://indisa.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 8,
+      "nome": "Viemar",
+      "slug": null,
+      "url": "",
+      "tipo": "viemar",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 9,
+      "nome": "Schadek",
+      "slug": null,
+      "url": "",
+      "tipo": "schadek",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 11,
+      "nome": "SPICER",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://spicer.catalogofraga.com.br\", \"referer\": \"https://spicer.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 12,
+      "nome": "Iguaçu",
+      "slug": null,
+      "url": "",
+      "tipo": "iguacu",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 13,
+      "nome": "DELPHI",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://delphi.catalogofraga.com.br\", \"referer\": \"https://delphi.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 14,
+      "nome": "MTE",
+      "slug": null,
+      "url": "",
+      "tipo": "mte_thomson",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 15,
+      "nome": "ZF TRW SACHS",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogozf.com.br\", \"referer\": \"https://catalogozf.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 16,
+      "nome": "DS KIT BICO",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/produtos/kit-de-filtros-para-bico-injetor/{id}",
+      "tipo": "ds",
+      "ativo": 0,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 18,
+      "nome": "SABO",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.sabo.com.br\", \"referer\": \"https://catalogo.sabo.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 19,
+      "nome": "TUBA",
+      "slug": null,
+      "url": "https://tubacabos.com.br/wp-json/api/v1/produtos/?codigo_tuba={id}",
+      "tipo": "rest",
+      "ativo": 0,
+      "headers": "{\"origin\": \"https://tubacabos.com.br/catalogo-online\", \"referer\": \"https://tubacabos.com.br/wp-json/api/v1/produtos/?codigo_tuba={id}\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 22,
+      "nome": "IMA",
+      "slug": null,
+      "url": "https://search-api.wedigi.house/api/ima/filters/items/search",
+      "tipo": "ima",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 25,
+      "nome": "WAHLER",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogowahler.com.br\", \"referer\": \"https://catalogowahler.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineTechnicalCode\n      engineConfiguration\n      fuel\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 26,
+      "nome": "DS SOLENOIDE",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/produtos/valvula-solenoide-de-partida-a-frio/{id}",
+      "tipo": "ds",
+      "ativo": 0,
+      "headers": "{\"origin\": \"\", \"referer\": \"\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 27,
+      "nome": "DS SENSOR NIVEL",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/produtos/sensor-de-nivel-de-combustivel/{id}",
+      "tipo": "ds",
+      "ativo": 0,
+      "headers": "{\"origin\": \"\", \"referer\": \"\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 28,
+      "nome": "FREMAX TESTE",
+      "slug": null,
+      "url": "https://api.autoexperts.parts/autexp/bff/v1/catalog/products",
+      "tipo": "rest",
+      "ativo": 1,
+      "headers": "{\"origin\": \"\", \"referer\": \"\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 29,
+      "nome": "AMPRI",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.ampri.com.br\", \"referer\": \"https://catalogo.ampri.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand {\n        name\n      }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 30,
+      "nome": "DS SENSOR ROTAÇÃO",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/produtos/sensor-de-rotacao-pms-ckp/{id}",
+      "tipo": "ds",
+      "ativo": 0,
+      "headers": "{\"origin\": \"\", \"referer\": \"\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 31,
+      "nome": "DS SENSOR POSIÇÃO BORBOLETA",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/produtos/sensor-de-posicao-da-borboleta-tps/{id}",
+      "tipo": "ds",
+      "ativo": 0,
+      "headers": "{\"origin\": \"\", \"referer\": \"\"}",
+      "query": "query GetProductById($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      endYear\n      note\n      only\n      restriction\n      startYear\n      __typename\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 32,
+      "nome": "DS",
+      "slug": null,
+      "url": "https://www.ds.ind.br/pt/busca-full?q={id}",
+      "tipo": "ds",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"container\":\".jq-apps tr\",\"marca\":\"td.montadora\",\"veiculo\":\"td.modelo\",\"motor\":\"td.motor\",\"ano_inicio\":\"td.ano\",\"imagem\":\".pgwSlider img\",\"referencias\":\".jq-codes tr\"}"
+    },
+    {
+      "id": 34,
+      "nome": "Wega ",
+      "slug": "wega-teste",
+      "url": "https://wega.wedigi.com.br/api/v1/produto?cod={id}",
+      "tipo": "wega",
+      "ativo": 1,
+      "headers": "{\"Origin\": \"https://wegamotors.com\", \"Referer\": \"https://wegamotors.com/\"}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"container\": \"Obj.DetailApl\", \"veiculo\": \"Montadora\", \"modelo\": \"Modelo\", \"versao\": \"DescModelo\", \"motor\": \"Motor\", \"configuracao_motor\": \"Pos_Montagem\", \"ano_inicio\": \"Ano\", \"ano_fim\": \"Ano\", \"image_pattern\": \"https://www.wegamotors.com/assets/images/{id}.jpg\", \"referencias\": \"root:Obj.DetailConv\", \"ref_marca\": \"Marca\", \"ref_codigo\": \"CodigoConcorrente\", \"posicao\": \"ZAU_XCOMR\"}"
+    },
+    {
+      "id": 35,
+      "nome": "BOSCH NATIVO",
+      "slug": "bosch",
+      "url": "https://am.boschaftermarket.com/",
+      "tipo": "bosch",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"labels\": {\"configuracao_motor\": \"Designa\\u00e7\\u00e3o / Medidas\", \"referencias\": \"Refer\\u00eancias OE\", \"veiculo\": \"Fabricante\"}}"
+    },
+    {
+      "id": 36,
+      "nome": "AutoExperts",
+      "slug": "autoexperts",
+      "url": "https://api.autoexperts.parts/autexp/bff/v1/catalog/products",
+      "tipo": "autoexperts",
+      "ativo": 1,
+      "headers": "{\"x-region\": \"br\", \"origin\": \"https://www.autoexperts.parts\"}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 37,
+      "nome": "PERFECT",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://perfect.catalogofraga.com.br\",\n  \"Referer\": \"https://perfect.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 1,
+      "username": "original.garantialins@gmail.com",
+      "password": " Or!ginal1080",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 38,
+      "nome": "COFAP ",
+      "slug": "cofap-fraga",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "cofap",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://cofap.catalogofraga.com.br\",\n  \"Referer\": \"https://cofap.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    images {\n      imageUrl\n      category\n    }\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n  }\n}",
+      "login_required": 1,
+      "username": "original.garantialins@gmail.com",
+      "password": " Or!ginal1080",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\n  \"marca\": \"brand\",\n  \"veiculo\": \"name\",\n  \"motor\": \"engineName\",\n  \"ano_inicio\": \"startYear\",\n  \"imagem\": \"images\"\n}"
+    },
+    {
+      "id": 39,
+      "nome": "TECFIL",
+      "slug": null,
+      "url": "https://tecfil-catalago.gruposofape.com.br/CatalogoTecfil",
+      "tipo": "tecfil",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 40,
+      "nome": "DNI",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.dni.com.br\", \"referer\": \"https://catalogo.dni.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 41,
+      "nome": "Junta Lima",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.juntalima.com.br\", \"referer\": \"https://catalogo.juntalima.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 42,
+      "nome": "TSA",
+      "slug": null,
+      "url": "https://www.tsadobrasil.com.br",
+      "tipo": "tsa",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 43,
+      "nome": "DAYCO",
+      "slug": "dayco",
+      "url": "https://webcateu.dayco.ws/api/",
+      "tipo": "dayco",
+      "ativo": 1,
+      "headers": null,
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 44,
+      "nome": "HIPPER FREIOS",
+      "slug": null,
+      "url": "https://www.hipperfreios.com.br",
+      "tipo": "hipper_freios",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 45,
+      "nome": "NOTUS",
+      "slug": "notus",
+      "url": "https://catalogo.notus.ind.br/",
+      "tipo": "notus",
+      "ativo": 1,
+      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"description\": \"Busca via JSON est\\u00e1tico da Notus do Brasil\"}"
+    },
+    {
+      "id": 46,
+      "nome": "Nakata",
+      "slug": "nakata",
+      "url": "https://www.catalogonakata.com.br",
+      "tipo": "nakata",
+      "ativo": 1,
+      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"labels\": {\"veiculo\": \"Montadora\", \"modelo\": \"Ve\\u00edculo\", \"versao\": \"Modelo / Vers\\u00e3o\", \"motor\": \"Motor\", \"posicao\": \"Posi\\u00e7\\u00e3o\", \"lado\": \"Lado\", \"direcao\": \"Dire\\u00e7\\u00e3o\", \"referencias\": \"Refer\\u00eancias Cruzadas\", \"observacao\": \"Observa\\u00e7\\u00f5es\"}}"
+    },
+    {
+      "id": 47,
+      "nome": "TUBA CABOS",
+      "slug": "tubacabos",
+      "url": "https://buscanarede.com.br/tubacabos",
+      "tipo": "tubacabos",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"brand_slug\": \"tubacabos\"}"
+    },
+    {
+      "id": 48,
+      "nome": "SAMPEL",
+      "slug": "sampel",
+      "url": "https://buscanarede.com.br/sAMPEL",
+      "tipo": "sampel",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"brand_slug\": \"sampel\"}"
+    },
+    {
+      "id": 49,
+      "nome": "TC CHICOTES",
+      "slug": "tcchicotes",
+      "url": "https://buscanarede.com.br/tcchicotes",
+      "tipo": "tcchicotes",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"brand_slug\": \"tcchicotes\"}"
+    },
+    {
+      "id": 50,
+      "nome": "MULTIQUALITÀ",
+      "slug": null,
+      "url": "https://multiqualita.com.br/",
+      "tipo": "multiqualita",
+      "ativo": 1,
+      "headers": "{}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 51,
+      "nome": "AUTAFASTAR",
+      "slug": "autafastar",
+      "url": "https://www.autafastar.com.br/",
+      "tipo": "autafastar",
+      "ativo": 1,
+      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36\"}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"description\": \"Busca via Web Scraping no cat\\u00e1logo Autafastar com Hydration de Refer\\u00eancias e Ficha T\\u00e9cnica\"}"
+    },
+    {
+      "id": 52,
+      "nome": "Japanparts",
+      "slug": null,
+      "url": "https://api.japanparts.com.br/api",
+      "tipo": "japanparts",
+      "ativo": 1,
+      "headers": "{}",
+      "query": null,
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 53,
+      "nome": "LUK",
+      "slug": null,
+      "url": "https://vehiclelifetimesolutions.schaeffler.com.br/pt-br/catalog",
+      "tipo": "schaeffler",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 54,
+      "nome": "FAG",
+      "slug": null,
+      "url": "https://vehiclelifetimesolutions.schaeffler.com.br/pt-br/catalog",
+      "tipo": "schaeffler",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 55,
+      "nome": "INA",
+      "slug": null,
+      "url": "https://vehiclelifetimesolutions.schaeffler.com.br/pt-br/catalog",
+      "tipo": "schaeffler",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 56,
+      "nome": "VICTOR REINZ",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://victorreinz.catalogofraga.com.br\", \"referer\": \"https://victorreinz.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 57,
+      "nome": "INDISA WEB",
+      "slug": null,
+      "url": "https://www.indisa.com.br/catalogo/",
+      "tipo": "indisa_web",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 58,
+      "nome": "COBREQ",
+      "slug": "cobreq",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://catalogo.cobreq.com.br\", \"referer\": \"https://catalogo.cobreq.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 1,
+      "username": "original.garantialins@gmail.com",
+      "password": "Or!ginal1080",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 59,
+      "nome": "AXIOS",
+      "slug": "axios",
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\"origin\": \"https://axios.catalogofraga.com.br\", \"referer\": \"https://axios.catalogofraga.com.br/\"}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 60,
+      "nome": "JAHU",
+      "slug": "jahu",
+      "url": "https://b2b.jahu.com.br/",
+      "tipo": "jahu",
+      "ativo": 1,
+      "headers": "{\"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\"}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"description\": \"Busca direta via API p\\u00fablica do e-commerce B2B da Jahu Borrachas\"}"
+    },
+    {
+      "id": 61,
+      "nome": "INTERMEC",
+      "slug": null,
+      "url": "https://www.intermecautomotive.com.br",
+      "tipo": "intermec",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 62,
+      "nome": "ALBARUS",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://albarus.catalogofraga.com.br\",\n  \"Referer\": \"https://albarus.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 63,
+      "nome": "CORTECO",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://corteco.catalogofraga.com.br\",\n  \"Referer\": \"https://corteco.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 64,
+      "nome": "VOX",
+      "slug": null,
+      "url": "https://www.filtrosvox.com.br/VoxCatalogo",
+      "tipo": "vox",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 65,
+      "nome": "BOSCH FRAGA",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://catalogo.boschaftermarket.com.br\",\n  \"Referer\": \"https://catalogo.boschaftermarket.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      fuel\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 66,
+      "nome": "WILLTEC",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://willtec.catalogofraga.com.br\",\n  \"Referer\": \"https://willtec.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      fuel\n      startYear\n      endYear\n      note\n      only\n      restriction\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 67,
+      "nome": "VETOR AUTOMOTIVOS",
+      "slug": null,
+      "url": "https://vetorauto.com.br/",
+      "tipo": "vetor",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "VT",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 68,
+      "nome": "SPAAL",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://spaal.catalogofraga.com.br\",\n  \"Referer\": \"https://spaal.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 69,
+      "nome": "IRB Rolamentos",
+      "slug": "irb",
+      "url": "https://catalogoexpresso.com.br/ideia2001/api/v1/consulta",
+      "tipo": "irb",
+      "ativo": 1,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": null
+    },
+    {
+      "id": 70,
+      "nome": "TECFIL LAB (TESTES)",
+      "slug": "tecfil_lab",
+      "url": "https://catalogo.tecfil.com.br",
+      "tipo": "tecfil_lab",
+      "ativo": 0,
+      "headers": "{}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 71,
+      "nome": "DHF WASCO",
+      "slug": "wasco",
+      "url": "https://buscanarede.com.br/wasco",
+      "tipo": "wasco",
+      "ativo": 1,
+      "headers": null,
+      "query": null,
+      "login_required": null,
+      "username": null,
+      "password": null,
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\"brand_slug\": \"wasco\"}"
+    },
+    {
+      "id": 72,
+      "nome": "MONROE AMORTECEDOR",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://catalogo.drivbrasil.com.br\",\n  \"Referer\": \"https://catalogo.drivbrasil.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    },
+    {
+      "id": 73,
+      "nome": "FILTRO BRASIL",
+      "slug": null,
+      "url": "https://bff.catalogofraga.com.br/gateway/graphql",
+      "tipo": "graphql",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://filtrosbrasil.catalogofraga.com.br\",\n  \"Referer\": \"https://filtrosbrasil.catalogofraga.com.br/\"\n}",
+      "query": "query getProduct($id: String!, $market: MarketType!) {\n  product(id: $id, market: $market) {\n    applicationDescription\n    productGroup { name }\n    specifications { description value }\n    id\n    partNumber\n    crossReferences {\n      brand { name }\n      partNumber\n    }\n    vehicles {\n      brand\n      name\n      model\n      engineName\n      engineConfiguration\n      startYear\n      endYear\n      note\n    }\n    images {\n      imageUrl\n    }\n  }\n}",
+      "login_required": 1,
+      "username": "original.garantialins@gmail.com",
+      "password": "Or!ginal1080",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{\n  \"marca\": \"brand\",\n  \"veiculo\": \"name\",\n  \"motor\": \"engineName\",\n  \"ano_inicio\": \"startYear\",\n  \"imagem\": \"images\"\n}"
+    },
+    {
+      "id": 74,
+      "nome": "VW REPARADOR",
+      "slug": "reparadorvw",
+      "url": "https://www.reparadorvw.com.br/api/catalogo/gql",
+      "tipo": "reparadorvw",
+      "ativo": 1,
+      "headers": "{\n  \"Origin\": \"https://www.reparadorvw.com.br\",\n  \"Referer\": \"https://www.reparadorvw.com.br/catalogo\"\n}",
+      "query": "",
+      "login_required": 0,
+      "username": "",
+      "password": "",
+      "url_login": null,
+      "pasta_pdf": null,
+      "mapeamento": "{}"
+    }
+  ],
+  "siglas": [
+    {
+      "id": 1,
+      "nome_completo": "VOLKS",
+      "abreviacao": "VW",
+      "campo": "marca"
+    },
+    {
+      "id": 2,
+      "nome_completo": "CHEVROLET",
+      "abreviacao": "GM",
+      "campo": "marca"
+    },
+    {
+      "id": 3,
+      "nome_completo": "VOLKSWAGEN",
+      "abreviacao": "VW",
+      "campo": "marca"
+    },
+    {
+      "id": 4,
+      "nome_completo": "GENERAL MOTORS",
+      "abreviacao": "GM",
+      "campo": "marca"
+    },
+    {
+      "id": 5,
+      "nome_completo": "1600",
+      "abreviacao": "1.6",
+      "campo": "marca"
+    },
+    {
+      "id": 6,
+      "nome_completo": "1800",
+      "abreviacao": "1.8",
+      "campo": "marca"
+    },
+    {
+      "id": 7,
+      "nome_completo": "QUILOMETRO",
+      "abreviacao": "KM",
+      "campo": "marca"
+    },
+    {
+      "id": 8,
+      "nome_completo": "G4",
+      "abreviacao": "GIV",
+      "campo": "marca"
+    },
+    {
+      "id": 9,
+      "nome_completo": "G5",
+      "abreviacao": "GIV",
+      "campo": "marca"
+    },
+    {
+      "id": 10,
+      "nome_completo": "CITROËN",
+      "abreviacao": "CITROEN",
+      "campo": "marca"
+    },
+    {
+      "id": 11,
+      "nome_completo": "2009",
+      "abreviacao": "09",
+      "campo": "marca"
+    },
+    {
+      "id": 12,
+      "nome_completo": "G6",
+      "abreviacao": "GVI",
+      "campo": "marca"
+    },
+    {
+      "id": 13,
+      "nome_completo": "ROBERT BOSCH LTDA",
+      "abreviacao": "BOSCH",
+      "campo": "marca"
+    },
+    {
+      "id": 14,
+      "nome_completo": "CHE",
+      "abreviacao": "GM",
+      "campo": "marca"
+    },
+    {
+      "id": 15,
+      "nome_completo": "VWW",
+      "abreviacao": "VW",
+      "campo": "marca"
+    },
+    {
+      "id": 16,
+      "nome_completo": "VW (VOLKSWAGEN)",
+      "abreviacao": "VW",
+      "campo": "marca"
+    },
+    {
+      "id": 17,
+      "nome_completo": "NAKATA",
+      "abreviacao": "NK",
+      "campo": "marca"
+    },
+    {
+      "id": 18,
+      "nome_completo": "FREMAX",
+      "abreviacao": "FRX",
+      "campo": "marca"
+    },
+    {
+      "id": 19,
+      "nome_completo": "CONTROIL",
+      "abreviacao": "CTR",
+      "campo": "marca"
+    },
+    {
+      "id": 20,
+      "nome_completo": "FRAS-LE",
+      "abreviacao": "FRL",
+      "campo": "marca"
+    },
+    {
+      "id": 21,
+      "nome_completo": "AUTOEXPERTS",
+      "abreviacao": "AXP",
+      "campo": "marca"
+    },
+    {
+      "id": 22,
+      "nome_completo": "VHC E",
+      "abreviacao": "VHC-E",
+      "campo": "marca"
+    },
+    {
+      "id": 23,
+      "nome_completo": "3CIL",
+      "abreviacao": "3-CIL",
+      "campo": "motor"
+    },
+    {
+      "id": 24,
+      "nome_completo": "CHEVROLET",
+      "abreviacao": "GM",
+      "campo": "veiculo"
+    },
+    {
+      "id": 25,
+      "nome_completo": "VOLKSWAGEN",
+      "abreviacao": "VW",
+      "campo": "veiculo"
+    },
+    {
+      "id": 26,
+      "nome_completo": "GENERAL MOTORS",
+      "abreviacao": "GM",
+      "campo": "veiculo"
+    },
+    {
+      "id": 27,
+      "nome_completo": "3CIL 6V",
+      "abreviacao": "3-CIL 6V",
+      "campo": "motor"
+    },
+    {
+      "id": 28,
+      "nome_completo": "I VTEC",
+      "abreviacao": "I-VTEC",
+      "campo": "motor"
+    },
+    {
+      "id": 29,
+      "nome_completo": "G3",
+      "abreviacao": "GIII",
+      "campo": "modelo"
+    },
+    {
+      "id": 30,
+      "nome_completo": "G4",
+      "abreviacao": "GIV",
+      "campo": "modelo"
+    },
+    {
+      "id": 31,
+      "nome_completo": "G5",
+      "abreviacao": "GV",
+      "campo": "modelo"
+    },
+    {
+      "id": 32,
+      "nome_completo": "G6",
+      "abreviacao": "GVI",
+      "campo": "modelo"
+    },
+    {
+      "id": 33,
+      "nome_completo": "G7",
+      "abreviacao": "GVII",
+      "campo": "modelo"
+    },
+    {
+      "id": 34,
+      "nome_completo": "G8",
+      "abreviacao": "GVIII",
+      "campo": "modelo"
+    },
+    {
+      "id": 35,
+      "nome_completo": "VHC E",
+      "abreviacao": "VHC-E",
+      "campo": "motor"
+    },
+    {
+      "id": 36,
+      "nome_completo": "TURBODIESEL",
+      "abreviacao": "TURBO DIESEL",
+      "campo": "motor"
+    },
+    {
+      "id": 38,
+      "nome_completo": "HDI -",
+      "abreviacao": "HDI",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 39,
+      "nome_completo": "TURBODIESEL",
+      "abreviacao": "TURBO DIESEL",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 40,
+      "nome_completo": "G2",
+      "abreviacao": "GII",
+      "campo": "modelo"
+    },
+    {
+      "id": 41,
+      "nome_completo": "G5",
+      "abreviacao": "GV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 42,
+      "nome_completo": "G2",
+      "abreviacao": "GII",
+      "campo": "versao"
+    },
+    {
+      "id": 43,
+      "nome_completo": "G3",
+      "abreviacao": "GIII",
+      "campo": "versao"
+    },
+    {
+      "id": 44,
+      "nome_completo": "G4",
+      "abreviacao": "GIV",
+      "campo": "versao"
+    },
+    {
+      "id": 45,
+      "nome_completo": "E.TORQ",
+      "abreviacao": "E-TORQ",
+      "campo": "observacao"
+    },
+    {
+      "id": 46,
+      "nome_completo": "VHC E",
+      "abreviacao": "VHC-E",
+      "campo": "marca"
+    },
+    {
+      "id": 49,
+      "nome_completo": "G7",
+      "abreviacao": "GVII",
+      "campo": "configuracao_motor"
+    }
+  ],
+  "palavras_remover": [
+    {
+      "id": 1,
+      "palavra": "SOHC L3",
+      "campo": "marca"
+    },
+    {
+      "id": 2,
+      "palavra": "SOHC L4",
+      "campo": "marca"
+    },
+    {
+      "id": 3,
+      "palavra": "DOHC L3",
+      "campo": "marca"
+    },
+    {
+      "id": 4,
+      "palavra": "DSOHC L4",
+      "campo": "marca"
+    },
+    {
+      "id": 5,
+      "palavra": "EA111",
+      "campo": "marca"
+    },
+    {
+      "id": 6,
+      "palavra": "1800",
+      "campo": "marca"
+    },
+    {
+      "id": 7,
+      "palavra": "OHV",
+      "campo": "marca"
+    },
+    {
+      "id": 8,
+      "palavra": "OHB L4",
+      "campo": "marca"
+    },
+    {
+      "id": 9,
+      "palavra": "OHV 4",
+      "campo": "marca"
+    },
+    {
+      "id": 10,
+      "palavra": "102cv",
+      "campo": "marca"
+    },
+    {
+      "id": 11,
+      "palavra": "Cil",
+      "campo": "marca"
+    },
+    {
+      "id": 12,
+      "palavra": "3P",
+      "campo": "modelo"
+    },
+    {
+      "id": 13,
+      "palavra": "5P",
+      "campo": "modelo"
+    },
+    {
+      "id": 14,
+      "palavra": "SOHC L3",
+      "campo": "motor"
+    },
+    {
+      "id": 15,
+      "palavra": "SOHC L4",
+      "campo": "motor"
+    },
+    {
+      "id": 16,
+      "palavra": "DOHC L3",
+      "campo": "motor"
+    },
+    {
+      "id": 17,
+      "palavra": "DOHC L4",
+      "campo": "motor"
+    },
+    {
+      "id": 18,
+      "palavra": "L",
+      "campo": "motor"
+    },
+    {
+      "id": 19,
+      "palavra": "DOHC L5",
+      "campo": "motor"
+    },
+    {
+      "id": 20,
+      "palavra": "SDOHC L5",
+      "campo": "motor"
+    },
+    {
+      "id": 21,
+      "palavra": "DOHC V6",
+      "campo": "motor"
+    },
+    {
+      "id": 22,
+      "palavra": "DOHV",
+      "campo": "motor"
+    },
+    {
+      "id": 23,
+      "palavra": "2000",
+      "campo": "motor"
+    },
+    {
+      "id": 24,
+      "palavra": "EA111",
+      "campo": "motor"
+    },
+    {
+      "id": 25,
+      "palavra": "1800",
+      "campo": "motor"
+    },
+    {
+      "id": 26,
+      "palavra": "1600",
+      "campo": "motor"
+    },
+    {
+      "id": 27,
+      "palavra": "OHV L4",
+      "campo": "motor"
+    },
+    {
+      "id": 28,
+      "palavra": "OHV 4",
+      "campo": "motor"
+    },
+    {
+      "id": 29,
+      "palavra": "50 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 30,
+      "palavra": "75 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 31,
+      "palavra": "105 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 32,
+      "palavra": "102 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 33,
+      "palavra": "103 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 34,
+      "palavra": "cv",
+      "campo": "motor"
+    },
+    {
+      "id": 35,
+      "palavra": "L4",
+      "campo": "motor"
+    },
+    {
+      "id": 36,
+      "palavra": "L8",
+      "campo": "motor"
+    },
+    {
+      "id": 37,
+      "palavra": "L12",
+      "campo": "motor"
+    },
+    {
+      "id": 38,
+      "palavra": "4Cil",
+      "campo": "motor"
+    },
+    {
+      "id": 39,
+      "palavra": "L3",
+      "campo": "motor"
+    },
+    {
+      "id": 40,
+      "palavra": "156 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 41,
+      "palavra": "211 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 42,
+      "palavra": "122 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 43,
+      "palavra": "-",
+      "campo": "motor"
+    },
+    {
+      "id": 44,
+      "palavra": "211cv",
+      "campo": "motor"
+    },
+    {
+      "id": 45,
+      "palavra": "156cv",
+      "campo": "motor"
+    },
+    {
+      "id": 46,
+      "palavra": "150",
+      "campo": "motor"
+    },
+    {
+      "id": 47,
+      "palavra": "155",
+      "campo": "motor"
+    },
+    {
+      "id": 48,
+      "palavra": "158",
+      "campo": "motor"
+    },
+    {
+      "id": 49,
+      "palavra": "175",
+      "campo": "motor"
+    },
+    {
+      "id": 50,
+      "palavra": "182",
+      "campo": "motor"
+    },
+    {
+      "id": 51,
+      "palavra": "278",
+      "campo": "motor"
+    },
+    {
+      "id": 52,
+      "palavra": "280",
+      "campo": "motor"
+    },
+    {
+      "id": 53,
+      "palavra": "156",
+      "campo": "motor"
+    },
+    {
+      "id": 54,
+      "palavra": "116",
+      "campo": "motor"
+    },
+    {
+      "id": 55,
+      "palavra": "126CV",
+      "campo": "motor"
+    },
+    {
+      "id": 56,
+      "palavra": "173",
+      "campo": "motor"
+    },
+    {
+      "id": 57,
+      "palavra": "130",
+      "campo": "motor"
+    },
+    {
+      "id": 59,
+      "palavra": "192",
+      "campo": "motor"
+    },
+    {
+      "id": 60,
+      "palavra": "297",
+      "campo": "motor"
+    },
+    {
+      "id": 61,
+      "palavra": "206",
+      "campo": "motor"
+    },
+    {
+      "id": 62,
+      "palavra": "101",
+      "campo": "motor"
+    },
+    {
+      "id": 63,
+      "palavra": "80",
+      "campo": "motor"
+    },
+    {
+      "id": 64,
+      "palavra": "83",
+      "campo": "motor"
+    },
+    {
+      "id": 65,
+      "palavra": "161",
+      "campo": "motor"
+    },
+    {
+      "id": 66,
+      "palavra": "190",
+      "campo": "motor"
+    },
+    {
+      "id": 67,
+      "palavra": "176",
+      "campo": "motor"
+    },
+    {
+      "id": 68,
+      "palavra": "272CV",
+      "campo": "motor"
+    },
+    {
+      "id": 69,
+      "palavra": "306CV",
+      "campo": "motor"
+    },
+    {
+      "id": 70,
+      "palavra": "308CV",
+      "campo": "motor"
+    },
+    {
+      "id": 71,
+      "palavra": "388CV",
+      "campo": "motor"
+    },
+    {
+      "id": 72,
+      "palavra": "367CV",
+      "campo": "motor"
+    },
+    {
+      "id": 73,
+      "palavra": "129 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 74,
+      "palavra": "143cv",
+      "campo": "motor"
+    },
+    {
+      "id": 75,
+      "palavra": "163 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 76,
+      "palavra": "192 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 77,
+      "palavra": "197 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 78,
+      "palavra": "170cv",
+      "campo": "motor"
+    },
+    {
+      "id": 79,
+      "palavra": "SOHC L4",
+      "campo": "ano"
+    },
+    {
+      "id": 80,
+      "palavra": "SOHC L3",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 81,
+      "palavra": "SOHC L4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 82,
+      "palavra": "DOHC L3",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 83,
+      "palavra": "DOHC L4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 84,
+      "palavra": "L",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 85,
+      "palavra": "DOHC L5",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 86,
+      "palavra": "SDOHC L5",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 87,
+      "palavra": "DOHC V6",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 88,
+      "palavra": "DOHV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 89,
+      "palavra": "OHV L4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 90,
+      "palavra": "OHV 4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 91,
+      "palavra": "OHV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 92,
+      "palavra": "2CC",
+      "campo": "motor"
+    },
+    {
+      "id": 93,
+      "palavra": "-->",
+      "campo": "ano"
+    },
+    {
+      "id": 94,
+      "palavra": "NOVO",
+      "campo": "modelo"
+    },
+    {
+      "id": 95,
+      "palavra": "113",
+      "campo": "motor"
+    },
+    {
+      "id": 96,
+      "palavra": "109",
+      "campo": "motor"
+    },
+    {
+      "id": 97,
+      "palavra": "272 cv",
+      "campo": "motor"
+    },
+    {
+      "id": 98,
+      "palavra": "186",
+      "campo": "motor"
+    },
+    {
+      "id": 99,
+      "palavra": "170",
+      "campo": "motor"
+    },
+    {
+      "id": 100,
+      "palavra": "185CV",
+      "campo": "motor"
+    },
+    {
+      "id": 101,
+      "palavra": "185",
+      "campo": "motor"
+    },
+    {
+      "id": 102,
+      "palavra": "166",
+      "campo": "motor"
+    },
+    {
+      "id": 103,
+      "palavra": "139",
+      "campo": "motor"
+    },
+    {
+      "id": 104,
+      "palavra": "120CV",
+      "campo": "motor"
+    },
+    {
+      "id": 105,
+      "palavra": "200",
+      "campo": "motor"
+    },
+    {
+      "id": 106,
+      "palavra": "200 CV",
+      "campo": "motor"
+    },
+    {
+      "id": 107,
+      "palavra": "SOHC",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 108,
+      "palavra": "5 PORTAS",
+      "campo": "modelo"
+    },
+    {
+      "id": 109,
+      "palavra": "5 PORTAS",
+      "campo": "versao"
+    },
+    {
+      "id": 110,
+      "palavra": "3 PORTAS",
+      "campo": "versao"
+    },
+    {
+      "id": 111,
+      "palavra": "2.0",
+      "campo": "modelo"
+    },
+    {
+      "id": 112,
+      "palavra": "115CV",
+      "campo": "motor"
+    },
+    {
+      "id": 113,
+      "palavra": "110CV",
+      "campo": "motor"
+    },
+    {
+      "id": 114,
+      "palavra": "NFU (TU5JP4)",
+      "campo": "motor"
+    },
+    {
+      "id": 115,
+      "palavra": "82",
+      "campo": "motor"
+    },
+    {
+      "id": 116,
+      "palavra": "75CV",
+      "campo": "motor"
+    },
+    {
+      "id": 117,
+      "palavra": "93",
+      "campo": "motor"
+    },
+    {
+      "id": 118,
+      "palavra": "90CV",
+      "campo": "motor"
+    },
+    {
+      "id": 119,
+      "palavra": "110",
+      "campo": "motor"
+    },
+    {
+      "id": 120,
+      "palavra": "88CV",
+      "campo": "motor"
+    },
+    {
+      "id": 121,
+      "palavra": "165",
+      "campo": "motor"
+    },
+    {
+      "id": 122,
+      "palavra": "N 163CV",
+      "campo": "motor"
+    },
+    {
+      "id": 123,
+      "palavra": "143",
+      "campo": "motor"
+    },
+    {
+      "id": 124,
+      "palavra": "151CV",
+      "campo": "motor"
+    },
+    {
+      "id": 125,
+      "palavra": "151",
+      "campo": "motor"
+    },
+    {
+      "id": 126,
+      "palavra": "153CV",
+      "campo": "motor"
+    },
+    {
+      "id": 127,
+      "palavra": "115",
+      "campo": "motor"
+    },
+    {
+      "id": 128,
+      "palavra": "163CV",
+      "campo": "motor"
+    },
+    {
+      "id": 129,
+      "palavra": "136CV",
+      "campo": "motor"
+    },
+    {
+      "id": 130,
+      "palavra": "140CV",
+      "campo": "motor"
+    },
+    {
+      "id": 131,
+      "palavra": "138",
+      "campo": "motor"
+    },
+    {
+      "id": 132,
+      "palavra": "138CV",
+      "campo": "motor"
+    },
+    {
+      "id": 133,
+      "palavra": "150CV",
+      "campo": "motor"
+    },
+    {
+      "id": 134,
+      "palavra": "125",
+      "campo": "motor"
+    },
+    {
+      "id": 135,
+      "palavra": "210",
+      "campo": "motor"
+    },
+    {
+      "id": 136,
+      "palavra": "160CV",
+      "campo": "motor"
+    },
+    {
+      "id": 137,
+      "palavra": "190CV",
+      "campo": "motor"
+    },
+    {
+      "id": 138,
+      "palavra": "120",
+      "campo": "motor"
+    },
+    {
+      "id": 139,
+      "palavra": "184",
+      "campo": "motor"
+    },
+    {
+      "id": 140,
+      "palavra": "200CV",
+      "campo": "motor"
+    },
+    {
+      "id": 141,
+      "palavra": "74",
+      "campo": "motor"
+    },
+    {
+      "id": 142,
+      "palavra": "95CV",
+      "campo": "motor"
+    },
+    {
+      "id": 143,
+      "palavra": "118CV",
+      "campo": "motor"
+    },
+    {
+      "id": 144,
+      "palavra": "100CV",
+      "campo": "motor"
+    },
+    {
+      "id": 145,
+      "palavra": "SOHC",
+      "campo": "motor"
+    },
+    {
+      "id": 146,
+      "palavra": "126",
+      "campo": "motor"
+    },
+    {
+      "id": 147,
+      "palavra": "207",
+      "campo": "motor"
+    },
+    {
+      "id": 148,
+      "palavra": "208",
+      "campo": "motor"
+    },
+    {
+      "id": 149,
+      "palavra": "160",
+      "campo": "motor"
+    },
+    {
+      "id": 150,
+      "palavra": "154CV",
+      "campo": "motor"
+    },
+    {
+      "id": 151,
+      "palavra": "220",
+      "campo": "motor"
+    },
+    {
+      "id": 152,
+      "palavra": "220CV",
+      "campo": "motor"
+    },
+    {
+      "id": 153,
+      "palavra": "240",
+      "campo": "motor"
+    },
+    {
+      "id": 154,
+      "palavra": "140",
+      "campo": "motor"
+    },
+    {
+      "id": 155,
+      "palavra": "147",
+      "campo": "motor"
+    },
+    {
+      "id": 156,
+      "palavra": "165CV",
+      "campo": "motor"
+    },
+    {
+      "id": 157,
+      "palavra": "114",
+      "campo": "motor"
+    },
+    {
+      "id": 158,
+      "palavra": "()",
+      "campo": "modelo"
+    },
+    {
+      "id": 159,
+      "palavra": "( )",
+      "campo": "modelo"
+    },
+    {
+      "id": 160,
+      "palavra": "(NUEVO)",
+      "campo": "modelo"
+    },
+    {
+      "id": 161,
+      "palavra": "DOHC",
+      "campo": "motor"
+    },
+    {
+      "id": 162,
+      "palavra": "L4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 163,
+      "palavra": "L3",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 164,
+      "palavra": "277 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 165,
+      "palavra": "284 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 166,
+      "palavra": "136 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 167,
+      "palavra": "134CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 168,
+      "palavra": "109CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 169,
+      "palavra": "110 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 170,
+      "palavra": "240 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 171,
+      "palavra": "137 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 172,
+      "palavra": "137 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 173,
+      "palavra": "176 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 174,
+      "palavra": "240CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 175,
+      "palavra": "131 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 176,
+      "palavra": "125 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 177,
+      "palavra": "100CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 178,
+      "palavra": "110CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 179,
+      "palavra": "125CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 180,
+      "palavra": "135 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 181,
+      "palavra": "145 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 182,
+      "palavra": "115 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 183,
+      "palavra": "115CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 184,
+      "palavra": "4CIL",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 185,
+      "palavra": "(312_)",
+      "campo": "modelo"
+    },
+    {
+      "id": 186,
+      "palavra": "(223_)",
+      "campo": "modelo"
+    },
+    {
+      "id": 187,
+      "palavra": "(263_)",
+      "campo": "modelo"
+    },
+    {
+      "id": 188,
+      "palavra": "(195_)",
+      "campo": "modelo"
+    },
+    {
+      "id": 189,
+      "palavra": "(146_)",
+      "campo": "modelo"
+    },
+    {
+      "id": 190,
+      "palavra": "- MECÂNICO",
+      "campo": "versao"
+    },
+    {
+      "id": 191,
+      "palavra": "C10NE",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 192,
+      "palavra": "NLEV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 193,
+      "palavra": "5N",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 194,
+      "palavra": "174 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 195,
+      "palavra": "150CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 196,
+      "palavra": "204CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 197,
+      "palavra": "177CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 198,
+      "palavra": "177 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 199,
+      "palavra": "204 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 200,
+      "palavra": "4 CIL",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 201,
+      "palavra": "133 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 202,
+      "palavra": "82 CV D",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 203,
+      "palavra": "116 CV D",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 204,
+      "palavra": "116 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 205,
+      "palavra": "132 CV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 206,
+      "palavra": "SOHV",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 207,
+      "palavra": "DP4",
+      "campo": "configuracao_motor"
+    },
+    {
+      "id": 208,
+      "palavra": "DX4",
+      "campo": "configuracao_motor"
+    }
+  ],
+  "configuracoes": [
+    {
+      "id": 1,
+      "chave": "colunas_visiveis",
+      "valor": "{\"marca\":true,\"codigo\":false,\"veiculo\":true,\"modelo\":true,\"versao\":true,\"motor\":true,\"configuracao_motor\":true,\"combustivel\":true,\"ano\":true,\"imagem\":false,\"referencias\":false,\"observacao\":false,\"posicao\":false,\"lado\":false,\"direcao\":false,\"sistema_freio\":false,\"restricao\":false,\"apenas\":false,\"ficha_tecnica\":false}"
+    }
+  ],
+  "config_imagens": [
+    {
+      "id": 1,
+      "preset_ativo": "ORIGINAL",
+      "formato_saida": "JPEG",
+      "qualidade": 85,
+      "max_width": 1024,
+      "max_height": 1024,
+      "manter_proporcao": 1,
+      "cor_fundo_jpg": "#fffafa",
+      "min_width": 500,
+      "min_height": 500
+    }
+  ]
+}
