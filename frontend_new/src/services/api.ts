@@ -36,6 +36,9 @@ export const configApi = {
 
     getHealth: () => api.get('/api/health'),
     exportBackup: () => api.post('/config/backup/export'),
+    exportSeedData: () => api.get('/config/seed/export'),
+    importSeedData: (data: any) => api.post('/config/seed/import', data),
+    reloadSeedData: () => api.post('/config/seed/reload'),
 
     getPreferencias: (chave: string) => api.get(`/config/preferencias/${chave}`),
     savePreferencias: (chave: string, valor: any) => api.post('/config/preferencias', { chave, valor: JSON.stringify(valor) }),

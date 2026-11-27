@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Search,
   FlaskConical,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import FieldManager from "./FieldManager";
@@ -428,6 +429,16 @@ const ProvedorForm: React.FC<ProvedorFormProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {/* Alerta de persistência em Nuvem */}
+          <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <strong className="font-semibold">Aviso de persistência em Nuvem (Render):</strong>
+              <p className="mt-0.5 text-amber-800 dark:text-amber-300/90">
+                O banco em produção possui armazenamento efêmero. Após salvar aqui, lembre-se de clicar em <strong>Exportar Backup JSON</strong> na lista de provedores para baixar o arquivo atualizado e versioná-lo no Git.
+              </p>
+            </div>
+          </div>
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-xl text-xs flex items-center gap-2 font-semibold animate-in fade-in duration-200">
               <Shield size={16} className="shrink-0" />
