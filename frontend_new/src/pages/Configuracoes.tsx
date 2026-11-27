@@ -4,6 +4,7 @@ import { configApi } from '../services/api';
 import { toast } from '../utils/toast';
 import ConfirmModal from '../components/ConfirmModal';
 import { ConfiguracoesImagens } from '../components/ConfiguracoesImagens';
+import { SystemLogsTab } from '../components/SystemLogsTab';
 
 const PREF_KEY = 'colunas_visiveis';
 
@@ -44,7 +45,7 @@ const Configuracoes = () => {
     const [syncing, setSyncing] = useState(false);
     const [automakerInfo, setAutomakerInfo] = useState<any>(null);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'grade' | 'imagens' | 'manutencao'>('grade');
+    const [activeTab, setActiveTab] = useState<'grade' | 'imagens' | 'manutencao' | 'logs'>('grade');
 
     useEffect(() => {
         loadPreferences();
@@ -184,6 +185,12 @@ const Configuracoes = () => {
                 >
                     Manutenção (FIPE)
                 </button>
+                <button
+                    onClick={() => setActiveTab('logs')}
+                    className={`px-4 py-2 font-bold text-sm border-b-2 transition-colors ${activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                >
+                    Logs do Sistema
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -302,6 +309,8 @@ const Configuracoes = () => {
                     </div>
                 </div>
             )}
+
+            {activeTab === 'logs' && <SystemLogsTab />}
         </div>
     );
 };

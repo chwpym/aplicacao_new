@@ -20,6 +20,7 @@ export const useCatalog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 30; // 30 itens por página
   const [loading, setLoading] = useState(false);
+  const [searchProgress, setSearchProgress] = useState<{ total: number; current: number }>({ total: 0, current: 0 });
   const [results, setResults] = useState<any[]>([]);
   const [selectedCodigo, setSelectedCodigo] = useState<string>("");
   const [provedores, setProvedores] = useState<any[]>([]);
@@ -200,6 +201,7 @@ export const useCatalog = () => {
 
     try {
       if (selectedProvedor) {
+        setSearchProgress({ total: 1, current: 0 });
         const p = provedores.find(prov => prov.id === selectedProvedor);
         const response = await searchApi.buscarPeca(
           partId,
@@ -207,6 +209,7 @@ export const useCatalog = () => {
           agrupar,
           { signal: controller.signal }
         );
+        setSearchProgress({ total: 1, current: 1 });
         const cleanedData = response.data.map((r: any) => ({
           ...r,
           marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p?.nome || "---").toUpperCase()
@@ -225,39 +228,55 @@ export const useCatalog = () => {
         const sorted = reais.sort(compareResults);
         setResults(sorted);
       } else {
-        const promises = provedores.map(async (p) => {
-          try {
-            const response = await searchApi.buscarPeca(
-              partId, 
-              [p.id], 
-              agrupar,
-              { signal: controller.signal }
-            );
-            if (response.data && response.data.length > 0) {
-              const cleanedData = response.data.map((r: any) => ({
-                ...r,
-                marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p.nome || "---").toUpperCase()
-              }));
-              // Intercepta aviso especial do provedor Wega (código incompleto sem '/')
-              // const avisos = cleanedData.filter((r: any) => r.metadados?._aviso_wega);
-              const reais = cleanedData.filter((r: any) => !r.metadados?._aviso_wega);
-              // Não exibimos o modal de aviso quando buscamos em TODOS os provedores
-              // para não interromper a busca global com alertas específicos de um catálogo.
-              if (reais.length > 0) {
-                setResults((prev) => {
-                  const combined = [...prev, ...reais];
-                  return combined.sort(compareResults);
-                });
-              }
-            }
-          } catch (err: any) {
-            if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
-              console.error(`Erro ao buscar no provedor ${p.nome}:`, err);
-            }
-          }
-        });
+        const totalProv = provedores.length;
+        setSearchProgress({ total: totalProv, current: 0 });
+        let completed = 0;
+        const CONCURRENCY_LIMIT = 5;
+        const executing = new Set<Promise<any>>();
 
-        await Promise.allSettled(promises);
+        for (const p of provedores) {
+          if (controller.signal.aborted) break;
+
+          const task = (async () => {
+            try {
+              const response = await searchApi.buscarPeca(
+                partId, 
+                [p.id], 
+                agrupar,
+                { signal: controller.signal }
+              );
+              if (response.data && response.data.length > 0) {
+                const cleanedData = response.data.map((r: any) => ({
+                  ...r,
+                  marca: r.marca && r.marca.trim() ? r.marca : (r.provedor || p.nome || "---").toUpperCase()
+                }));
+                const reais = cleanedData.filter((r: any) => !r.metadados?._aviso_wega);
+                if (reais.length > 0) {
+                  setResults((prev) => {
+                    const combined = [...prev, ...reais];
+                    return combined.sort(compareResults);
+                  });
+                }
+              }
+            } catch (err: any) {
+              if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+                console.error(`Erro ao buscar no provedor ${p.nome}:`, err);
+              }
+            } finally {
+              completed++;
+              setSearchProgress({ total: totalProv, current: completed });
+            }
+          })();
+
+          executing.add(task);
+          task.finally(() => executing.delete(task));
+
+          if (executing.size >= CONCURRENCY_LIMIT) {
+            await Promise.race(executing);
+          }
+        }
+
+        await Promise.allSettled(executing);
       }
     } catch (error: any) {
       if (error.name === 'AbortError' || error.name === 'CanceledError') {
@@ -270,6 +289,7 @@ export const useCatalog = () => {
       // Só desativa o loading se for o controller atual (para não bugar com cancelamentos rápidos)
       if (abortControllerRef.current === controller) {
         setLoading(false);
+        setSearchProgress({ total: 0, current: 0 });
         abortControllerRef.current = null;
       }
     }
@@ -281,6 +301,7 @@ export const useCatalog = () => {
       abortControllerRef.current = null;
     }
     setLoading(false);
+    setSearchProgress({ total: 0, current: 0 });
   };
 
 
@@ -570,6 +591,7 @@ export const useCatalog = () => {
     clearResults,
     downloadAllImages,
     cancelSearch,
+    searchProgress,
   };
 
 };
